@@ -1,0 +1,70 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "iPhonePro-Helfer",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main.dart",
+      "args": [
+        "--target",
+        "lib/main.dart",
+        "-d",
+        "9F126682-2EE8-491E-98DF-F0A56C9CF7E7" // iPhone 15 Pro
+      ]
+    },
+    {
+      "name": "Helfer-phone",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main.dart",
+      "args": [
+        "--target",
+        "lib/main.dart",
+        "-d",
+        "00008130-001214A63C20001C" // iPhone 15 Pro
+      ]
+    },
+    {
+      "name": "localAndroidDebug",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main.dart",
+      "args": ["--target", "lib/main.dart", "-d", "emulator-5554"]
+    },
+    {
+      "name": "Pixel6-Ryan",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main.dart",
+      "args": ["--target", "lib/main.dart", "-d", "19081FDF600DWU"]
+    },
+
+    {
+      "name": "Wireless-Ryan",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main.dart",
+      "args": [
+        "--target",
+        "lib/main.dart",
+        "-d",
+        "adb-19081FDF600DWU-2Lkd38._adb-tls-connect._tcp"
+      ]
+    },
+
+    {
+      "name": "iPhone-Ryan",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main.dart",
+      "args": [
+        "--target",
+        "lib/main.dart",
+        "-d",
+        "D1C0A7B9-0166-4EE6-B077-35AD56F56A04" // iPhone 15
+      ]
+    }
+  ],
+  "compounds": []
+}

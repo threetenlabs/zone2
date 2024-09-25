@@ -1,0 +1,40 @@
+# This file contains the fastlane.tools configuration
+# You can find the documentation at https://docs.fastlane.tools
+#
+# For a list of all available actions, check out
+#
+#     https://docs.fastlane.tools/actions
+#
+# For a list of all available plugins, check out
+#
+#     https://docs.fastlane.tools/plugins/available-plugins
+#
+
+# Uncomment the line if you want fastlane to automatically update itself
+# update_fastlane
+
+default_platform(:ios)
+
+platform :ios do
+  slack_url = 'https://hooks.slack.com/services/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'
+
+  desc "Push a new beta build to TestFlight"
+  lane :deploy do
+    # increment_build_number(xcodeproj: "Runner.xcodeproj")
+    # build_app(workspace: "Runner.xcworkspace", scheme: "prod")
+    upload_to_testflight(
+      ipa: '../build/ios/ipa/app.ipa',
+      username: ENV['FASTLANE_USERNAME'],
+      changelog: "Next release candidate - please test all games and functionality.",
+      beta_app_description: "This is the latest beta version of Bedlam Games.",
+      beta_app_feedback_email: "hello@threetenlabs.com",
+      notify_external_testers: true,
+      groups: "beta_testers",
+      distribute_external: true
+    )
+    slack(
+      message: 'New ios build uploaded to App Store',
+      slack_url: slack_url
+    )
+  end
+end

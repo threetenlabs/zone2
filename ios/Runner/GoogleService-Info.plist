@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CLIENT_ID</key>
+	<string>476459834022-7uov3abjhs46oqnk7a4tgd8bk9ju1a7g.apps.googleusercontent.com</string>
+	<key>REVERSED_CLIENT_ID</key>
+	<string>com.googleusercontent.apps.476459834022-7uov3abjhs46oqnk7a4tgd8bk9ju1a7g</string>
+	<key>ANDROID_CLIENT_ID</key>
+	<string>476459834022-1vbbjgi8ge41su31r9et1tbqp4mc6cdj.apps.googleusercontent.com</string>
+	<key>API_KEY</key>
+	<string>AIzaSyAusyIkeXWn_0mORQOCE_MJhOktRr3FCCQ</string>
+	<key>GCM_SENDER_ID</key>
+	<string>476459834022</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>com.threetenlabs.template</string>
+	<key>PROJECT_ID</key>
+	<string>threeten-labs-template</string>
+	<key>STORAGE_BUCKET</key>
+	<string>threeten-labs-template.appspot.com</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:476459834022:ios:713bd6b7945c5e7b987267</string>
+</dict>
+</plist>

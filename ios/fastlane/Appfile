@@ -1,0 +1,8 @@
+app_identifier("com.threetenlabs.template") # The bundle identifier of your app
+apple_id("ryan@threetenlabs.com") # Your Apple Developer Portal username
+
+itc_team_id("126749548") # App Store Connect Team ID
+team_id("64F2NQS383") # Developer Portal Team ID
+
+# For more information about the Appfile, see:
+#     https://docs.fastlane.tools/advanced/#appfile
