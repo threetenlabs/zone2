@@ -18,9 +18,7 @@ class ProfileViewLandscapeSmall extends GetWidget<ProfileController> {
     final AuthService authService = Get.find<AuthService>();
     Timer? debounce;
     return PopScope(
-      onPopInvoked: (bool value) {
-        return;
-      },
+      canPop: false,
       child: LayoutBuilder(
         builder: (BuildContext context, BoxConstraints constraints) {
           var height = MediaQuery.of(context).size.height;

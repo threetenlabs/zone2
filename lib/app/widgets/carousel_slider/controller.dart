@@ -44,7 +44,7 @@ class BedlamCarouselController extends GetxController with GetSingleTickerProvid
   Timer? _getTimer() {
     logger.i('getTimer');
 
-    return Timer.periodic(this.autoPlayInterval, (_) async {
+    return Timer.periodic(autoPlayInterval, (_) async {
       if (pageController.value == null) {
         logger.w('pageController.value.page is null');
         return;
@@ -61,7 +61,7 @@ class BedlamCarouselController extends GetxController with GetSingleTickerProvid
       } else {
         logger.w('animating to page $nextPage');
         await pageController.value!
-            .animateToPage(nextPage, duration: Duration(milliseconds: 300), curve: Curves.ease);
+            .animateToPage(nextPage, duration: const Duration(milliseconds: 300), curve: Curves.ease);
         update();
       }
     });

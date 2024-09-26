@@ -18,8 +18,8 @@ class AppDialog extends StatelessWidget {
       required this.onCancel,
       this.confirmText = 'Confirm',
       this.cancelText = 'Cancel',
-      this.width = null,
-      this.textStyle = null});
+      this.width,
+      this.textStyle});
 
   @override
   Widget build(BuildContext context) {
@@ -32,7 +32,7 @@ class AppDialog extends StatelessWidget {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
       child: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Container(
+        child: SizedBox(
           width: width,
           child: Column(
             mainAxisSize: MainAxisSize.min,

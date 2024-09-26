@@ -10,7 +10,7 @@ class ForcedUpdateService {
 
   bool _isAboveMinimumSupportedVersion = true;
 
-  ForcedUpdateService() {}
+  ForcedUpdateService();
 
   Future<void> setIsAboveMinimumSupportedVersion() async {
     try {

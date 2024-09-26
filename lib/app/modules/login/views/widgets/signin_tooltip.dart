@@ -26,7 +26,7 @@ class SignInToolTip extends StatelessWidget {
         arrowBaseWidth: 20.0,
         arrowLength: 20.0,
         borderWidth: 2.0,
-        showCloseButton: ShowCloseButton.none,
+        showCloseButton: false,
         touchThroughAreaShape: ClipAreaShape.rectangle,
         touchThroughAreaCornerRadius: 30,
         barrierColor: const Color.fromARGB(26, 47, 45, 47),

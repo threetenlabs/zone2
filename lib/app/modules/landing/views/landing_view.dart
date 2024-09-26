@@ -5,7 +5,7 @@ import 'package:get/get.dart';
 import '../controllers/landing_controller.dart';
 
 class LandingView extends GetView<LandingController> {
-  const LandingView({Key? key}) : super(key: key);
+  const LandingView({super.key});
   @override
   Widget build(BuildContext context) {
     return Scaffold(

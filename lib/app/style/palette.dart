@@ -145,11 +145,11 @@ class Palette {
   Color get scribologyGreen => const Color(0xffa9c9cb);
   Color get scribologyTan => const Color(0xfffaf9e6);
   Color get scribologyDarkText => const Color.fromARGB(255, 17, 16, 16);
-  Color get scribologyWhite => Color.fromARGB(255, 255, 255, 255);
+  Color get scribologyWhite => const Color.fromARGB(255, 255, 255, 255);
 
   Color get scribologyPrimary => const Color(0xff4b94af);
   Color get scribologySecondary => const Color(0xffa9c9cb);
-  Color get scribologyTeritary => Color.fromARGB(255, 223, 19, 118);
+  Color get scribologyTeritary => const Color.fromARGB(255, 223, 19, 118);
 
   ThemeData get scribologyTheme => ThemeData(
         useMaterial3: false,
@@ -162,7 +162,7 @@ class Palette {
             borderRadius: BorderRadius.circular(8.0),
           ),
           hintStyle: TextStyle(color: appDisabled),
-          contentPadding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
         ),
         textTheme: TextTheme(
           bodySmall: GoogleFonts.schoolbell().copyWith(color: trueWhite, fontSize: 14),
