@@ -59,7 +59,7 @@ class Palette {
         colorScheme: ColorScheme.fromSeed(
           seedColor: Colors.purple,
           // ···
-          brightness: Brightness.dark,
+          brightness: Brightness.light,
         ),
 
         // Define the default `TextTheme`. Use this to specify the default

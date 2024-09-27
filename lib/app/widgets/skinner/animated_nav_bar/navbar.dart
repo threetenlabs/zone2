@@ -1,6 +1,3 @@
-import 'package:app/app/style/palette.dart';
-import 'package:get/get.dart';
-
 import 'clipped_view.dart';
 import 'navbar_button.dart';
 import 'package:flutter/material.dart';
@@ -18,7 +15,7 @@ class AnimatedNavBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final palette = Get.find<Palette>();
+    final colorScheme = Theme.of(context).colorScheme; // Get the ColorScheme
 
     //For each item in our list of data, create a NavBtn widget
     List<Widget> buttonWidgets = items.map((data) {
@@ -34,8 +31,7 @@ class AnimatedNavBar extends StatelessWidget {
     //Create a container with a row, and add our btn widgets into the row
     return Container(
       decoration: BoxDecoration(
-        color: palette.darkBackGround,
-        //Add some drop-shadow to our navbar, use 2 for a slightly nicer effect
+        color: colorScheme.surface, // Use ColorScheme background color
         boxShadow: const [
           BoxShadow(blurRadius: 16, color: Colors.black12),
           BoxShadow(blurRadius: 24, color: Colors.black12),
