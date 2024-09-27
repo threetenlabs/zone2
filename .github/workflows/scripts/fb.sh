@@ -27,7 +27,7 @@ if [[ $platform == "ios" ]]; then
         updated_version="$MAJOR.$MINOR.$PATCH+$js_return_value"
         awk -v new_version="$updated_version" '/^version:/ {sub(/^version: .*/, "version: " new_version)} 1' "$pubspec_file" >tmpfile && mv tmpfile "$pubspec_file"
 
-        (cd ./packages/mobile && firebase use bedlam-nonprod && flutter build ipa --release --flavor nonprod --target lib/main_nonprod.dart --export-options-plist=ios/FirebaseDistributionOptions.plist)
+        (cd ./packages/mobile && firebase use bedlam-nonprod && flutter build ipa --release --flavor nonprod --target lib/main.dart --export-options-plist=ios/FirebaseDistributionOptions.plist)
 
         firebase appdistribution:distribute packages/mobile/build/ios/ipa/bedlam.ipa \
             --app $appId \
@@ -55,7 +55,7 @@ elif [[ $platform == "android" ]]; then
         updated_version="$MAJOR.$MINOR.$PATCH+$js_return_value"
         awk -v new_version="$updated_version" '/^version:/ {sub(/^version: .*/, "version: " new_version)} 1' "$pubspec_file" >tmpfile && mv tmpfile "$pubspec_file"
 
-        (cd ./packages/mobile && firebase use bedlam-nonprod && flutter build apk --release --flavor nonprod --target lib/main_nonprod.dart)
+        (cd ./packages/mobile && firebase use bedlam-nonprod && flutter build apk --release --flavor nonprod --target lib/main.dart)
 
         firebase appdistribution:distribute packages/mobile/build/app/outputs/flutter-apk/app-nonprod-release.apk \
             --app $appId \

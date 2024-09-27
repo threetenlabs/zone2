@@ -81,10 +81,10 @@ Future<void> main() async {
 
   runApp(
     GetMaterialApp(
-      title: "Three Ten Labs Template",
+      title: "Zone 2",
       initialBinding: globalBindings,
       debugShowCheckedModeBanner: true,
-      themeMode: ThemeMode.dark,
+      themeMode: ThemeMode.light,
       theme: palette.primaryTheme,
       initialRoute: Routes.introOrHome,
       getPages: AppPages.routes,

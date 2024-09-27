@@ -1,4 +1,3 @@
-import 'package:app/app/modules/home/views/widgets/app_bar.dart';
 import 'package:app/app/style/palette.dart';
 import 'package:app/app/widgets/skinner/animated_sidebar_nav/sidebar.dart';
 import 'package:flutter/material.dart';
@@ -19,10 +18,6 @@ class HomeViewLandscapeSmall extends GetView<HomeController> {
         builder: (controller) => Theme(
           data: palette.primaryTheme,
           child: Scaffold(
-            appBar: const PreferredSize(
-              preferredSize: Size.fromHeight(kToolbarHeight),
-              child: HomeAppBar(scaledPercent: 0.3),
-            ),
             body: Row(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [

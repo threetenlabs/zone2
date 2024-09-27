@@ -35,17 +35,6 @@ class Palette {
 
   Color get inkFullOpacity => const Color(0xff352b42);
 
-  Color get guacamole => const Color(0xff98A77D);
-  Color get avocado => const Color(0xff568203);
-  Color get onion => const Color(0xffA3A948);
-  Color get cilantro => const Color(0xff3F9B6B);
-  Color get lime => const Color(0xffCDEA80);
-  Color get tomato => const Color(0xff9B1B30);
-  Color get jalapeno => const Color(0xff006E44);
-  Color get sourCream => const Color.fromARGB(255, 242, 242, 227);
-
-  MaterialColor get meccaPrimaryColor => inkFullOpacity.toMaterialColor();
-  MaterialColor get meccaAccentColor => avocado.toMaterialColor();
   MaterialColor get meccaOnSecondaryColor => inkFullOpacity.toMaterialColor();
 
   Color get appPrimary => const Color.fromARGB(255, 67, 182, 217);
@@ -64,168 +53,29 @@ class Palette {
   Color get mainMenuStore => const Color.fromARGB(255, 212, 109, 145);
   Color get mainMenuProfile => const Color.fromARGB(255, 213, 252, 159);
 
-  ButtonStyle get textButtonStyle => TextButton.styleFrom(
-        textStyle: const TextStyle(fontSize: 16), // Text size
-      );
-
-  ThemeData get meccaPrimaryTheme => ThemeData(
-        colorScheme: ColorScheme.fromSwatch(
-            primarySwatch: meccaPrimaryColor, accentColor: meccaOnSecondaryColor),
-      );
-
   ThemeData get primaryTheme => ThemeData(
-        useMaterial3: false,
-        visualDensity: VisualDensity.standard,
-        dialogBackgroundColor: darkBackGround,
-        appBarTheme: AppBarTheme(backgroundColor: darkBackGround, foregroundColor: smokyWhite),
-        canvasColor: reallyDarkBackGround,
+        useMaterial3: true,
+        // Define the default brightness and colors.
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: Colors.purple,
+          // ···
+          brightness: Brightness.dark,
+        ),
 
-        colorScheme: ColorScheme(
-          primary: appPrimary,
-          onPrimary: smokyWhite,
-          error: appError,
-          onError: smokyWhite,
-          surface: smokyWhite,
-          onSurface: darkBackGround,
-          onSecondary: smokyWhite,
-          secondary: appSecondary,
-          brightness: Brightness.light,
-        ),
-        // bottoJsonpBarTheme: BottoJsonpBarTheme(surfaceTintColor: darkBackGround, color: smokyWhite),
-        bottomNavigationBarTheme: BottomNavigationBarThemeData(
-          elevation: 0.7,
-          backgroundColor: appPrimary,
-          selectedItemColor: smokyWhite,
-          unselectedItemColor: smokyWhite,
-        ),
-        outlinedButtonTheme: OutlinedButtonThemeData(
-          style: ButtonStyle(
-            side: WidgetStateProperty.all<BorderSide>(BorderSide(color: appPrimary)),
-            backgroundColor: WidgetStateProperty.all<Color>(darkBackGround),
-            foregroundColor: WidgetStateProperty.all<Color>(smokyWhite),
-          ),
-        ),
-        buttonTheme: ButtonThemeData(
-            focusColor: Colors.blue,
-            buttonColor: Colors.blue, // Default color for all RaisedButton (Deprecated).
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-            textTheme: ButtonTextTheme.normal),
-        textButtonTheme: TextButtonThemeData(
-          style: TextButton.styleFrom(
-            backgroundColor: Colors.blue, // Background color for TextButtons.
-
-            foregroundColor: Colors.white, // Text color for TextButtons.
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-          ),
-        ),
-        elevatedButtonTheme: ElevatedButtonThemeData(
-          style: ElevatedButton.styleFrom(
-            foregroundColor: Colors.white, // Text color for TextButtons.
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-          ),
-        ),
-        dialogTheme: ThemeData().dialogTheme.copyWith(
-              backgroundColor: reallyDarkBackGround,
-              titleTextStyle: GoogleFonts.quicksand().copyWith(color: smokyWhite),
-              contentTextStyle: GoogleFonts.quicksand().copyWith(color: smokyWhite),
-            ),
+        // Define the default `TextTheme`. Use this to specify the default
+        // text styling for headlines, titles, bodies of text, and more.
         textTheme: TextTheme(
-          bodySmall: GoogleFonts.roboto().copyWith(color: trueWhite, fontSize: 14),
-          bodyMedium: GoogleFonts.roboto().copyWith(color: trueWhite, fontSize: 16),
-          bodyLarge: GoogleFonts.roboto().copyWith(color: trueWhite, fontSize: 18),
-          titleSmall: GoogleFonts.quicksand().copyWith(color: trueWhite, fontSize: 20),
-          titleMedium: GoogleFonts.quicksand().copyWith(color: trueWhite, fontSize: 24),
-          titleLarge: GoogleFonts.quicksand().copyWith(color: trueWhite, fontSize: 28),
-          // Add other text styles as needed
-        ),
-      );
-
-  // Scribology colors & theme
-  Color get scribologyBlue => const Color(0xff06558e);
-  Color get scribologyGreen => const Color(0xffa9c9cb);
-  Color get scribologyTan => const Color(0xfffaf9e6);
-  Color get scribologyDarkText => const Color.fromARGB(255, 17, 16, 16);
-  Color get scribologyWhite => const Color.fromARGB(255, 255, 255, 255);
-
-  Color get scribologyPrimary => const Color(0xff4b94af);
-  Color get scribologySecondary => const Color(0xffa9c9cb);
-  Color get scribologyTeritary => const Color.fromARGB(255, 223, 19, 118);
-
-  ThemeData get scribologyTheme => ThemeData(
-        useMaterial3: false,
-        visualDensity: VisualDensity.standard,
-        scaffoldBackgroundColor: scribologyGreen,
-        appBarTheme: AppBarTheme(backgroundColor: darkBackGround, foregroundColor: smokyWhite),
-        canvasColor: scribologyBlue,
-        inputDecorationTheme: InputDecorationTheme(
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(8.0),
+          displayLarge: const TextStyle(
+            fontSize: 72,
+            fontWeight: FontWeight.bold,
           ),
-          hintStyle: TextStyle(color: appDisabled),
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
-        ),
-        textTheme: TextTheme(
-          bodySmall: GoogleFonts.schoolbell().copyWith(color: trueWhite, fontSize: 14),
-          bodyMedium: GoogleFonts.schoolbell().copyWith(color: trueWhite, fontSize: 16),
-          bodyLarge: GoogleFonts.schoolbell().copyWith(color: trueWhite, fontSize: 18),
-          titleSmall: GoogleFonts.schoolbell().copyWith(color: trueWhite, fontSize: 20),
-          titleMedium: GoogleFonts.schoolbell().copyWith(color: trueWhite, fontSize: 24),
-          titleLarge: GoogleFonts.schoolbell().copyWith(color: trueWhite, fontSize: 28),
-          // Add other text styles as needed
-        ),
-        colorScheme: ColorScheme(
-          primary: scribologyGreen,
-          onPrimary: darkBackGround,
-          error: appError,
-          onError: smokyWhite,
-          surface: scribologyGreen,
-          onSurface: darkBackGround,
-          secondary: scribologyPrimary,
-          onSecondary: darkBackGround,
-          brightness: Brightness.light,
-        ),
-        bottomAppBarTheme: ThemeData().bottomAppBarTheme.copyWith(
-              color: scribologyBlue,
-              elevation: 5,
-            ),
-        dialogTheme: ThemeData().dialogTheme.copyWith(
-              backgroundColor: scribologyGreen,
-              titleTextStyle: GoogleFonts.schoolbell().copyWith(color: scribologyDarkText),
-              contentTextStyle: GoogleFonts.schoolbell().copyWith(color: scribologyDarkText),
-            ),
-        bottomNavigationBarTheme: BottomNavigationBarThemeData(
-          elevation: 0.7,
-          backgroundColor: scribologyBlue,
-          selectedItemColor: scribologyBlue,
-          unselectedItemColor: scribologyBlue,
-        ),
-        outlinedButtonTheme: OutlinedButtonThemeData(
-          style: ButtonStyle(
-            side: WidgetStateProperty.all<BorderSide>(BorderSide(color: scribologyBlue)),
-            backgroundColor: WidgetStateProperty.all<Color>(darkBackGround),
-            foregroundColor: WidgetStateProperty.all<Color>(smokyWhite),
+          // ···
+          titleLarge: GoogleFonts.oswald(
+            fontSize: 30,
+            fontStyle: FontStyle.italic,
           ),
-        ),
-        buttonTheme: ButtonThemeData(
-            focusColor: Colors.blue,
-            buttonColor: Colors.blue, // Default color for all RaisedButton (Deprecated).
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-            textTheme: ButtonTextTheme.normal),
-        textButtonTheme: TextButtonThemeData(
-          style: TextButton.styleFrom(
-            backgroundColor: Colors.blue, // Background color for TextButtons.
-
-            foregroundColor: Colors.white, // Text color for TextButtons.
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-          ),
-        ),
-        elevatedButtonTheme: ElevatedButtonThemeData(
-          style: ElevatedButton.styleFrom(
-            elevation: 5,
-            foregroundColor: Colors.white, // Text color for TextButtons.
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-            backgroundColor: scribologyBlue,
-          ),
+          bodyMedium: GoogleFonts.merriweather(),
+          displaySmall: GoogleFonts.pacifico(),
         ),
       );
 }

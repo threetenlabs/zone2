@@ -12,9 +12,8 @@ class FluttermojiCustomizerPage extends GetWidget<ProfileController> {
 
   @override
   Widget build(BuildContext context) {
-    return PopScope(onPopInvoked: (bool value) {
+    return PopScope(onPopInvokedWithResult: (bool value, Object? result) {
       controller.saveFluttermoji();
-      return;
     }, child: LayoutBuilder(
       builder: (BuildContext context, BoxConstraints constraints) {
         var width = MediaQuery.of(context).size.width;

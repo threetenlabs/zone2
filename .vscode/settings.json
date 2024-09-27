@@ -79,5 +79,6 @@
       "extensions": ["mobile"],
       "format": "svg"
     }
-  ]
+  ],
+  "java.compile.nullAnalysis.mode": "automatic"
 }

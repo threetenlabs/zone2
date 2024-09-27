@@ -22,7 +22,7 @@ generate:
 	flutter pub run build_runner build --delete-conflicting-outputs
 
 mobile:
-	flutter run --target lib/main_nonprod.dart
+	flutter run --target lib/main.dart
 
 
 build-android:

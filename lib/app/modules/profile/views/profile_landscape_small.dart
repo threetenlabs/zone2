@@ -52,9 +52,6 @@ class ProfileViewLandscapeSmall extends GetWidget<ProfileController> {
                                 ),
                               ),
                               OutlinedButton(
-                                style: palette.primaryTheme.outlinedButtonTheme.style?.copyWith(
-                                    side: WidgetStateProperty.all<BorderSide>(
-                                        BorderSide(color: palette.mainMenuProfile))),
                                 onPressed: () {
                                   Navigator.push(
                                     context,
@@ -93,31 +90,14 @@ class ProfileViewLandscapeSmall extends GetWidget<ProfileController> {
                                               ? null
                                               : 'Invalid username';
                                         },
-                                        decoration: InputDecoration(
+                                        decoration: const InputDecoration(
                                           labelText: 'Display Name',
-                                          labelStyle: TextStyle(color: palette.mainMenuProfile),
                                           hintText: 'Enter your display name',
-                                          hintStyle: const TextStyle(color: Colors.grey),
-                                          errorStyle: const TextStyle(color: Colors.red),
-                                          border: const OutlineInputBorder(),
-                                          enabledBorder: OutlineInputBorder(
-                                            borderSide: BorderSide(
-                                                color: palette.mainMenuProfile, width: 2.0),
-                                          ),
-                                          focusedBorder: OutlineInputBorder(
-                                            borderSide: BorderSide(
-                                                color: palette.mainMenuProfile, width: 2.0),
-                                          ),
-                                          errorBorder: OutlineInputBorder(
-                                            borderSide: BorderSide(
-                                                color: palette.mainMenuProfile, width: 2.0),
-                                          ),
-                                          focusedErrorBorder: OutlineInputBorder(
-                                            borderSide: BorderSide(
-                                                color: palette.mainMenuProfile, width: 2.5),
-                                          ),
+                                          hintStyle: TextStyle(color: Colors.grey),
+                                          errorStyle: TextStyle(color: Colors.red),
+                                          border: OutlineInputBorder(),
+                                          enabledBorder: OutlineInputBorder(),
                                         ),
-                                        style: palette.primaryTheme.textTheme.bodyMedium,
                                       ),
                                     ),
                                   ),
@@ -127,9 +107,6 @@ class ProfileViewLandscapeSmall extends GetWidget<ProfileController> {
                                   authService.firebaseUser.value != null)
                                 OutlinedButton(
                                   onPressed: () => {authService.signOut()},
-                                  style: palette.primaryTheme.outlinedButtonTheme.style?.copyWith(
-                                      side: WidgetStateProperty.all<BorderSide>(
-                                          BorderSide(color: palette.mainMenuProfile))),
                                   child: Row(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
