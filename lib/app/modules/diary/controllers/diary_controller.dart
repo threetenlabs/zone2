@@ -3,73 +3,71 @@ import 'package:logger/logger.dart';
 import 'package:health/health.dart';
 import 'package:zone2/app/services/health_service.dart';
 
-import 'package:zone2/app/services/notification_service.dart'; // Ensure you have the health package imported
+import 'package:zone2/app/services/notification_service.dart';
+import 'package:timezone/timezone.dart' as tz;
+import 'package:intl/intl.dart'; // Added for date formatting
 
 class DiaryController extends GetxController {
   final logger = Get.find<Logger>();
   final healthService = Get.find<HealthService>();
-
-  // // Define the types to get
-  var types = [
-    HealthDataType.STEPS,
-  ];
 
   final count = 0.obs;
   final weightWhole = 70.obs;
   final weightDecimal = 0.obs;
   final healthData = RxList<HealthDataPoint>();
   final isWeightLogged = false.obs; // Track if weight is logged
+  final diaryDate = tz.TZDateTime.now(tz.local).obs;
+  final diaryDateLabel = ''.obs; // Observable for date label
 
-  List<HealthDataAccess> get permissions => types
-      .map((type) =>
-          // can only request READ permissions to the following list of types on iOS
-          [
-            HealthDataType.WALKING_HEART_RATE,
-            HealthDataType.ELECTROCARDIOGRAM,
-            HealthDataType.HIGH_HEART_RATE_EVENT,
-            HealthDataType.LOW_HEART_RATE_EVENT,
-            HealthDataType.IRREGULAR_HEART_RATE_EVENT,
-            HealthDataType.EXERCISE_TIME,
-          ].contains(type)
-              ? HealthDataAccess.READ
-              : HealthDataAccess.READ)
-      .toList();
   @override
   void onInit() async {
+    logger.i('DiaryController onInit');
     super.onInit();
-    await loadHealthData();
+    ever(healthService.isAuthorized, (isAuthorized) => authorizedChanged(isAuthorized));
+    ever(diaryDate, (date) => updateDateLabel());
+    updateDateLabel();
   }
 
-  Future<void> loadHealthData() async {
+  Future<void> authorizedChanged(dynamic isAuthorized) async {
     try {
-      final authorized = await healthService.authorize(); // Example types
-      if (!authorized) {
-        logger.e('Authorization not granted');
+      if (!isAuthorized) {
+        logger.e('Health Connect Authorization not granted');
         return;
       }
 
-      final now = DateTime.now();
-      final yesterday = now.subtract(const Duration(hours: 1));
+      await healthService.deleteData(HealthDataType.WEIGHT, diaryDate.value, TimeFrame.lastDay);
 
-      // Log types and permissions for debugging
-      logger.i('Types: $types');
-      logger.i('Permissions: $permissions');
-      logger.i('Authorized: $authorized');
-      logger.i('Now: $now');
-      logger.i('Yesterday: $yesterday');
-
-      final healthConnectStatus = await healthService.getHealthConnectSdkStatus();
-      logger.i('Health Connect SDK Status: $healthConnectStatus');
-      // Fetch health data
-      final healthData = await healthService.getHealthData(startTime: yesterday, endTime: now);
-
-      final dedupedHealthData = Health().removeDuplicates(healthData);
-
-      healthData.assignAll(dedupedHealthData); // Use assignAll to update the RxList
-
-      logger.i('Health data: $healthData');
+      await getHealthDataForSelectedDay();
+      // logger.i('Health data: $healthData');
     } catch (e) {
       logger.e('Error loading health data: $e');
+    }
+  }
+
+  Future<void> getHealthDataForSelectedDay() async {
+    final now = diaryDate.value;
+    final weightData =
+        await healthService.getWeightData(timeFrame: TimeFrame.lastDay, endTime: now);
+
+    weightData.sort((a, b) => b.dateTo.compareTo(a.dateTo));
+
+    if (weightData.isNotEmpty) {
+      logger.i('Weight data: ${weightData.first}');
+      final weight = weightData.first.value as NumericHealthValue;
+      logger.i('Health data: $weight');
+      final weightInKilograms = weight.numericValue.toDouble();
+      final weightInPounds = await healthService.convertWeightUnit(
+          weightInKilograms, WeightUnit.kilogram, WeightUnit.pound);
+
+      logger.i('Weight in pounds: $weightInPounds');
+
+      weightWhole.value = weightInPounds.toInt(); // Ensure weightWhole is an int
+      logger.i('Weight whole: $weightWhole');
+      weightDecimal.value =
+          ((weightInPounds - weightWhole.value) * 10).round(); // Update to single digit
+      logger.i('Weight decimal: $weightDecimal');
+
+      isWeightLogged.value = true;
     }
   }
 
@@ -90,5 +88,47 @@ class DiaryController extends GetxController {
     } catch (e) {
       logger.e('Error saving weight to Health: $e');
     }
+  }
+
+  bool isToday(tz.TZDateTime date) {
+    final now = tz.TZDateTime.now(tz.local);
+    logger.i('date: ${date.year} ${date.month} ${date.day}');
+    logger.i('now: ${now.year} ${now.month} ${now.day}');
+    return date.year == now.year && date.month == now.month && date.day == now.day;
+  }
+
+  bool isYesterday(tz.TZDateTime date) {
+    final yesterday = tz.TZDateTime.now(tz.local).subtract(Duration(days: 1));
+    logger.i('date: ${date.year} ${date.month} ${date.day}');
+    logger.i('yesterday: ${yesterday.year} ${yesterday.month} ${yesterday.day}');
+    return date.year == yesterday.year &&
+        date.month == yesterday.month &&
+        date.day == yesterday.day;
+  }
+
+  void updateDateLabel() {
+    logger.i('Updating date label: ${diaryDate.value}');
+    if (isToday(diaryDate.value)) {
+      logger.i('Updating date label to today: ${diaryDate.value}');
+      diaryDateLabel.value = 'Today';
+    } else if (isYesterday(diaryDate.value)) {
+      logger.i('Updating date label to yesterday: ${diaryDate.value}');
+      diaryDateLabel.value = 'Yesterday';
+    } else {
+      logger.i('Updating date label to full date: ${diaryDate.value}');
+      String dateLabel =
+          DateFormat('MM/dd/yyyy').format(diaryDate.value); // Show full date for other days
+      diaryDateLabel.value = dateLabel;
+    }
+  }
+
+  void navigateToNextDay() {
+    if (!isToday(diaryDate.value) && diaryDate.value.isBefore(DateTime.now())) {
+      diaryDate.value = diaryDate.value.add(Duration(days: 1));
+    }
+  }
+
+  void navigateToPreviousDay() {
+    diaryDate.value = diaryDate.value.subtract(Duration(days: 1));
   }
 }

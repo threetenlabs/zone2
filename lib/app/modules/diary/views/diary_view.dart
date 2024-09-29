@@ -10,52 +10,88 @@ class DiaryView extends GetView<DiaryController> {
 
   @override
   Widget build(BuildContext context) {
+    controller.getHealthDataForSelectedDay();
     return Scaffold(
       body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.all(16.0),
+        child: Column(
+          // {{ edit_2 }}
           children: [
-            Obx(
-              () => _buildCard(
-                context,
-                icon: Icons.scale,
-                title: 'Log Weight',
-                subtitle: 'Track your weight progress',
-                iconColor: Theme.of(context).colorScheme.primary, // {{ edit_3 }}
-                onTap: () => _showWeightBottomSheet(context), // {{ edit_1 }}
-                isChecked: controller.isWeightLogged.value, // Pass the checkbox state
+            Obx(() => _buildDateNavigation()), // Add date navigation component
+            Expanded(
+              child: ListView(
+                padding: const EdgeInsets.all(16.0),
+                children: [
+                  Obx(
+                    () => _buildCard(
+                      context,
+                      icon: Icons.scale,
+                      title: 'Log Weight',
+                      subtitle: 'Track your weight progress',
+                      iconColor: Theme.of(context).colorScheme.primary, // {{ edit_3 }}
+                      onTap: () => _showWeightBottomSheet(context), // {{ edit_1 }}
+                      isChecked: controller.isWeightLogged.value, // Pass the checkbox state
+                    ),
+                  ),
+                  _buildCard(
+                    context,
+                    icon: Icons.fastfood,
+                    title: 'Log Meals',
+                    subtitle: 'Record your meals',
+                    iconColor: Theme.of(context).colorScheme.secondary, // {{ edit_4 }}
+                    onTap: () => _showBottomSheet(context, 'Log Meals'),
+                    isChecked: false,
+                  ),
+                  _buildCard(
+                    context,
+                    icon: Icons.run_circle,
+                    title: 'Zone 2',
+                    subtitle: 'Monitor your Zone 2 training',
+                    iconColor: Theme.of(context).colorScheme.tertiary, // {{ edit_5 }}
+                    onTap: () => _showBottomSheet(context, 'Zone 2'),
+                    isChecked: false,
+                  ),
+                  _buildCard(
+                    context,
+                    icon: Icons.local_drink,
+                    title: 'Hydration',
+                    subtitle: 'Keep track of your water intake',
+                    iconColor: Theme.of(context).colorScheme.tertiary, // {{ edit_6 }}
+                    onTap: () => _showBottomSheet(context, 'Hydration'),
+                    isChecked: false,
+                  ),
+                ],
               ),
-            ),
-            _buildCard(
-              context,
-              icon: Icons.fastfood,
-              title: 'Log Meals',
-              subtitle: 'Record your meals',
-              iconColor: Theme.of(context).colorScheme.secondary, // {{ edit_4 }}
-              onTap: () => _showBottomSheet(context, 'Log Meals'),
-              isChecked: false,
-            ),
-            _buildCard(
-              context,
-              icon: Icons.run_circle,
-              title: 'Zone 2',
-              subtitle: 'Monitor your Zone 2 training',
-              iconColor: Theme.of(context).colorScheme.tertiary, // {{ edit_5 }}
-              onTap: () => _showBottomSheet(context, 'Zone 2'),
-              isChecked: false,
-            ),
-            _buildCard(
-              context,
-              icon: Icons.local_drink,
-              title: 'Hydration',
-              subtitle: 'Keep track of your water intake',
-              iconColor: Theme.of(context).colorScheme.tertiary, // {{ edit_6 }}
-              onTap: () => _showBottomSheet(context, 'Hydration'),
-              isChecked: false,
             ),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildDateNavigation() {
+    // {{ edit_3 }}
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center, // Center the row
+      children: [
+        IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            controller.navigateToPreviousDay();
+          },
+        ),
+        const SizedBox(width: 8), // Add spacing between arrow and date
+        Obx(() => Text(controller.diaryDateLabel.value, style: const TextStyle(fontSize: 20))),
+        const SizedBox(width: 8), // Add spacing between date and forward arrow
+        IconButton(
+          icon: const Icon(Icons.arrow_forward),
+          onPressed: controller.isToday(controller.diaryDate.value)
+              ? null
+              : () {
+                  controller.navigateToNextDay(); // Call the new method
+                },
+        ),
+      ],
     );
   }
 
@@ -117,7 +153,8 @@ class DiaryView extends GetView<DiaryController> {
               ElevatedButton.icon(
                 onPressed: () async {
                   await controller.saveWeightToHealth(); // Call saveWeightToHealth
-                  if (context.mounted) { // Check if the widget is still mounted
+                  if (context.mounted) {
+                    // Check if the widget is still mounted
                     Navigator.pop(context); // Close the bottom sheet
                   }
                 },

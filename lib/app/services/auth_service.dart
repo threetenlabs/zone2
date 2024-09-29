@@ -21,7 +21,7 @@ class AuthService {
   final FirebaseFirestore db = Get.find();
   final GoogleSignIn googleSignIn = Get.find();
   Rxn<User> firebaseUser = Rxn<User>();
-  final fcmService = Get.find<FcmService>();
+  // final fcmService = Get.find<FcmService>();
   final sharedPrefs = Get.find<SharedPreferencesService>();
 
   final Map<String, dynamic> defaultFluttermoji = {
@@ -77,14 +77,14 @@ class AuthService {
 
       //If the user has no fcmTokenMap, then update the user with the fcmTokenMap acquired at startup
       //TODO implement better TTL management
-      if (appUser.value.fcmTokenMap.isEmpty) {
-        await db.collection('users').doc(appUser.value.uid).update({
-          'fcmTokenMap': fcmService.tokenMap,
-        });
-      } else {
-        //If the user has an fcmTokenMap, throw away the one we collected at startup
-        fcmService.tokenMap.clear();
-      }
+      // if (appUser.value.fcmTokenMap.isEmpty) {
+      //   await db.collection('users').doc(appUser.value.uid).update({
+      //     'fcmTokenMap': fcmService.tokenMap,
+      //   });
+      // } else {
+      //   //If the user has an fcmTokenMap, throw away the one we collected at startup
+      //   fcmService.tokenMap.clear();
+      // }
 
       //if the user has no SVG string, then create a default SVG string
       if (appUser.value.svgString.isEmpty) {

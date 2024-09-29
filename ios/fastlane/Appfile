@@ -1,4 +1,4 @@
-app_identifier("com.threetenlab.zone2") # The bundle identifier of your app
+app_identifier("com.threetenlabs.zone2") # The bundle identifier of your app
 apple_id("ryan@threetenlabs.com") # Your Apple Developer Portal username
 
 itc_team_id("126749548") # App Store Connect Team ID

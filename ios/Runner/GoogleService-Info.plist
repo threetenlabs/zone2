@@ -3,9 +3,9 @@
 <plist version="1.0">
 <dict>
 	<key>CLIENT_ID</key>
-	<string>260007377833-n1j5tgblbbq8194lk6n4sc4tm1obsith.apps.googleusercontent.com</string>
+	<string>260007377833-un7fpgngv8cbpdh42rgbtuimganesasb.apps.googleusercontent.com</string>
 	<key>REVERSED_CLIENT_ID</key>
-	<string>com.googleusercontent.apps.260007377833-n1j5tgblbbq8194lk6n4sc4tm1obsith</string>
+	<string>com.googleusercontent.apps.260007377833-un7fpgngv8cbpdh42rgbtuimganesasb</string>
 	<key>ANDROID_CLIENT_ID</key>
 	<string>260007377833-5f6ouohq4n4uouit719lp106qbf7q9ce.apps.googleusercontent.com</string>
 	<key>API_KEY</key>
@@ -15,7 +15,7 @@
 	<key>PLIST_VERSION</key>
 	<string>1</string>
 	<key>BUNDLE_ID</key>
-	<string>com.threetenlab.zone2</string>
+	<string>com.threetenlabs.zone2</string>
 	<key>PROJECT_ID</key>
 	<string>zone2-prod</string>
 	<key>STORAGE_BUCKET</key>
@@ -31,6 +31,6 @@
 	<key>IS_SIGNIN_ENABLED</key>
 	<true></true>
 	<key>GOOGLE_APP_ID</key>
-	<string>1:260007377833:ios:87b0df030bd1e84fc562b8</string>
+	<string>1:260007377833:ios:3aa922d998605c50c562b8</string>
 </dict>
 </plist>

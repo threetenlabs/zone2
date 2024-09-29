@@ -1,26 +1,31 @@
 import 'package:health/health.dart';
 import 'package:get/get.dart';
 import 'package:logger/logger.dart';
-import 'package:zone2/app/modules/track/timeframe.dart';
+import 'package:permission_handler/permission_handler.dart';
+
+enum WeightUnit { kilogram, pound }
+
+enum TimeFrame {
+  lastDay,
+  lastWeek,
+  lastThreeMonths,
+  lastSixMonths,
+  all,
+}
 
 class HealthService extends GetxService {
   final logger = Get.find<Logger>();
   final isAuthorized = false.obs;
   final status = HealthConnectSdkStatus.sdkUnavailable.obs;
 
-  // Mapping of HealthDataType to permissions
-  final Map<HealthDataType, List<HealthDataAccess>> _permissionsMap = {
-    HealthDataType.HEART_RATE: [HealthDataAccess.READ],
-    HealthDataType.ACTIVE_ENERGY_BURNED: [HealthDataAccess.READ],
-    HealthDataType.BLOOD_GLUCOSE: [HealthDataAccess.READ],
-    HealthDataType.WEIGHT: [HealthDataAccess.READ, HealthDataAccess.WRITE],
-    HealthDataType.STEPS: [HealthDataAccess.READ],
-    HealthDataType.HEIGHT: [HealthDataAccess.READ, HealthDataAccess.WRITE],
-    HealthDataType.BODY_TEMPERATURE: [HealthDataAccess.READ],
-    HealthDataType.SLEEP_AWAKE: [HealthDataAccess.READ],
-    HealthDataType.SLEEP_ASLEEP: [HealthDataAccess.READ],
-    // Add more mappings as needed
-  };
+  final List<HealthDataType> _writePermissionTypes = [
+    HealthDataType.WEIGHT,
+    HealthDataType.STEPS,
+    HealthDataType.HEIGHT,
+    HealthDataType.EXERCISE_TIME,
+    HealthDataType.WATER,
+    HealthDataType.NUTRITION,
+  ];
 
   /// List of data types available on iOS
   final List<HealthDataType> dataTypesIOS = [
@@ -98,7 +103,7 @@ class HealthService extends GetxService {
     HealthDataType.BODY_FAT_PERCENTAGE,
     HealthDataType.HEIGHT,
     HealthDataType.WEIGHT,
-    // HealthDataType.BODY_MASS_INDEX,
+    HealthDataType.BODY_MASS_INDEX,
     HealthDataType.BODY_TEMPERATURE,
     HealthDataType.HEART_RATE,
     HealthDataType.HEART_RATE_VARIABILITY_RMSSD,
@@ -123,9 +128,47 @@ class HealthService extends GetxService {
     HealthDataType.MENSTRUATION_FLOW,
   ];
 
+  Future<double> convertWeightUnit(dynamic weight, WeightUnit fromUnit, WeightUnit toUnit) async {
+    double convertedWeight;
+    if (fromUnit == WeightUnit.kilogram && toUnit == WeightUnit.pound) {
+      convertedWeight = weight * 2.20462;
+    } else if (fromUnit == WeightUnit.pound && toUnit == WeightUnit.kilogram) {
+      convertedWeight = weight / 2.20462;
+    } else {
+      throw Exception('Unsupported weight unit conversion');
+    }
+    return convertedWeight;
+  }
+
+  Future<DateTime> getStartTimeForTimeFrame(DateTime endTime, TimeFrame timeFrame) async {
+    DateTime startTime;
+    switch (timeFrame) {
+      case TimeFrame.lastDay:
+        startTime = endTime.subtract(const Duration(days: 1));
+        break;
+      case TimeFrame.lastWeek:
+        startTime = endTime.subtract(const Duration(days: 7));
+        break;
+      case TimeFrame.lastThreeMonths:
+        startTime = endTime.subtract(const Duration(days: 90));
+        break;
+      case TimeFrame.lastSixMonths:
+        startTime = endTime.subtract(const Duration(days: 180));
+        break;
+      case TimeFrame.all:
+        startTime = DateTime(0); // Start from the epoch for all data
+        break;
+      default:
+        return DateTime.now(); // Return current time for unhandled cases
+    }
+    return startTime;
+  }
+
   @override
   Future<void> onInit() async {
     super.onInit();
+    Health().configure();
+    Health().getHealthConnectSdkStatus();
     isAuthorized.value = await authorize();
   }
 
@@ -134,16 +177,22 @@ class HealthService extends GetxService {
     List<HealthDataAccess> permissions = [];
 
     // Determine permissions based on requested data types
-    for (var type in types) {
-      if (_permissionsMap.containsKey(type)) {
-        permissions.addAll(_permissionsMap[type]!); // Add the corresponding permissions
-      }
-    }
+    permissions.addAll(types.map((type) => _writePermissionTypes.contains(type)
+        ? HealthDataAccess.READ_WRITE
+        : HealthDataAccess.READ));
 
-    const hasPermissions = false; // Replace with actual permission check
+    await Permission.activityRecognition.request();
+    await Permission.location.request();
+
+    final status = await Health().getHealthConnectSdkStatus();
+    logger.i('Health Connect SDK Status: $status');
+    logger.i('Types count: ${types.length}');
+    logger.i('Permissions count: ${permissions.length}');
+
+    final hasPermissions = await Health().hasPermissions(types, permissions: permissions);
 
     bool authorized = false;
-    if (!hasPermissions) {
+    if (hasPermissions != null && !hasPermissions) {
       try {
         authorized = await Health().requestAuthorization(types, permissions: permissions);
       } catch (error) {
@@ -156,9 +205,10 @@ class HealthService extends GetxService {
   }
 
   Future<List<HealthDataPoint>> getHealthData(
-      {required DateTime startTime, required DateTime endTime}) async {
+      {required DateTime endTime, required TimeFrame timeFrame}) async {
     final types = GetPlatform.isIOS ? dataTypesIOS : dataTypesAndroid;
     try {
+      DateTime startTime = await getStartTimeForTimeFrame(endTime, timeFrame); // Use the new method
       final healthData = await Health()
           .getHealthDataFromTypes(types: types, startTime: startTime, endTime: endTime);
       return Health().removeDuplicates(healthData);
@@ -166,6 +216,24 @@ class HealthService extends GetxService {
       logger.e('Error loading health data: $e');
       return [];
     }
+  }
+
+  Future<List<HealthDataPoint>> getStepData(
+      {required DateTime endTime, required TimeFrame timeFrame}) async {
+    final types = [HealthDataType.STEPS];
+    DateTime startTime = await getStartTimeForTimeFrame(endTime, timeFrame);
+    final healthData =
+        await Health().getHealthDataFromTypes(types: types, startTime: startTime, endTime: endTime);
+    return Health().removeDuplicates(healthData);
+  }
+
+  Future<List<HealthDataPoint>> getWeightData(
+      {required DateTime endTime, required TimeFrame timeFrame}) async {
+    final types = [HealthDataType.WEIGHT];
+    DateTime startTime = await getStartTimeForTimeFrame(endTime, timeFrame);
+    final healthData =
+        await Health().getHealthDataFromTypes(types: types, startTime: startTime, endTime: endTime);
+    return Health().removeDuplicates(healthData);
   }
 
   Future<void> writeHealthData(HealthDataType type, double value, HealthDataUnit unit,
@@ -242,5 +310,12 @@ class HealthService extends GetxService {
         await Health().getHealthDataFromTypes(types: types, startTime: startTime, endTime: endTime);
     logger.i('Weight data: $healthData');
     return Health().removeDuplicates(healthData); // Return unique weight data
+  }
+
+  Future<void> deleteData(HealthDataType type, DateTime endTime, TimeFrame timeFrame) async {
+    DateTime startTime = await getStartTimeForTimeFrame(endTime, timeFrame);
+    logger.i('Deleting data for type: $type, startTime: $startTime, endTime: $endTime');
+    await Health().delete(type: type, startTime: startTime, endTime: endTime);
+    logger.w('Data deleted');
   }
 }

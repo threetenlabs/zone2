@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 import 'package:zone2/app/modules/track/controllers/track_controller.dart';
-import 'package:zone2/app/modules/track/timeframe.dart';
-import 'package:get/get.dart'; // Import GetX for controller access
+import 'package:get/get.dart';
+import 'package:zone2/app/services/health_service.dart'; // Import GetX for controller access
 
 // Define an enum for time frames
 

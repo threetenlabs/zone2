@@ -9,7 +9,7 @@ class AppLabel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Center(
-            child: Text('ThreeTen Labs Template',
+            child: Text('Zone 2',
                 style: GoogleFonts.quicksand().copyWith(
                   color: Colors.white,
                 )).scaled(context, scalePercent: 0.07))

@@ -57,7 +57,7 @@ class HomeController extends GetxController {
       return GetPageRoute(
         settings: settings,
         page: () => const DiaryView(),
-        binding: LandingBinding(),
+        binding: DiaryBinding(),
       );
     }
 

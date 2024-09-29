@@ -1,8 +1,8 @@
 import 'package:get/get.dart';
 import 'package:health/health.dart';
-import 'package:zone2/app/modules/track/timeframe.dart';
 import 'package:zone2/app/modules/track/views/weight_tab.dart';
 import 'package:zone2/app/services/health_service.dart';
+import 'package:intl/intl.dart'; // Add this import for DateFormat
 
 class TrackController extends GetxController {
   final count = 0.obs;
@@ -33,10 +33,10 @@ class TrackController extends GetxController {
     // Convert HealthDataPoint to WeightData
     return healthData
         .map((dataPoint) => WeightData(
-            dataPoint.dateFrom.toString(),
+            DateFormat('M/d/yy').format(dataPoint.dateFrom), // DateFormat is now defined
             (dataPoint.value as NumericHealthValue)
                 .numericValue
-                .toDouble())) // Convert HealthValue to double
+                .toDouble())) // Convert HealthValue to double and format date
         .toList();
   }
 }

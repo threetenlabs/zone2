@@ -2,7 +2,7 @@ import 'package:zone2/app/modules/loading_service.dart';
 import 'package:zone2/app/services/audio_service.dart';
 import 'package:zone2/app/services/auth_service.dart';
 import 'package:zone2/app/services/firebase_service.dart';
-import 'package:zone2/app/services/fcm_service.dart';
+import 'package:zone2/app/services/health_service.dart';
 import 'package:zone2/app/services/notification_service.dart';
 import 'package:zone2/app/services/shared_preferences_service.dart';
 import 'package:zone2/app/style/palette.dart';
@@ -37,8 +37,8 @@ class GlobalBindings extends Bindings {
     Get.put<FirebaseAuth>(FirebaseAuth.instance);
     Get.put<FirebaseFirestore>(FirebaseFirestore.instance);
     Get.put<GoogleSignIn>(GoogleSignIn());
-
-    Get.put<FcmService>(FcmService(), permanent: true);
+    Get.put<HealthService>(HealthService(), permanent: true);
+    // Get.put<FcmService>(FcmService(), permanent: true);
     Get.put<AuthService>(AuthService(), permanent: true);
 
     Get.put<FirebaseService>(FirebaseService(), permanent: true);

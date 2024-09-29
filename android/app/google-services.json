@@ -7,28 +7,12 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:260007377833:android:e399e62022c51ae8c562b8",
+        "mobilesdk_app_id": "1:260007377833:android:48485da0a82d5283c562b8",
         "android_client_info": {
-          "package_name": "com.threetenlab.zone2"
+          "package_name": "com.threetenlabs.zone2"
         }
       },
       "oauth_client": [
-        {
-          "client_id": "260007377833-5f6ouohq4n4uouit719lp106qbf7q9ce.apps.googleusercontent.com",
-          "client_type": 1,
-          "android_info": {
-            "package_name": "com.threetenlab.zone2",
-            "certificate_hash": "6f92f39bf07d4a377874aedc178c20633aa562a2"
-          }
-        },
-        {
-          "client_id": "260007377833-kvnn75mkthsc6j03c29iasd4f4itb6ln.apps.googleusercontent.com",
-          "client_type": 1,
-          "android_info": {
-            "package_name": "com.threetenlab.zone2",
-            "certificate_hash": "c5b9c6792dfc21ac2255b49e7d5af9276ec7f6c9"
-          }
-        },
         {
           "client_id": "260007377833-9frq7ora3rck4l7l64oerada5j4ralnm.apps.googleusercontent.com",
           "client_type": 3

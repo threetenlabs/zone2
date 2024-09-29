@@ -25,7 +25,7 @@ if (flutterVersionName == null) {
 }
 
 android {
-    namespace "com.threetenlab.zone2"
+    namespace "com.threetenlabs.zone2"
     compileSdk 34
     compileSdkVersion 34
     ndkVersion "26.1.10909125"
@@ -45,7 +45,7 @@ android {
 
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId "com.threetenlab.zone2"
+        applicationId "com.threetenlabs.zone2"
         // You can update the following values to match your application needs.
         // For more information, see: https://docs.flutter.dev/deployment/android#reviewing-the-gradle-build-configuration.
         // minSdkVersion flutter.minSdkVersion

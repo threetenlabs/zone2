@@ -51,7 +51,7 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions android = FirebaseOptions(
     apiKey: 'AIzaSyBvuthiZVuGwFUgwlDfQuXU1zR3yeVSNRA',
-    appId: '1:260007377833:android:e399e62022c51ae8c562b8',
+    appId: '1:260007377833:android:48485da0a82d5283c562b8',
     messagingSenderId: '260007377833',
     projectId: 'zone2-prod',
     storageBucket: 'zone2-prod.appspot.com',
@@ -59,13 +59,12 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions ios = FirebaseOptions(
     apiKey: 'AIzaSyCgbcrEO335n3uL2aY5h-TGFAF3RxB2t10',
-    appId: '1:260007377833:ios:87b0df030bd1e84fc562b8',
+    appId: '1:260007377833:ios:3aa922d998605c50c562b8',
     messagingSenderId: '260007377833',
     projectId: 'zone2-prod',
     storageBucket: 'zone2-prod.appspot.com',
     androidClientId: '260007377833-5f6ouohq4n4uouit719lp106qbf7q9ce.apps.googleusercontent.com',
-    iosClientId: '260007377833-n1j5tgblbbq8194lk6n4sc4tm1obsith.apps.googleusercontent.com',
-    iosBundleId: 'com.threetenlab.zone2',
+    iosClientId: '260007377833-un7fpgngv8cbpdh42rgbtuimganesasb.apps.googleusercontent.com',
+    iosBundleId: 'com.threetenlabs.zone2',
   );
-
 }

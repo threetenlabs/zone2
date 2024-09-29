@@ -1,9 +1,7 @@
 // ignore_for_file: dead_code
 
-import 'package:health/health.dart';
 import 'package:zone2/app/modules/global_bindings.dart';
 import 'package:zone2/app/services/forced_update_service.dart';
-import 'package:zone2/app/services/health_service.dart';
 import 'package:zone2/app/style/palette.dart';
 import 'package:zone2/firebase_options.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -22,10 +20,13 @@ import 'package:logger/logger.dart';
 import 'package:network_info_plus/network_info_plus.dart';
 
 import 'app/routes/app_pages.dart';
+import 'package:timezone/data/latest.dart' as tz;
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await GetStorage.init();
+
+  tz.initializeTimeZones();
 
   final Palette palette = Palette();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
@@ -35,9 +36,6 @@ Future<void> main() async {
   FirebaseFirestore.instance.settings = const Settings(persistenceEnabled: false);
 
   Get.lazyPut<Logger>(() => logger, fenix: true);
-
-  // configure the health plugin before use.
-  Health().configure();
 
   final remoteConfig = FirebaseRemoteConfig.instance;
   await remoteConfig.setConfigSettings(RemoteConfigSettings(
@@ -52,8 +50,6 @@ Future<void> main() async {
   final forcedUpdateService = ForcedUpdateService();
   await forcedUpdateService.setIsAboveMinimumSupportedVersion();
   Get.put(forcedUpdateService, permanent: true);
-
-  Get.put(HealthService(), permanent: true);
 
   if (kDebugMode && !kIsWeb) {
     bool useEmulator = false;

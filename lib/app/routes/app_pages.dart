@@ -54,7 +54,7 @@ class AppPages {
     GetPage(
       name: _Paths.landing,
       page: () => const DiaryView(),
-      binding: LandingBinding(),
+      binding: DiaryBinding(),
     ),
   ];
 }

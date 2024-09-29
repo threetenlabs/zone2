@@ -1,4 +1,4 @@
-package com.threetenlab.zone2
+package com.threetenlabs.zone2
 
 import io.flutter.embedding.android.FlutterFragmentActivity
 
