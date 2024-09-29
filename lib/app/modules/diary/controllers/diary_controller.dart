@@ -18,6 +18,11 @@ class DiaryController extends GetxController {
   final isWeightLogged = false.obs; // Track if weight is logged
   final diaryDate = tz.TZDateTime.now(tz.local).obs;
   final diaryDateLabel = ''.obs; // Observable for date label
+  final waterIntake = 0.0.obs; // Track total water intake
+  final waterGoal = 120.0.obs; // Set water goal
+  final isWaterLogged = false.obs; // Track if water is logged
+  final customWaterWhole = 1.obs;
+  final customWaterDecimal = 0.obs;
 
   @override
   void onInit() async {
@@ -46,38 +51,55 @@ class DiaryController extends GetxController {
 
   Future<void> getHealthDataForSelectedDay() async {
     final now = diaryDate.value;
-    final weightData =
-        await healthService.getWeightData(timeFrame: TimeFrame.lastDay, endTime: now);
 
+    // Retrieve weight data
+    final weightData =
+        await healthService.getWeightData(timeFrame: TimeFrame.lastThreeMonths, endTime: now);
+    logger.i('Weight data length: ${weightData.length}');
     weightData.sort((a, b) => b.dateTo.compareTo(a.dateTo));
 
     if (weightData.isNotEmpty) {
       logger.i('Weight data: ${weightData.first}');
       final weight = weightData.first.value as NumericHealthValue;
-      logger.i('Health data: $weight');
       final weightInKilograms = weight.numericValue.toDouble();
-      final weightInPounds = await healthService.convertWeightUnit(
-          weightInKilograms, WeightUnit.kilogram, WeightUnit.pound);
-
-      logger.i('Weight in pounds: $weightInPounds');
+      final weightInPounds =
+          await healthService.convertWeightUnit(weightInKilograms, WeightUnit.pound);
 
       weightWhole.value = weightInPounds.toInt(); // Ensure weightWhole is an int
-      logger.i('Weight whole: $weightWhole');
       weightDecimal.value =
           ((weightInPounds - weightWhole.value) * 10).round(); // Update to single digit
-      logger.i('Weight decimal: $weightDecimal');
-
       isWeightLogged.value = true;
+    }
+
+    // Retrieve water data
+    final waterData =
+        await healthService.getWaterData(timeFrame: TimeFrame.lastThreeMonths, endTime: now);
+    logger.i('Water data length: ${waterData.length}');
+
+    // Process water data as needed
+    if (waterData.isNotEmpty) {
+      // Example: Sum total water intake from the retrieved data
+      double waterIntakeInLiters = waterData.fold(
+          0, (sum, data) => sum + (data.value as NumericHealthValue).numericValue.toDouble());
+      double waterIntakeInOunces =
+          await healthService.convertWaterUnit(waterIntakeInLiters, WaterUnit.ounce);
+      waterIntake.value = waterIntakeInOunces; // Update the water intake observable
+      logger.i('Total water intake: $waterIntakeInLiters oz');
+      isWaterLogged.value = waterIntake.value > waterGoal.value;
+      logger.i('Water logged: $isWaterLogged.value');
     }
   }
 
   Future<void> saveWeightToHealth() async {
     try {
-      final weight =
+      final weightInPounds =
           weightWhole.value + (weightDecimal.value / 100); // Combine whole and decimal parts
 
+      final weightInKilograms =
+          await healthService.convertWeightUnit(weightInPounds, WeightUnit.kilogram);
+
       // Call the HealthService to save the weight
-      await healthService.saveWeightToHealth(weight);
+      await healthService.saveWeightToHealth(weightInKilograms);
 
       // Send success notification
       NotificationService.to
@@ -130,5 +152,23 @@ class DiaryController extends GetxController {
 
   void navigateToPreviousDay() {
     diaryDate.value = diaryDate.value.subtract(Duration(days: 1));
+  }
+
+  Future<void> addWater(double ounces) async {
+    double waterIntakeInOunces = ounces;
+    double waterIntakeInLiters =
+        await healthService.convertWaterUnit(waterIntakeInOunces, WaterUnit.liter);
+    logger.i('Added $ounces oz of water. Total water intake: ${waterIntake.value} oz');
+
+    try {
+      // Call the HealthService to save the weight
+      await healthService.saveWaterToHealth(waterIntakeInLiters);
+
+      // Send success notification
+      NotificationService.to
+          .showSuccess('Weight Saved', 'Your weight has been successfully saved to health data.');
+    } catch (e) {
+      logger.e('Error saving weight to Health: $e');
+    }
   }
 }

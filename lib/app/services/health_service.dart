@@ -5,6 +5,8 @@ import 'package:permission_handler/permission_handler.dart';
 
 enum WeightUnit { kilogram, pound }
 
+enum WaterUnit { ounce, liter }
+
 enum TimeFrame {
   lastDay,
   lastWeek,
@@ -128,16 +130,28 @@ class HealthService extends GetxService {
     HealthDataType.MENSTRUATION_FLOW,
   ];
 
-  Future<double> convertWeightUnit(dynamic weight, WeightUnit fromUnit, WeightUnit toUnit) async {
+  Future<double> convertWeightUnit(dynamic weight, WeightUnit toUnit) async {
     double convertedWeight;
-    if (fromUnit == WeightUnit.kilogram && toUnit == WeightUnit.pound) {
+    if (toUnit == WeightUnit.pound) {
       convertedWeight = weight * 2.20462;
-    } else if (fromUnit == WeightUnit.pound && toUnit == WeightUnit.kilogram) {
+    } else if (toUnit == WeightUnit.kilogram) {
       convertedWeight = weight / 2.20462;
     } else {
       throw Exception('Unsupported weight unit conversion');
     }
     return convertedWeight;
+  }
+
+  Future<double> convertWaterUnit(dynamic water, WaterUnit toUnit) async {
+    double convertedWater;
+    if (toUnit == WaterUnit.ounce) {
+      convertedWater = water * 16;
+    } else if (toUnit == WaterUnit.liter) {
+      convertedWater = water / 16;
+    } else {
+      throw Exception('Unsupported water unit conversion');
+    }
+    return convertedWater; // Ensure a return statement is present
   }
 
   Future<DateTime> getStartTimeForTimeFrame(DateTime endTime, TimeFrame timeFrame) async {
@@ -218,6 +232,15 @@ class HealthService extends GetxService {
     }
   }
 
+  Future<List<HealthDataPoint>> getWaterData(
+      {required DateTime endTime, required TimeFrame timeFrame}) async {
+    final types = [HealthDataType.WATER];
+    DateTime startTime = await getStartTimeForTimeFrame(endTime, timeFrame);
+    final healthData =
+        await Health().getHealthDataFromTypes(types: types, startTime: startTime, endTime: endTime);
+    return Health().removeDuplicates(healthData);
+  }
+
   Future<List<HealthDataPoint>> getStepData(
       {required DateTime endTime, required TimeFrame timeFrame}) async {
     final types = [HealthDataType.STEPS];
@@ -281,6 +304,23 @@ class HealthService extends GetxService {
     }
   }
 
+  Future<void> saveWaterToHealth(double water) async {
+    try {
+      final now = DateTime.now();
+      // Save the weight data point to Health
+      await Health().writeHealthData(
+          value: water,
+          type: HealthDataType.WATER,
+          startTime: now,
+          endTime: now.add(const Duration(minutes: 1)));
+
+      // Optionally return success or handle success notification here
+    } catch (e) {
+      // Handle error
+      logger.e('Error saving water to Health: $e');
+    }
+  }
+
   // Method to get weight data by specified time frame
   Future<List<HealthDataPoint>> getWeightDataByTimeFrame(TimeFrame timeFrame) async {
     DateTime now = DateTime.now();
@@ -306,6 +346,8 @@ class HealthService extends GetxService {
 
     // Fetch weight data using the Health() method
     final types = [HealthDataType.WEIGHT];
+
+    logger.i('Fetching weight data from $startTime to $endTime');
     final healthData =
         await Health().getHealthDataFromTypes(types: types, startTime: startTime, endTime: endTime);
     logger.i('Weight data: $healthData');
@@ -313,9 +355,23 @@ class HealthService extends GetxService {
   }
 
   Future<void> deleteData(HealthDataType type, DateTime endTime, TimeFrame timeFrame) async {
-    DateTime startTime = await getStartTimeForTimeFrame(endTime, timeFrame);
-    logger.i('Deleting data for type: $type, startTime: $startTime, endTime: $endTime');
-    await Health().delete(type: type, startTime: startTime, endTime: endTime);
-    logger.w('Data deleted');
+    // DateTime startTime = await getStartTimeForTimeFrame(endTime, timeFrame);
+    // logger.i('Deleting data for type: $type, startTime: $startTime, endTime: $endTime');
+
+    // await Health().delete(
+    //     type: HealthDataType.WEIGHT,
+    //     startTime: DateTime(2024, 9, 28, 16),
+    //     endTime: DateTime(2024, 9, 28, 23));
+    // logger.w('Data deleted');
+
+    final now = DateTime.now();
+    final earlier = now.subtract(const Duration(hours: 24));
+
+    final result = await Health().delete(
+      type: HealthDataType.WEIGHT,
+      startTime: earlier,
+      endTime: now,
+    );
+    logger.i('Data deleted: $result');
   }
 }

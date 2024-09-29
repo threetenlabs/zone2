@@ -13,7 +13,7 @@ class TrackView extends GetView<TrackController> {
       length: 3, // Number of tabs
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('Track'),
+          automaticallyImplyLeading: false,
           bottom: const TabBar(
             tabs: [
               Tab(text: 'Weight'),
