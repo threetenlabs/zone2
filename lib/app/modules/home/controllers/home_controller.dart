@@ -1,18 +1,18 @@
 import 'dart:async';
 
 import 'package:app_links/app_links.dart';
-import 'package:app/app/modules/landing/bindings/landing_binding.dart';
-import 'package:app/app/modules/landing/views/landing_view.dart';
+import 'package:zone2/app/modules/diary/bindings/diary_binding.dart';
+import 'package:zone2/app/modules/diary/views/diary_view.dart';
 
-import 'package:app/app/modules/profile/bindings/profile_binding.dart';
-import 'package:app/app/modules/profile/views/profile_view.dart';
-import 'package:app/app/modules/settings/bindings/settings_binding.dart';
-import 'package:app/app/modules/settings/views/settings_view.dart';
-import 'package:app/app/modules/store/bindings/store_binding.dart';
-import 'package:app/app/modules/store/views/store_view.dart';
-import 'package:app/app/services/firebase_service.dart';
-import 'package:app/app/style/palette.dart';
-import 'package:app/app/widgets/skinner/animated_nav_bar/navbar.dart';
+import 'package:zone2/app/modules/profile/bindings/profile_binding.dart';
+import 'package:zone2/app/modules/profile/views/profile_view.dart';
+import 'package:zone2/app/modules/settings/bindings/settings_binding.dart';
+import 'package:zone2/app/modules/settings/views/settings_view.dart';
+import 'package:zone2/app/modules/store/bindings/store_binding.dart';
+import 'package:zone2/app/modules/store/views/store_view.dart';
+import 'package:zone2/app/services/firebase_service.dart';
+import 'package:zone2/app/style/palette.dart';
+import 'package:zone2/app/widgets/skinner/animated_nav_bar/navbar.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:logger/logger.dart';
@@ -34,9 +34,9 @@ class HomeController extends GetxController {
     super.onInit();
 
     navBarItems.value = [
-      NavBarItemData("Games", OMIcons.games, 110, palette.mainMenuGames),
-      NavBarItemData("Settings", OMIcons.tune, 115, palette.mainMenuSettings),
-      NavBarItemData("Store", OMIcons.shoppingCart, 100, palette.mainMenuStore),
+      NavBarItemData("Diary", OMIcons.book, 110, palette.mainMenuGames),
+      NavBarItemData("Zone", OMIcons.trackChanges, 115, palette.mainMenuSettings),
+      NavBarItemData("Track", OMIcons.barChart, 100, palette.mainMenuStore),
       NavBarItemData("Profile", OMIcons.accountCircle, 105, palette.mainMenuProfile),
     ];
 
@@ -45,7 +45,7 @@ class HomeController extends GetxController {
     });
   }
 
-  final pages = <String>['/games', '/settings', '/store', '/profile'];
+  final pages = <String>['/diary', '/zone', '/track', '/profile'];
 
   void changePage(int index) {
     contentIndex.value = index;
@@ -53,15 +53,15 @@ class HomeController extends GetxController {
   }
 
   Route? onGenerateRoute(RouteSettings settings) {
-    if (settings.name == '/games') {
+    if (settings.name == '/diary') {
       return GetPageRoute(
         settings: settings,
-        page: () => const LandingView(),
+        page: () => const DiaryView(),
         binding: LandingBinding(),
       );
     }
 
-    if (settings.name == '/settings') {
+    if (settings.name == '/zone') {
       return GetPageRoute(
         settings: settings,
         page: () => const SettingsView(),
@@ -69,7 +69,7 @@ class HomeController extends GetxController {
       );
     }
 
-    if (settings.name == '/store') {
+    if (settings.name == '/track') {
       return GetPageRoute(
         settings: settings,
         page: () => const StoreView(),

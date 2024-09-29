@@ -1,7 +1,7 @@
-import 'package:app/app/modules/login/views/login_landscape_small.dart';
-import 'package:app/app/modules/login/views/login_portait_small.dart';
-import 'package:app/app/widgets/not_implemented.dart';
-import 'package:app/app/widgets/responsive_layout.dart';
+import 'package:zone2/app/modules/login/views/login_landscape_small.dart';
+import 'package:zone2/app/modules/login/views/login_portait_small.dart';
+import 'package:zone2/app/widgets/not_implemented.dart';
+import 'package:zone2/app/widgets/responsive_layout.dart';
 import 'package:flutter/material.dart';
 
 import 'package:get/get.dart';

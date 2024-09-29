@@ -1,4 +1,4 @@
-import 'package:app/app/widgets/responsive_layout.dart';
+import 'package:zone2/app/widgets/responsive_layout.dart';
 import 'package:flutter/material.dart';
 
 import 'package:get/get.dart';

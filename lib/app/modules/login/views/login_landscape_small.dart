@@ -1,9 +1,9 @@
-import 'package:app/app/extensions/extensions.dart';
-import 'package:app/app/modules/login/views/widgets/apple_signin.dart';
-import 'package:app/app/modules/login/views/widgets/google_signin.dart';
-import 'package:app/app/modules/login/views/widgets/login_avatar.dart';
-import 'package:app/app/modules/login/views/widgets/signin_tooltip.dart';
-import 'package:app/app/style/palette.dart';
+import 'package:zone2/app/extensions/extensions.dart';
+import 'package:zone2/app/modules/login/views/widgets/apple_signin.dart';
+import 'package:zone2/app/modules/login/views/widgets/google_signin.dart';
+import 'package:zone2/app/modules/login/views/widgets/login_avatar.dart';
+import 'package:zone2/app/modules/login/views/widgets/signin_tooltip.dart';
+import 'package:zone2/app/style/palette.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 

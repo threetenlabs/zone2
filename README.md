@@ -1,4 +1,4 @@
-<h1 align="center">app</h1>
+<h1 align="center">Zone 2</h1>
 <a name="readme-top"></a>
 <div align="center">
   <strong>Multi-player mobile gaming platform powered with <img src="https://img.shields.io/badge/Flutter-%2302569B.svg?style=for-the-badge&logo=Flutter&logoColor=white" /> and <img src="https://img.shields.io/badge/firebase-%23039BE5.svg?style=for-the-badge&logo=firebase" /></strong>
@@ -17,7 +17,7 @@
 <!-- PROJECT LOGO -->
 <br />
 <div align="center">
-  <a href="https://github.com/threetenlabs/bedlam">
+  <a href="https://github.com/threetenlabs/zone2">
     <img src="https://raw.githubusercontent.com/threetenlabs/bedlam-flutter/main/packages/common/lib/assets/images/bedlam.webp?token=GHSAT0AAAAAACQLLOFOQX3PQWMLTOD6DO4SZQZOJ3Q" alt="Logo" width="600" height="300">
   </a>
 </div>
@@ -44,7 +44,7 @@ Instructions to get developer environment set-up.
 
 ### Prerequisites
 
-The following is a list of things you need to develop bedlam games and how to install them.
+The following is a list of things you need to develop zone2 and how to install them.
 
 - xcode [install](https://developer.apple.com/xcode/)
 
@@ -208,7 +208,7 @@ keytool -list -v -alias androiddebugkey -keystore ~/.android/debug.keystore
 nonprod mobile
 
 ```sh
-keytool -list -v -alias bedlam-nonprod -keystore ./packages/mobile/bedlam-nonprod.jks
+keytool -list -v -alias zone2 -keystore ./packages/mobile/bedlam-nonprod.jks
 ```
 
 nonprod mecca

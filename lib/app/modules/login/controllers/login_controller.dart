@@ -1,4 +1,4 @@
-import 'package:app/app/services/auth_service.dart';
+import 'package:zone2/app/services/auth_service.dart';
 import 'package:get/get.dart';
 import 'package:logger/logger.dart';
 

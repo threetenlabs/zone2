@@ -1,4 +1,4 @@
-import 'package:app/app/extensions/extensions.dart';
+import 'package:zone2/app/extensions/extensions.dart';
 import 'package:flutter/material.dart';
 
 import 'fluid_icon.dart';

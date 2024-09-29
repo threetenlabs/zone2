@@ -1,4 +1,4 @@
-import 'package:app/app/style/palette.dart';
+import 'package:zone2/app/style/palette.dart';
 import 'package:flutter/material.dart';
 
 import 'package:get/get.dart';

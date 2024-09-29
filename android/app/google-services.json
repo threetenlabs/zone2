@@ -1,48 +1,56 @@
 {
   "project_info": {
-    "project_number": "476459834022",
-    "project_id": "threeten-labs-template",
-    "storage_bucket": "threeten-labs-template.appspot.com"
+    "project_number": "260007377833",
+    "project_id": "zone2-prod",
+    "storage_bucket": "zone2-prod.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:476459834022:android:fcd0cb9270942501987267",
+        "mobilesdk_app_id": "1:260007377833:android:e399e62022c51ae8c562b8",
         "android_client_info": {
-          "package_name": "com.threetenlabs.template"
+          "package_name": "com.threetenlab.zone2"
         }
       },
       "oauth_client": [
         {
-          "client_id": "476459834022-1vbbjgi8ge41su31r9et1tbqp4mc6cdj.apps.googleusercontent.com",
+          "client_id": "260007377833-5f6ouohq4n4uouit719lp106qbf7q9ce.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
-            "package_name": "com.threetenlabs.template",
+            "package_name": "com.threetenlab.zone2",
+            "certificate_hash": "6f92f39bf07d4a377874aedc178c20633aa562a2"
+          }
+        },
+        {
+          "client_id": "260007377833-kvnn75mkthsc6j03c29iasd4f4itb6ln.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.threetenlab.zone2",
             "certificate_hash": "c5b9c6792dfc21ac2255b49e7d5af9276ec7f6c9"
           }
         },
         {
-          "client_id": "476459834022-ncudlv2u78gnfes3dcpro9mj9d1arrip.apps.googleusercontent.com",
+          "client_id": "260007377833-9frq7ora3rck4l7l64oerada5j4ralnm.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyBOK2nZ0OuBfxyWbMhawHgJp1uBbVH-d3o"
+          "current_key": "AIzaSyBvuthiZVuGwFUgwlDfQuXU1zR3yeVSNRA"
         }
       ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "476459834022-ncudlv2u78gnfes3dcpro9mj9d1arrip.apps.googleusercontent.com",
+              "client_id": "260007377833-9frq7ora3rck4l7l64oerada5j4ralnm.apps.googleusercontent.com",
               "client_type": 3
             },
             {
-              "client_id": "476459834022-7uov3abjhs46oqnk7a4tgd8bk9ju1a7g.apps.googleusercontent.com",
+              "client_id": "260007377833-n1j5tgblbbq8194lk6n4sc4tm1obsith.apps.googleusercontent.com",
               "client_type": 2,
               "ios_info": {
-                "bundle_id": "com.threetenlabs.template"
+                "bundle_id": "com.threetenlab.zone2"
               }
             }
           ]

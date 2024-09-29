@@ -1,5 +1,5 @@
-import 'package:app/app/modules/settings/controllers/settings_controller.dart';
-import 'package:app/app/style/palette.dart';
+import 'package:zone2/app/modules/settings/controllers/settings_controller.dart';
+import 'package:zone2/app/style/palette.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:package_info_plus/package_info_plus.dart';

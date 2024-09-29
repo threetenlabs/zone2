@@ -1,4 +1,4 @@
-import 'package:app/app/utils/constants.dart';
+import 'package:zone2/app/utils/constants.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:get/get.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';

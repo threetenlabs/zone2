@@ -1,4 +1,4 @@
-import 'package:app/gen/assets.gen.dart';
+import 'package:zone2/gen/assets.gen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 

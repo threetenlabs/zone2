@@ -1,6 +1,6 @@
-import 'package:app/app/modules/intro/controllers/intro_controller.dart';
-import 'package:app/app/modules/intro/views/intro_small.dart';
-import 'package:app/app/widgets/responsive_layout.dart';
+import 'package:zone2/app/modules/intro/controllers/intro_controller.dart';
+import 'package:zone2/app/modules/intro/views/intro_small.dart';
+import 'package:zone2/app/widgets/responsive_layout.dart';
 import 'package:flutter/material.dart';
 
 import 'package:get/get.dart';

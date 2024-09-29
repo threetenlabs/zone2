@@ -35,6 +35,9 @@ build-ios:
 debug-keystore:
 	keytool -list -v -alias androiddebugkey -keystore ~/.android/debug.keystore
 
+zone2-keystore:
+	keytool -list -v -alias zone2 -keystore ./zone2.jks
+
 firebaseInit:
 	firebase login --reauth && 
 

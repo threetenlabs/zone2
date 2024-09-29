@@ -1,4 +1,4 @@
-import 'package:app/app/widgets/skinner/ui/sprite.dart';
+import 'package:zone2/app/widgets/skinner/ui/sprite.dart';
 import 'package:flutter/widgets.dart';
 
 class AnimatedSprite extends AnimatedWidget {

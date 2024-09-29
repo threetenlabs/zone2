@@ -3,6 +3,7 @@ plugins {
     id "kotlin-android"
     id "dev.flutter.flutter-gradle-plugin"
     id 'com.google.gms.google-services'
+    id 'com.google.firebase.crashlytics'
 }
 
 def localProperties = new Properties()
@@ -24,8 +25,9 @@ if (flutterVersionName == null) {
 }
 
 android {
-    namespace "com.threetenlabs.template"
-    compileSdk 35
+    namespace "com.threetenlab.zone2"
+    compileSdk 34
+    compileSdkVersion 34
     ndkVersion "26.1.10909125"
 
     compileOptions {
@@ -43,12 +45,12 @@ android {
 
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId "com.threetenlabs.template"
+        applicationId "com.threetenlab.zone2"
         // You can update the following values to match your application needs.
         // For more information, see: https://docs.flutter.dev/deployment/android#reviewing-the-gradle-build-configuration.
         // minSdkVersion flutter.minSdkVersion
         // targetSdkVersion flutter.targetSdkVersion
-        minSdkVersion 25
+        minSdkVersion 26
         targetSdkVersion 33
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
@@ -58,9 +60,9 @@ android {
         release {
             def storePass = System.getenv("STORE_PASSWORD")
             def keyPass = System.getenv("KEY_PASSWORD")
-            storeFile file("../../bedlam.jks")
+            storeFile file("../../zone2.jks")
             storePassword "$storePass"
-            keyAlias "bedlam"
+            keyAlias "zone2"
             keyPassword "$keyPass"
         }
     }
@@ -78,5 +80,7 @@ flutter {
 
 dependencies {
     implementation platform('com.google.firebase:firebase-bom:33.0.0')
-    implementation 'com.google.firebase:firebase-analytics'
+        // When using the BoM, you don't specify versions in Firebase library dependencies
+    implementation("com.google.firebase:firebase-crashlytics")
+    implementation("com.google.firebase:firebase-analytics")
 }

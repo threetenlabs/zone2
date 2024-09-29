@@ -1,5 +1,5 @@
-import 'package:app/app/style/palette.dart';
-import 'package:app/app/widgets/skinner/animated_sidebar_nav/sidebar.dart';
+import 'package:zone2/app/style/palette.dart';
+import 'package:zone2/app/widgets/skinner/animated_sidebar_nav/sidebar.dart';
 import 'package:flutter/material.dart';
 
 import 'package:get/get.dart';
@@ -33,7 +33,7 @@ class HomeViewLandscapeSmall extends GetView<HomeController> {
                   flex: 4,
                   child: Navigator(
                     key: Get.nestedKey(1),
-                    initialRoute: '/games',
+                    initialRoute: '/diary',
                     onGenerateRoute: controller.onGenerateRoute,
                   ),
                 ),

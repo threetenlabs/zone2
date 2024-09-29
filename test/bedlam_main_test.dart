@@ -1,9 +1,9 @@
-import 'package:app/app/modules/home/controllers/home_controller.dart';
-import 'package:app/app/modules/home/views/home_view.dart';
-import 'package:app/app/modules/landing/controllers/landing_controller.dart';
-import 'package:app/app/services/auth_service.dart';
-import 'package:app/app/services/firebase_service.dart';
-import 'package:app/app/style/palette.dart';
+import 'package:zone2/app/modules/home/controllers/home_controller.dart';
+import 'package:zone2/app/modules/home/views/home_view.dart';
+import 'package:zone2/app/modules/diary/controllers/diary_controller.dart';
+import 'package:zone2/app/services/auth_service.dart';
+import 'package:zone2/app/services/firebase_service.dart';
+import 'package:zone2/app/style/palette.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -28,7 +28,7 @@ void main() {
     Get.put<FirebaseService>(BedlamFirebaseServiceMock());
     Get.put<Palette>(Palette());
 
-    Get.put<LandingController>(LandingController());
+    Get.put<DiaryController>(DiaryController());
     Get.put<Palette>(Palette());
     final home = HomeController();
     // when(home.onInit()).thenAnswer((_) async {

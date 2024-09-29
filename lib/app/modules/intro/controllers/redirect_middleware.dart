@@ -1,6 +1,6 @@
-import 'package:app/app/routes/app_pages.dart';
-import 'package:app/app/services/forced_update_service.dart';
-import 'package:app/app/services/shared_preferences_service.dart';
+import 'package:zone2/app/routes/app_pages.dart';
+import 'package:zone2/app/services/forced_update_service.dart';
+import 'package:zone2/app/services/shared_preferences_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'package:flutter/material.dart';

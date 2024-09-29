@@ -1,4 +1,4 @@
-import 'package:app/app/utils/routes.dart';
+import 'package:zone2/app/utils/routes.dart';
 import 'package:flutter/material.dart';
 
 import 'package:firebase_auth/firebase_auth.dart';
@@ -9,8 +9,8 @@ import '../modules/home/views/home_view.dart';
 import '../modules/intro/bindings/intro_binding.dart';
 import '../modules/intro/controllers/redirect_middleware.dart';
 import '../modules/intro/views/intro_view.dart';
-import '../modules/landing/bindings/landing_binding.dart';
-import '../modules/landing/views/landing_view.dart';
+import '../modules/diary/bindings/diary_binding.dart';
+import '../modules/diary/views/diary_view.dart';
 import '../modules/login/bindings/login_binding.dart';
 import '../modules/login/views/login_view.dart';
 import '../modules/update/bindings/update_bindings.dart';
@@ -53,7 +53,7 @@ class AppPages {
     ),
     GetPage(
       name: _Paths.landing,
-      page: () => const LandingView(),
+      page: () => const DiaryView(),
       binding: LandingBinding(),
     ),
   ];

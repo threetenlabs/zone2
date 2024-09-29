@@ -6,8 +6,8 @@
 import 'dart:math';
 
 import 'package:audioplayers/audioplayers.dart';
-import 'package:app/app/audio/sounds.dart';
-import 'package:app/app/services/shared_preferences_service.dart';
+import 'package:zone2/app/audio/sounds.dart';
+import 'package:zone2/app/services/shared_preferences_service.dart';
 import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 import 'package:logger/logger.dart';

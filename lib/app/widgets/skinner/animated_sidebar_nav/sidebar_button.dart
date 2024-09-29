@@ -1,9 +1,9 @@
 import 'dart:core';
 
-import 'package:app/app/style/palette.dart';
-import 'package:app/app/widgets/skinner/animated_nav_bar/clipped_view.dart';
-import 'package:app/app/widgets/skinner/animated_nav_bar/navbar.dart';
-import 'package:app/app/widgets/skinner/ui/rotation_3d.dart';
+import 'package:zone2/app/style/palette.dart';
+import 'package:zone2/app/widgets/skinner/animated_nav_bar/clipped_view.dart';
+import 'package:zone2/app/widgets/skinner/animated_nav_bar/navbar.dart';
+import 'package:zone2/app/widgets/skinner/ui/rotation_3d.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 

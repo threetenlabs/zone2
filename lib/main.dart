@@ -1,9 +1,11 @@
 // ignore_for_file: dead_code
 
-import 'package:app/app/modules/global_bindings.dart';
-import 'package:app/app/services/forced_update_service.dart';
-import 'package:app/app/style/palette.dart';
-import 'package:app/firebase_options.dart';
+import 'package:health/health.dart';
+import 'package:zone2/app/modules/global_bindings.dart';
+import 'package:zone2/app/services/forced_update_service.dart';
+import 'package:zone2/app/services/health_service.dart';
+import 'package:zone2/app/style/palette.dart';
+import 'package:zone2/firebase_options.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -34,6 +36,9 @@ Future<void> main() async {
 
   Get.lazyPut<Logger>(() => logger, fenix: true);
 
+  // configure the health plugin before use.
+  Health().configure();
+
   final remoteConfig = FirebaseRemoteConfig.instance;
   await remoteConfig.setConfigSettings(RemoteConfigSettings(
     fetchTimeout: const Duration(minutes: 1),
@@ -47,6 +52,8 @@ Future<void> main() async {
   final forcedUpdateService = ForcedUpdateService();
   await forcedUpdateService.setIsAboveMinimumSupportedVersion();
   Get.put(forcedUpdateService, permanent: true);
+
+  Get.put(HealthService(), permanent: true);
 
   if (kDebugMode && !kIsWeb) {
     bool useEmulator = false;

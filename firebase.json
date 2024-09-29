@@ -1,13 +1,1 @@
-{
-  "hosting": {
-    "source": ".",
-    "ignore": [
-      "firebase.json",
-      "**/.*",
-      "**/node_modules/**"
-    ],
-    "frameworksBackend": {
-      "region": "us-central1"
-    }
-  }
-}
+{"flutter":{"platforms":{"android":{"default":{"projectId":"zone2-prod","appId":"1:260007377833:android:e399e62022c51ae8c562b8","fileOutput":"android/app/google-services.json"}},"ios":{"default":{"projectId":"zone2-prod","appId":"1:260007377833:ios:87b0df030bd1e84fc562b8","uploadDebugSymbols":true,"fileOutput":"ios/Runner/GoogleService-Info.plist"}},"dart":{"lib/firebase_options.dart":{"projectId":"zone2-prod","configurations":{"android":"1:260007377833:android:e399e62022c51ae8c562b8","ios":"1:260007377833:ios:87b0df030bd1e84fc562b8"}}}}}}

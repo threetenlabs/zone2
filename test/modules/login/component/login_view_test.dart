@@ -1,8 +1,8 @@
-import 'package:app/app/modules/login/controllers/login_controller.dart';
-import 'package:app/app/modules/login/views/login_view.dart';
-import 'package:app/app/services/auth_service.dart';
-import 'package:app/app/services/firebase_service.dart';
-import 'package:app/app/style/palette.dart';
+import 'package:zone2/app/modules/login/controllers/login_controller.dart';
+import 'package:zone2/app/modules/login/views/login_view.dart';
+import 'package:zone2/app/services/auth_service.dart';
+import 'package:zone2/app/services/firebase_service.dart';
+import 'package:zone2/app/style/palette.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';

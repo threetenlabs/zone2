@@ -1,4 +1,4 @@
-import 'package:app/app/extensions/extensions.dart';
+import 'package:zone2/app/extensions/extensions.dart';
 import 'package:flutter/material.dart';
 
 // Define a class that encapsulates responsive layout logic

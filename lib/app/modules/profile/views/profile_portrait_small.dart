@@ -1,8 +1,7 @@
 import 'dart:async';
 
-import 'package:app/app/modules/profile/views/fluttermoji_customizer.dart';
-import 'package:app/app/services/auth_service.dart';
-import 'package:app/app/style/palette.dart';
+import 'package:zone2/app/services/auth_service.dart';
+import 'package:zone2/app/style/palette.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
@@ -57,13 +56,7 @@ class ProfileViewPortraitSmall extends GetWidget<ProfileController> {
                             style: palette.primaryTheme.outlinedButtonTheme.style?.copyWith(
                                 side: WidgetStateProperty.all<BorderSide>(
                                     BorderSide(color: palette.mainMenuProfile))),
-                            onPressed: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) => FluttermojiCustomizerPage()),
-                              );
-                            },
+                            onPressed: () {},
                             child: Text('Change Profile Picture',
                                 style: palette.primaryTheme.textTheme.bodyMedium),
                           ),
@@ -73,18 +66,9 @@ class ProfileViewPortraitSmall extends GetWidget<ProfileController> {
                               autovalidateMode: AutovalidateMode.onUserInteraction,
                               child: TextFormField(
                                 controller: controller.userNameController,
-                                onChanged: (text) {
-                                  if (debounce?.isActive ?? false) debounce?.cancel();
-                                  debounce = Timer(const Duration(milliseconds: 500), () {
-                                    if (controller.isUsernameValid(text)) {
-                                      controller.updateUsername(text);
-                                    }
-                                  });
-                                },
+                                onChanged: (text) {},
                                 validator: (value) {
-                                  return controller.isUsernameValid(value)
-                                      ? null
-                                      : 'Invalid username';
+                                  return null;
                                 },
                                 decoration: InputDecoration(
                                   labelText: 'Display Name',

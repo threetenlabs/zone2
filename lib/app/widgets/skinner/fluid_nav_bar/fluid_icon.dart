@@ -1,6 +1,6 @@
 import 'dart:ui' as ui;
 
-import 'package:app/app/widgets/skinner/ui/path_util.dart';
+import 'package:zone2/app/widgets/skinner/ui/path_util.dart';
 import 'package:flutter/material.dart';
 
 // Users of this class shouldn't have to explicitly import fluid_icon_data

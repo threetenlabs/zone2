@@ -1,4 +1,4 @@
-import 'package:app/app/models/deep_link.dart';
+import 'package:zone2/app/models/deep_link.dart';
 
 DeepLinkDetails parseGameUrl(Uri uri) {
   // Extract the action from the last segment of the path

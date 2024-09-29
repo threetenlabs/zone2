@@ -1,17 +1,16 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:app/app/models/user.dart';
-import 'package:app/app/services/fcm_service.dart';
-import 'package:app/app/services/notification_service.dart';
-import 'package:app/app/services/shared_preferences_service.dart';
-import 'package:app/app/utils/routes.dart';
+import 'package:zone2/app/models/user.dart';
+import 'package:zone2/app/services/fcm_service.dart';
+import 'package:zone2/app/services/notification_service.dart';
+import 'package:zone2/app/services/shared_preferences_service.dart';
+import 'package:zone2/app/utils/routes.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:get/get.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:fluttermoji/fluttermoji.dart';
 
 import 'package:logger/logger.dart';
 import 'package:username_gen/username_gen.dart';
@@ -24,7 +23,6 @@ class AuthService {
   final GoogleSignIn googleSignIn = Get.find();
   Rxn<User> firebaseUser = Rxn<User>();
   final fcmService = Get.find<FcmService>();
-  final fluttermojiController = FluttermojiController();
   final sharedPrefs = Get.find<SharedPreferencesService>();
 
   final Map<String, dynamic> defaultFluttermoji = {
@@ -94,10 +92,8 @@ class AuthService {
         logger.i('No SVG String found, setting default Fluttermoji');
 
         String svgConfig = jsonEncode(defaultFluttermoji);
-        String svgString = FluttermojiFunctions().decodeFluttermojifromString(
-          jsonEncode(defaultFluttermoji),
-        );
-        updateUserSvg(svgString, svgConfig);
+
+        // updateUserSvg(svgString, svgConfig);
       }
     }
   }
@@ -119,16 +115,16 @@ class AuthService {
     }
   }
 
-  updateUserSvg(String svgString, String svgConfig) async {
-    appUser.update((user) {
-      user?.svgString = svgString;
-    });
-    db
-        .collection('users')
-        .doc(appUser.value.uid)
-        .update({'svgString': svgString, 'svgConfig': svgConfig});
-    logger.i('updateUserSvg');
-  }
+  // updateUserSvg(String svgString, String svgConfig) async {
+  //   appUser.update((user) {
+  //     user?.svgString = svgString;
+  //   });
+  //   db
+  //       .collection('users')
+  //       .doc(appUser.value.uid)
+  //       .update({'svgString': svgString, 'svgConfig': svgConfig});
+  //   logger.i('updateUserSvg');
+  // }
 
   UserModel getOrCreateUser(DocumentSnapshot<Map<String, dynamic>> documentSnapshot) {
     if ((documentSnapshot.data() != null)) {

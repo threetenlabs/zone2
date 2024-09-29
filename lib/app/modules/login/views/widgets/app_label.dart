@@ -1,4 +1,4 @@
-import 'package:app/app/extensions/text.dart';
+import 'package:zone2/app/extensions/text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';

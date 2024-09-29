@@ -1,5 +1,5 @@
-import 'package:app/app/extensions/extensions.dart';
-import 'package:app/gen/assets.gen.dart';
+import 'package:zone2/app/extensions/extensions.dart';
+import 'package:zone2/gen/assets.gen.dart';
 import 'package:flutter/material.dart';
 
 class AppleSignIn extends StatelessWidget {

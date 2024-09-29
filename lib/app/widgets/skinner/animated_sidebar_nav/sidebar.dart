@@ -1,6 +1,6 @@
-import 'package:app/app/style/palette.dart';
-import 'package:app/app/widgets/skinner/animated_nav_bar/navbar.dart';
-import 'package:app/app/widgets/skinner/animated_sidebar_nav/sidebar_button.dart';
+import 'package:zone2/app/style/palette.dart';
+import 'package:zone2/app/widgets/skinner/animated_nav_bar/navbar.dart';
+import 'package:zone2/app/widgets/skinner/animated_sidebar_nav/sidebar_button.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 

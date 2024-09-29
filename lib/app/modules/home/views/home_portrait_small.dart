@@ -1,5 +1,5 @@
-import 'package:app/app/style/palette.dart';
-import 'package:app/app/widgets/skinner/animated_nav_bar/navbar.dart';
+import 'package:zone2/app/style/palette.dart';
+import 'package:zone2/app/widgets/skinner/animated_nav_bar/navbar.dart';
 import 'package:flutter/material.dart';
 
 import 'package:get/get.dart';
@@ -25,7 +25,7 @@ class HomeViewPortaitSmall extends GetWidget<HomeController> {
             ),
             body: Navigator(
               key: Get.nestedKey(1),
-              initialRoute: '/games',
+              initialRoute: '/diary',
               onGenerateRoute: controller.onGenerateRoute,
             ),
           ),

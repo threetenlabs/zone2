@@ -5,10 +5,10 @@
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'dart:async' as _i12;
 
-import 'package:app/app/models/user.dart' as _i10;
-import 'package:app/app/services/auth_service.dart' as _i11;
-import 'package:app/app/services/fcm_service.dart' as _i7;
-import 'package:app/app/services/shared_preferences_service.dart' as _i9;
+import 'package:zone2/app/models/user.dart' as _i10;
+import 'package:zone2/app/services/auth_service.dart' as _i11;
+import 'package:zone2/app/services/fcm_service.dart' as _i7;
+import 'package:zone2/app/services/shared_preferences_service.dart' as _i9;
 import 'package:cloud_firestore/cloud_firestore.dart' as _i4;
 import 'package:firebase_auth/firebase_auth.dart' as _i3;
 import 'package:fluttermoji/fluttermoji.dart' as _i8;

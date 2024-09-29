@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'dart:collection';
-import 'package:app/app/style/palette.dart';
+import 'package:zone2/app/style/palette.dart';
 import 'package:elegant_notification/elegant_notification.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
