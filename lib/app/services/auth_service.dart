@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:convert';
 
 import 'package:zone2/app/models/user.dart';
 import 'package:zone2/app/services/fcm_service.dart';
@@ -91,7 +90,7 @@ class AuthService {
       if (appUser.value.svgString.isEmpty) {
         logger.i('No SVG String found, setting default Fluttermoji');
 
-        String svgConfig = jsonEncode(defaultFluttermoji);
+        // String svgConfig = jsonEncode(defaultFluttermoji);
 
         // updateUserSvg(svgString, svgConfig);
       }

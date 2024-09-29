@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:zone2/app/services/auth_service.dart';
 import 'package:zone2/app/style/palette.dart';
 import 'package:flutter/material.dart';
@@ -15,10 +13,9 @@ class ProfileViewPortraitSmall extends GetWidget<ProfileController> {
   Widget build(BuildContext context) {
     final Palette palette = Palette();
     final AuthService authService = Get.find<AuthService>();
-    Timer? debounce;
     return PopScope(
-      onPopInvoked: (bool value) {
-        return;
+      onPopInvokedWithResult: (bool value, Object? result) {
+        return; // Updated to use onPopInvokedWithResult
       },
       child: LayoutBuilder(
         builder: (BuildContext context, BoxConstraints constraints) {

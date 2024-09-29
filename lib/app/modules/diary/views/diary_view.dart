@@ -74,7 +74,7 @@ class DiaryView extends GetView<DiaryController> {
         title: Text(title),
         subtitle: Text(subtitle),
         onTap: onTap,
-        trailing: isChecked ? Icon(Icons.check_box) : null, // {{ edit_2 }}
+        trailing: isChecked ? const Icon(Icons.check_box) : null, // {{ edit_2 }}
       ),
     );
   }
@@ -88,7 +88,7 @@ class DiaryView extends GetView<DiaryController> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text('Select your weight in pounds:', style: TextStyle(fontSize: 18)),
+              const Text('Select your weight in pounds:', style: TextStyle(fontSize: 18)),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -101,7 +101,7 @@ class DiaryView extends GetView<DiaryController> {
                           controller.weightWhole.value = value, // Update whole pounds
                     ),
                   ),
-                  Text('.', style: TextStyle(fontSize: 24)), // Decimal point
+                  const Text('.', style: TextStyle(fontSize: 24)), // Decimal point
                   Obx(
                     () => NumberPicker(
                       value: controller.weightDecimal.value,
@@ -113,14 +113,14 @@ class DiaryView extends GetView<DiaryController> {
                   ),
                 ],
               ),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
               ElevatedButton.icon(
                 onPressed: () async {
                   await controller.saveWeightToHealth(); // Call saveWeightToHealth
                   Navigator.pop(context); // Close the bottom sheet
                 },
-                icon: Icon(Icons.save),
-                label: Text('Save'),
+                icon: const Icon(Icons.save),
+                label: const Text('Save'),
               ),
             ],
           ),

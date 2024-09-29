@@ -1,6 +1,7 @@
 import 'package:health/health.dart';
 import 'package:get/get.dart';
 import 'package:logger/logger.dart';
+import 'package:zone2/app/modules/track/timeframe.dart';
 
 class HealthService extends GetxService {
   final logger = Get.find<Logger>();
@@ -210,5 +211,36 @@ class HealthService extends GetxService {
       // Handle error
       logger.e('Error saving weight to Health: $e');
     }
+  }
+
+  // Method to get weight data by specified time frame
+  Future<List<HealthDataPoint>> getWeightDataByTimeFrame(TimeFrame timeFrame) async {
+    DateTime now = DateTime.now();
+    DateTime startTime;
+    DateTime endTime = now;
+
+    switch (timeFrame) {
+      case TimeFrame.lastWeek:
+        startTime = now.subtract(const Duration(days: 7));
+        break;
+      case TimeFrame.lastThreeMonths:
+        startTime = now.subtract(const Duration(days: 90));
+        break;
+      case TimeFrame.lastSixMonths:
+        startTime = now.subtract(const Duration(days: 180));
+        break;
+      case TimeFrame.all:
+        startTime = DateTime(0); // Start from the epoch for all data
+        break;
+      default:
+        return []; // Ensure a return value for unhandled cases
+    }
+
+    // Fetch weight data using the Health() method
+    final types = [HealthDataType.WEIGHT];
+    final healthData =
+        await Health().getHealthDataFromTypes(types: types, startTime: startTime, endTime: endTime);
+    logger.i('Weight data: $healthData');
+    return Health().removeDuplicates(healthData); // Return unique weight data
   }
 }
