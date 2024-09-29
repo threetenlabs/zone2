@@ -1,8 +1,8 @@
-import 'package:zone2/app/utils/constants.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:get/get.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:logger/logger.dart';
+import 'package:zone2/app/utils/constants.dart';
 
 class FcmService {
   FirebaseMessaging messaging = FirebaseMessaging.instance;
@@ -33,22 +33,17 @@ class FcmService {
       tokenMap['timestamp'] = DateTime.now().toUtc().toIso8601String();
       // fcmLogger.e('TokenMap: $tokenMap');
 
-      //TODO: Subscribe to topics
       await FirebaseMessaging.instance.subscribeToTopic('bedlam_general');
 
-      FirebaseAnalytics.instance.logEvent(name: LOG_FCM_PERMISSION_GRANTED);
+      FirebaseAnalytics.instance.logEvent(name: logFcmPermissionGranted);
     } else {
       fcmLogger.d('User declined or has not accepted permission');
-      FirebaseAnalytics.instance.logEvent(name: LOG_FCM_PERMISSION_DECLINED);
+      FirebaseAnalytics.instance.logEvent(name: logFcmPermissionDeclined);
     }
   }
 
   Future<void> saveTokenToDatabase(String token) async {
     //create a map for the fcmToken and a timestamp
     //add two properties to TokenMap
-  }
-
-  Future<void> _backgroundHandler(RemoteMessage message) async {
-    fcmLogger.d('Handling a background message: ${message.messageId}');
   }
 }

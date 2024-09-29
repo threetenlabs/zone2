@@ -117,7 +117,9 @@ class DiaryView extends GetView<DiaryController> {
               ElevatedButton.icon(
                 onPressed: () async {
                   await controller.saveWeightToHealth(); // Call saveWeightToHealth
-                  Navigator.pop(context); // Close the bottom sheet
+                  if (context.mounted) { // Check if the widget is still mounted
+                    Navigator.pop(context); // Close the bottom sheet
+                  }
                 },
                 icon: const Icon(Icons.save),
                 label: const Text('Save'),

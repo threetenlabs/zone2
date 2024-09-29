@@ -11,7 +11,7 @@ class SettingsPortraitSmall extends GetWidget<SettingsController> {
   Widget build(BuildContext context) {
     final Palette palette = Palette();
     return PopScope(
-      onPopInvoked: (bool value) {
+      onPopInvokedWithResult: (bool value, Object? result) {
         return;
       },
       child: LayoutBuilder(

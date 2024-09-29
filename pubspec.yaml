@@ -56,6 +56,7 @@ dependencies:
   username_gen: ^1.0.4
   path: ^1.9.0
   vector_math: ^2.1.4
+  crypto: ^3.0.5
 
 dev_dependencies:
   flutter_lints: 3.0.2

@@ -261,8 +261,8 @@ See the [open issues](https://github.com/orgs/threetenlabs/projects/2/views/1) f
 
 [Create Service Credential](https://github.com/wzieba/Firebase-Distribution-Github-Action/wiki/FIREBASE_TOKEN-migration#guide-2---the-same-but-with-screenshots)
 
-https://blog.stackademic.com/flutter-extensions-tricks-to-boost-your-productivity-88573b7efc0f
+<https://blog.stackademic.com/flutter-extensions-tricks-to-boost-your-productivity-88573b7efc0f>
 
-https://medium.com/flutter-community/build-a-custom-bottom-navigation-bar-in-flutter-with-animated-icons-from-rive-13651bc80629
+<https://medium.com/flutter-community/build-a-custom-bottom-navigation-bar-in-flutter-with-animated-icons-from-rive-13651bc80629>
 
 test commit
