@@ -48,10 +48,6 @@ class DeviceHelper {
     debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
   }
 
-  static void setWeb() {
-    // TODO: Implement
-  }
-
   static void setMacOs() {
     debugDefaultTargetPlatformOverride = TargetPlatform.macOS;
   }

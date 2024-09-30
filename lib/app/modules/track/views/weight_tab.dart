@@ -27,10 +27,10 @@ class WeightTab extends StatelessWidget {
         ),
         body: const TabBarView(
           children: [
-            WeightGraph(timeFrame: TimeFrame.lastWeek),
-            WeightGraph(timeFrame: TimeFrame.lastThreeMonths),
+            WeightGraph(timeFrame: TimeFrame.thisWeek),
+            WeightGraph(timeFrame: TimeFrame.thisMonth),
             WeightGraph(timeFrame: TimeFrame.lastSixMonths),
-            WeightGraph(timeFrame: TimeFrame.all),
+            WeightGraph(timeFrame: TimeFrame.thisYear),
           ],
         ),
       ),

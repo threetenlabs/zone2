@@ -35,9 +35,6 @@ class TrackController extends GetxController {
     final now = DateTime.now();
     final weightData = await healthService.getWeightData(timeFrame: timeFrame, endTime: now);
 
-    logger.i('Weight data length: ${weightData.length}');
-    logger.i('Weight data: ${weightData}');
-
     // Group by date and take the last entry for each date
     Map<String, HealthDataPoint> latestEntries = {};
     for (var dataPoint in weightData) {

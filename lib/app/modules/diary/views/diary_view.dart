@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'package:get/get.dart';
 import 'package:numberpicker/numberpicker.dart';
+import 'package:zone2/app/modules/diary/views/add_food.dart';
 
 import '../controllers/diary_controller.dart';
 
@@ -35,10 +36,10 @@ class DiaryView extends GetView<DiaryController> {
                   _buildCard(
                     context,
                     icon: Icons.fastfood,
-                    title: 'Log Meals',
-                    subtitle: 'Record your meals',
-                    iconColor: Theme.of(context).colorScheme.secondary, // {{ edit_4 }}
-                    onTap: () => _showBottomSheet(context, 'Log Meals'),
+                    title: 'Add Food', // New card for adding food
+                    subtitle: 'Log your meals and snacks',
+                    iconColor: Theme.of(context).colorScheme.secondary,
+                    onTap: () => _showAddFoodBottomSheet(context), // Show the new bottom sheet
                     isChecked: false,
                   ),
                   _buildCard(
@@ -162,6 +163,41 @@ class DiaryView extends GetView<DiaryController> {
                 },
                 icon: const Icon(Icons.save),
                 label: const Text('Save'),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void _showAddFoodBottomSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true, // Allow full screen
+      useSafeArea: true,
+      builder: (context) {
+        return SizedBox(
+          height: MediaQuery.of(context).size.height, // Full screen height
+          child: Column(
+            children: [
+              // Close button
+              Align(
+                alignment: Alignment.topLeft,
+                child: IconButton(
+                  icon: const Icon(Icons.close),
+                  onPressed: () => Navigator.pop(context), // Close the bottom sheet
+                ),
+              ),
+              const Expanded(
+                child: AddFoodBottomSheet(
+                  calorieTarget: 2000, // Example target
+                  caloriesConsumed: 1200, // Example consumed
+                  caloriesBurned: 300, // Example burned
+                  proteinConsumed: 80, // Example protein
+                  carbsConsumed: 150, // Example carbs
+                  fatConsumed: 50, // Example fat
+                ),
               ),
             ],
           ),

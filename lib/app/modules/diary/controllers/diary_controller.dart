@@ -1,6 +1,7 @@
 import 'package:get/get.dart';
 import 'package:logger/logger.dart';
 import 'package:health/health.dart';
+import 'package:zone2/app/services/food_service.dart';
 import 'package:zone2/app/services/health_service.dart';
 
 import 'package:zone2/app/services/notification_service.dart';
@@ -10,7 +11,7 @@ import 'package:intl/intl.dart'; // Added for date formatting
 class DiaryController extends GetxController {
   final logger = Get.find<Logger>();
   final healthService = Get.find<HealthService>();
-
+  final foodService = Get.find<FoodService>();
   final count = 0.obs;
   final weightWhole = 70.obs;
   final weightDecimal = 0.obs;
@@ -23,7 +24,7 @@ class DiaryController extends GetxController {
   final isWaterLogged = false.obs; // Track if water is logged
   final customWaterWhole = 1.obs;
   final customWaterDecimal = 0.obs;
-
+  final foodSearchResults = Rxn<FoodSearchResponse>();
   @override
   void onInit() async {
     logger.i('DiaryController onInit');
@@ -40,7 +41,7 @@ class DiaryController extends GetxController {
         return;
       }
 
-      await healthService.deleteData(HealthDataType.WEIGHT, diaryDate.value, TimeFrame.lastDay);
+      await healthService.deleteData(HealthDataType.WEIGHT, diaryDate.value, TimeFrame.today);
 
       await getHealthDataForSelectedDay();
       // logger.i('Health data: $healthData');
@@ -50,11 +51,9 @@ class DiaryController extends GetxController {
   }
 
   Future<void> getHealthDataForSelectedDay() async {
-    final now = diaryDate.value;
-
     // Retrieve weight data
     final weightData =
-        await healthService.getWeightData(timeFrame: TimeFrame.lastThreeMonths, endTime: now);
+        await healthService.getWeightData(timeFrame: TimeFrame.thisMonth, endTime: diaryDate.value);
     logger.i('Weight data length: ${weightData.length}');
     weightData.sort((a, b) => b.dateTo.compareTo(a.dateTo));
 
@@ -73,7 +72,7 @@ class DiaryController extends GetxController {
 
     // Retrieve water data
     final waterData =
-        await healthService.getWaterData(timeFrame: TimeFrame.lastThreeMonths, endTime: now);
+        await healthService.getWaterData(timeFrame: TimeFrame.today, endTime: diaryDate.value);
     logger.i('Water data length: ${waterData.length}');
 
     // Process water data as needed
@@ -120,7 +119,7 @@ class DiaryController extends GetxController {
   }
 
   bool isYesterday(tz.TZDateTime date) {
-    final yesterday = tz.TZDateTime.now(tz.local).subtract(Duration(days: 1));
+    final yesterday = tz.TZDateTime.now(tz.local).subtract(const Duration(days: 1));
     logger.i('date: ${date.year} ${date.month} ${date.day}');
     logger.i('yesterday: ${yesterday.year} ${yesterday.month} ${yesterday.day}');
     return date.year == yesterday.year &&
@@ -146,12 +145,12 @@ class DiaryController extends GetxController {
 
   void navigateToNextDay() {
     if (!isToday(diaryDate.value) && diaryDate.value.isBefore(DateTime.now())) {
-      diaryDate.value = diaryDate.value.add(Duration(days: 1));
+      diaryDate.value = diaryDate.value.add(const Duration(days: 1));
     }
   }
 
   void navigateToPreviousDay() {
-    diaryDate.value = diaryDate.value.subtract(Duration(days: 1));
+    diaryDate.value = diaryDate.value.subtract(const Duration(days: 1));
   }
 
   Future<void> addWater(double ounces) async {
@@ -170,5 +169,9 @@ class DiaryController extends GetxController {
     } catch (e) {
       logger.e('Error saving weight to Health: $e');
     }
+  }
+
+  Future<void> searchFood(String query) async {
+    foodSearchResults.value = await foodService.searchFood(query);
   }
 }

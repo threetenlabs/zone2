@@ -8,11 +8,11 @@ enum WeightUnit { kilogram, pound }
 enum WaterUnit { ounce, liter }
 
 enum TimeFrame {
-  lastDay,
-  lastWeek,
-  lastThreeMonths,
+  today,
+  thisWeek,
+  thisMonth,
   lastSixMonths,
-  all,
+  thisYear,
 }
 
 class HealthService extends GetxService {
@@ -154,23 +154,27 @@ class HealthService extends GetxService {
     return convertedWater; // Ensure a return statement is present
   }
 
-  Future<DateTime> getStartTimeForTimeFrame(DateTime endTime, TimeFrame timeFrame) async {
+  Future<DateTime> getStartTimeForTimeFrame([DateTime? endTime, TimeFrame timeFrame = TimeFrame.today]) async {
+    endTime ??= DateTime.now(); // Use now if endTime is not specified
     DateTime startTime;
+
     switch (timeFrame) {
-      case TimeFrame.lastDay:
-        startTime = endTime.subtract(const Duration(days: 1));
+      case TimeFrame.today:
+        startTime = DateTime(endTime.year, endTime.month, endTime.day); // Midnight of today
         break;
-      case TimeFrame.lastWeek:
-        startTime = endTime.subtract(const Duration(days: 7));
+      case TimeFrame.thisWeek:
+        startTime = endTime.subtract(Duration(days: endTime.weekday - 1)); // Monday of the current week
         break;
-      case TimeFrame.lastThreeMonths:
-        startTime = endTime.subtract(const Duration(days: 90));
+      case TimeFrame.thisMonth:
+        startTime = DateTime(endTime.year, endTime.month, 1); // 1st of the current month
         break;
       case TimeFrame.lastSixMonths:
-        startTime = endTime.subtract(const Duration(days: 180));
+        startTime = endTime.isBefore(DateTime(endTime.year, endTime.month - 6, endTime.day))
+            ? DateTime(endTime.year, endTime.month - 6, endTime.day)
+            : DateTime(endTime.year, endTime.month - 6, 1); // Adjust based on the current date
         break;
-      case TimeFrame.all:
-        startTime = DateTime(0); // Start from the epoch for all data
+      case TimeFrame.thisYear:
+        startTime = DateTime(endTime.year, 1, 1); // Start of the current year
         break;
       default:
         return DateTime.now(); // Return current time for unhandled cases
@@ -328,16 +332,16 @@ class HealthService extends GetxService {
     DateTime endTime = now;
 
     switch (timeFrame) {
-      case TimeFrame.lastWeek:
+      case TimeFrame.thisWeek:
         startTime = now.subtract(const Duration(days: 7));
         break;
-      case TimeFrame.lastThreeMonths:
+      case TimeFrame.thisMonth:
         startTime = now.subtract(const Duration(days: 90));
         break;
       case TimeFrame.lastSixMonths:
         startTime = now.subtract(const Duration(days: 180));
         break;
-      case TimeFrame.all:
+      case TimeFrame.thisYear:
         startTime = DateTime(0); // Start from the epoch for all data
         break;
       default:
