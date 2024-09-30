@@ -21,23 +21,26 @@ class _FoodDetailBottomSheetState extends State<FoodDetailBottomSheet> {
         color: Colors.white,
         borderRadius: BorderRadius.vertical(top: Radius.circular(16.0)), // Rounded top corners
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(widget.food.description,
-              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
-          const SizedBox(height: 8),
-          Text('Brand: ${widget.food.brandOwner}', style: const TextStyle(fontSize: 18)),
-          const SizedBox(height: 16),
-          _buildNutritionalCard(),
-          const SizedBox(height: 16),
-          _buildAddToMealSection(),
-          const SizedBox(height: 16),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(context), // Close the bottom sheet
-            child: const Text('Close'),
-          ),
-        ],
+      child: SingleChildScrollView(
+        // Wrap the content in a scrollable view
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(widget.food.description,
+                style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 8),
+            Text('Brand: ${widget.food.brandOwner}', style: const TextStyle(fontSize: 18)),
+            const SizedBox(height: 16),
+            _buildNutritionalCard(),
+            const SizedBox(height: 16),
+            _buildAddToMealSection(),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: () => Navigator.pop(context), // Close the bottom sheet
+              child: const Text('Close'),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -113,8 +116,7 @@ class _FoodDetailBottomSheetState extends State<FoodDetailBottomSheet> {
             ElevatedButton(
               onPressed: () {
                 // Handle adding to meal logic here
-                // For example, you can print the serving count and food description
-                print('Added ${servingCount} servings of ${widget.food.description} to meal.');
+                debugPrint('Added $servingCount servings of ${widget.food.description} to meal.');
               },
               child: const Text('Add to Meal'),
             ),

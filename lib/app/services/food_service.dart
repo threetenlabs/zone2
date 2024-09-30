@@ -34,18 +34,6 @@ class FoodSearchResponse {
     );
   }
 
-  // void sortFoods() {
-  //   foods.sort((a, b) {
-  //     // First sort by dataType
-  //     int dataTypeComparison = _compareDataType(a.dataType, b.dataType);
-  //     if (dataTypeComparison != 0) {
-  //       return dataTypeComparison;
-  //     }
-  //     // If dataTypes are the same, sort by name
-  //     return a.description.compareTo(b.description);
-  //   });
-  // }
-
   int _compareDataType(String a, String b) {
     const order = {
       'Foundation': 0,
