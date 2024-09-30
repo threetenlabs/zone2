@@ -104,6 +104,8 @@ class Food {
   final List<FoodNutrient> foodNutrients;
   final String publicationDate;
   final String brandOwner;
+  final String servingSizeUnit;
+  final double servingSize;
 
   Food({
     required this.fdcId,
@@ -112,6 +114,8 @@ class Food {
     required this.foodNutrients,
     required this.publicationDate,
     required this.brandOwner,
+    required this.servingSizeUnit,
+    required this.servingSize,
   });
 
   factory Food.fromJson(Map<String, dynamic> json) {
@@ -124,6 +128,8 @@ class Food {
               []), // Handle null
       publicationDate: json['publicationDate'] ?? '', // Default to empty string if null
       brandOwner: json['brandOwner'] ?? '', // Default to empty string if null
+      servingSizeUnit: json['servingSizeUnit'] ?? '', // Default to empty string if null
+      servingSize: json['servingSize'] ?? 0.0, // Default to 0.0 if null
     );
   }
 }

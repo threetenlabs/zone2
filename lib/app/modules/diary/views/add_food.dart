@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:zone2/app/modules/diary/controllers/diary_controller.dart';
+import 'package:zone2/app/modules/diary/views/food_detail.dart';
+import 'package:zone2/app/services/food_service.dart';
 
 class AddFoodBottomSheet extends GetView<DiaryController> {
   final double calorieTarget;
@@ -157,9 +159,7 @@ class AddFoodBottomSheet extends GetView<DiaryController> {
                         return ListTile(
                           title: Text(food.description),
                           subtitle: Text('Brand: ${food.brandOwner}'),
-                          onTap: () {
-                            // Handle food item tap
-                          },
+                          onTap: () => _showFoodDetail(context, food), // Show food details on tap
                         );
                       },
                     ),
@@ -171,6 +171,17 @@ class AddFoodBottomSheet extends GetView<DiaryController> {
             ],
           ),
         );
+      },
+    );
+  }
+
+  void _showFoodDetail(BuildContext context, Food food) {
+    showModalBottomSheet(
+      isScrollControlled: true, // Allow full screen
+      useSafeArea: true,
+      context: context,
+      builder: (context) {
+        return FoodDetailBottomSheet(food: food); // Pass the selected food
       },
     );
   }

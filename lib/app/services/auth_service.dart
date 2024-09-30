@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:zone2/app/models/user.dart';
-import 'package:zone2/app/services/fcm_service.dart';
 import 'package:zone2/app/services/notification_service.dart';
 import 'package:zone2/app/services/shared_preferences_service.dart';
 import 'package:zone2/app/utils/routes.dart';
