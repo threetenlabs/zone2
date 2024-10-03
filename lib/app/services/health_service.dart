@@ -2,6 +2,8 @@ import 'package:health/health.dart';
 import 'package:get/get.dart';
 import 'package:logger/logger.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:zone2/app/services/food_service.dart';
+import 'package:zone2/app/services/notification_service.dart';
 
 enum WeightUnit { kilogram, pound }
 
@@ -19,6 +21,7 @@ class HealthService extends GetxService {
   final logger = Get.find<Logger>();
   final isAuthorized = false.obs;
   final status = HealthConnectSdkStatus.sdkUnavailable.obs;
+  final health = Rxn<Health>();
 
   final List<HealthDataType> _writePermissionTypes = [
     HealthDataType.WEIGHT,
@@ -145,16 +148,17 @@ class HealthService extends GetxService {
   Future<double> convertWaterUnit(dynamic water, WaterUnit toUnit) async {
     double convertedWater;
     if (toUnit == WaterUnit.ounce) {
-      convertedWater = water * 16;
+      convertedWater = water * 33.814;
     } else if (toUnit == WaterUnit.liter) {
-      convertedWater = water / 16;
+      convertedWater = water / 33.814;
     } else {
       throw Exception('Unsupported water unit conversion');
     }
     return convertedWater; // Ensure a return statement is present
   }
 
-  Future<DateTime> getStartTimeForTimeFrame([DateTime? endTime, TimeFrame timeFrame = TimeFrame.today]) async {
+  Future<DateTime> getStartTimeForTimeFrame(
+      [DateTime? endTime, TimeFrame timeFrame = TimeFrame.today]) async {
     endTime ??= DateTime.now(); // Use now if endTime is not specified
     DateTime startTime;
 
@@ -163,7 +167,8 @@ class HealthService extends GetxService {
         startTime = DateTime(endTime.year, endTime.month, endTime.day); // Midnight of today
         break;
       case TimeFrame.thisWeek:
-        startTime = endTime.subtract(Duration(days: endTime.weekday - 1)); // Monday of the current week
+        startTime =
+            endTime.subtract(Duration(days: endTime.weekday - 1)); // Monday of the current week
         break;
       case TimeFrame.thisMonth:
         startTime = DateTime(endTime.year, endTime.month, 1); // 1st of the current month
@@ -187,6 +192,7 @@ class HealthService extends GetxService {
     super.onInit();
     Health().configure();
     Health().getHealthConnectSdkStatus();
+    health.value = Health();
     isAuthorized.value = await authorize();
   }
 
@@ -202,17 +208,17 @@ class HealthService extends GetxService {
     await Permission.activityRecognition.request();
     await Permission.location.request();
 
-    final status = await Health().getHealthConnectSdkStatus();
+    final status = await health.value!.getHealthConnectSdkStatus();
     logger.i('Health Connect SDK Status: $status');
     logger.i('Types count: ${types.length}');
     logger.i('Permissions count: ${permissions.length}');
 
-    final hasPermissions = await Health().hasPermissions(types, permissions: permissions);
+    final hasPermissions = await health.value!.hasPermissions(types, permissions: permissions);
 
     bool authorized = false;
     if (hasPermissions != null && !hasPermissions) {
       try {
-        authorized = await Health().requestAuthorization(types, permissions: permissions);
+        authorized = await health.value!.requestAuthorization(types, permissions: permissions);
       } catch (error) {
         logger.e("Exception in authorize: $error");
       }
@@ -227,9 +233,10 @@ class HealthService extends GetxService {
     final types = GetPlatform.isIOS ? dataTypesIOS : dataTypesAndroid;
     try {
       DateTime startTime = await getStartTimeForTimeFrame(endTime, timeFrame); // Use the new method
-      final healthData = await Health()
+      final healthData = await health.value!
           .getHealthDataFromTypes(types: types, startTime: startTime, endTime: endTime);
-      return Health().removeDuplicates(healthData);
+
+      return health.value!.removeDuplicates(healthData);
     } catch (e) {
       logger.e('Error loading health data: $e');
       return [];
@@ -240,33 +247,48 @@ class HealthService extends GetxService {
       {required DateTime endTime, required TimeFrame timeFrame}) async {
     final types = [HealthDataType.WATER];
     DateTime startTime = await getStartTimeForTimeFrame(endTime, timeFrame);
-    final healthData =
-        await Health().getHealthDataFromTypes(types: types, startTime: startTime, endTime: endTime);
-    return Health().removeDuplicates(healthData);
+    logger.i('Start Time: ${startTime.toString()}');
+    final healthData = await health.value!
+        .getHealthDataFromTypes(types: types, startTime: startTime, endTime: endTime);
+    logger.i('Water Health data: $healthData');
+    return health.value!.removeDuplicates(healthData);
   }
 
   Future<List<HealthDataPoint>> getStepData(
       {required DateTime endTime, required TimeFrame timeFrame}) async {
     final types = [HealthDataType.STEPS];
     DateTime startTime = await getStartTimeForTimeFrame(endTime, timeFrame);
-    final healthData =
-        await Health().getHealthDataFromTypes(types: types, startTime: startTime, endTime: endTime);
-    return Health().removeDuplicates(healthData);
+    final healthData = await health.value!
+        .getHealthDataFromTypes(types: types, startTime: startTime, endTime: endTime);
+    return health.value!.removeDuplicates(healthData);
   }
 
   Future<List<HealthDataPoint>> getWeightData(
       {required DateTime endTime, required TimeFrame timeFrame}) async {
     final types = [HealthDataType.WEIGHT];
     DateTime startTime = await getStartTimeForTimeFrame(endTime, timeFrame);
+    final healthData = await health.value!
+        .getHealthDataFromTypes(types: types, startTime: startTime, endTime: endTime);
+    return health.value!.removeDuplicates(healthData);
+  }
+
+  Future<List<HealthDataPoint>> getMealData(
+      {required DateTime endTime, required TimeFrame timeFrame}) async {
+    final types = [HealthDataType.NUTRITION];
+    // DateTime startTime = await getStartTimeForTimeFrame(endTime, timeFrame);
+
+    final now = DateTime.now().add(const Duration(minutes: 10));
+    final earlier = DateTime.now().subtract(const Duration(minutes: 30));
+
     final healthData =
-        await Health().getHealthDataFromTypes(types: types, startTime: startTime, endTime: endTime);
-    return Health().removeDuplicates(healthData);
+        await health.value!.getHealthDataFromTypes(types: types, startTime: earlier, endTime: now);
+    return health.value!.removeDuplicates(healthData);
   }
 
   Future<void> writeHealthData(HealthDataType type, double value, HealthDataUnit unit,
       DateTime startTime, DateTime endTime) async {
     try {
-      await Health().writeHealthData(
+      await health.value!.writeHealthData(
         unit: unit,
         value: value,
         type: type,
@@ -280,7 +302,7 @@ class HealthService extends GetxService {
 
   Future<HealthConnectSdkStatus> getHealthConnectSdkStatus() async {
     try {
-      final hcStatus = await Health().getHealthConnectSdkStatus();
+      final hcStatus = await health.value!.getHealthConnectSdkStatus();
       logger.i('Health Connect SDK Status: $hcStatus');
       status.value = hcStatus!; // Use null assertion operator to ensure non-null value
       return hcStatus; // Add this return statement
@@ -293,12 +315,14 @@ class HealthService extends GetxService {
   Future<void> saveWeightToHealth(double weight) async {
     try {
       final now = DateTime.now();
+      final earlier = now.subtract(const Duration(minutes: 1));
       // Save the weight data point to Health
-      await Health().writeHealthData(
-          unit: HealthDataUnit.POUND,
+      await health.value!.writeHealthData(
+          unit: HealthDataUnit.KILOGRAM,
           value: weight,
           type: HealthDataType.WEIGHT,
-          startTime: now,
+          recordingMethod: RecordingMethod.manual,
+          startTime: earlier,
           endTime: now);
 
       // Optionally return success or handle success notification here
@@ -311,12 +335,14 @@ class HealthService extends GetxService {
   Future<void> saveWaterToHealth(double water) async {
     try {
       final now = DateTime.now();
+      final earlier = now.subtract(const Duration(minutes: 1));
       // Save the weight data point to Health
-      await Health().writeHealthData(
+      await health.value!.writeHealthData(
           value: water,
           type: HealthDataType.WATER,
-          startTime: now,
-          endTime: now.add(const Duration(minutes: 1)));
+          recordingMethod: RecordingMethod.manual,
+          startTime: earlier,
+          endTime: now);
 
       // Optionally return success or handle success notification here
     } catch (e) {
@@ -325,57 +351,47 @@ class HealthService extends GetxService {
     }
   }
 
-  // Method to get weight data by specified time frame
-  Future<List<HealthDataPoint>> getWeightDataByTimeFrame(TimeFrame timeFrame) async {
-    DateTime now = DateTime.now();
-    DateTime startTime;
-    DateTime endTime = now;
+  Future<bool> saveMealToHealth(MealType mealtype, PlatformHealthMeal meal, double qty) async {
+    final now = DateTime.now();
+    final earlier = DateTime.now().subtract(const Duration(minutes: 1));
 
-    switch (timeFrame) {
-      case TimeFrame.thisWeek:
-        startTime = now.subtract(const Duration(days: 7));
-        break;
-      case TimeFrame.thisMonth:
-        startTime = now.subtract(const Duration(days: 90));
-        break;
-      case TimeFrame.lastSixMonths:
-        startTime = now.subtract(const Duration(days: 180));
-        break;
-      case TimeFrame.thisYear:
-        startTime = DateTime(0); // Start from the epoch for all data
-        break;
-      default:
-        return []; // Ensure a return value for unhandled cases
+    try {
+      final result = await health.value!.writeMeal(
+          mealType: mealtype,
+          startTime: earlier,
+          endTime: now,
+          caloriesConsumed: meal.totalCaloriesValue * qty,
+          carbohydrates: meal.totalCarbsValue * qty,
+          protein: meal.proteinValue * qty,
+          fatTotal: meal.totalFatValue * qty,
+          name: meal.name,
+          sodium: meal.sodiumValue * qty,
+          cholesterol: meal.cholesterolValue * qty,
+          fiber: meal.fiberValue * qty,
+          fatUnsaturated: (meal.totalFatValue - meal.saturatedValue) * qty,
+          fatSaturated: meal.saturatedValue * qty,
+          sugar: meal.sugarValue * qty,
+          recordingMethod: RecordingMethod.manual);
+      return result;
+    } catch (e) {
+      logger.e('Error saving meal to Health: $e');
+      return false;
     }
-
-    // Fetch weight data using the Health() method
-    final types = [HealthDataType.WEIGHT];
-
-    logger.i('Fetching weight data from $startTime to $endTime');
-    final healthData =
-        await Health().getHealthDataFromTypes(types: types, startTime: startTime, endTime: endTime);
-    logger.i('Weight data: $healthData');
-    return Health().removeDuplicates(healthData); // Return unique weight data
   }
 
-  Future<void> deleteData(HealthDataType type, DateTime endTime, TimeFrame timeFrame) async {
-    // DateTime startTime = await getStartTimeForTimeFrame(endTime, timeFrame);
-    // logger.i('Deleting data for type: $type, startTime: $startTime, endTime: $endTime');
-
-    // await Health().delete(
-    //     type: HealthDataType.WEIGHT,
-    //     startTime: DateTime(2024, 9, 28, 16),
-    //     endTime: DateTime(2024, 9, 28, 23));
-    // logger.w('Data deleted');
-
-    final now = DateTime.now();
-    final earlier = now.subtract(const Duration(hours: 24));
-
-    final result = await Health().delete(
-      type: HealthDataType.WEIGHT,
-      startTime: earlier,
-      endTime: now,
+  Future<void> deleteData(HealthDataType type, DateTime startTime, DateTime endTime) async {
+    final result = await health.value!.delete(
+      type: HealthDataType.NUTRITION,
+      startTime: startTime,
+      endTime: endTime,
     );
-    logger.i('Data deleted: $result');
+
+    if (result) {
+      logger.i('Data deleted: $result');
+      NotificationService.to.showSuccess('Data Deleted', 'Data has been successfully deleted.');
+    } else {
+      logger.e('Error deleting data: $result');
+      NotificationService.to.showError('Error Deleting Data', 'Data has not been deleted.');
+    }
   }
 }

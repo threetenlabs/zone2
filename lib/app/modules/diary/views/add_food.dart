@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:health/health.dart';
 import 'package:zone2/app/modules/diary/controllers/diary_controller.dart';
 import 'package:zone2/app/modules/diary/views/food_detail.dart';
-import 'package:zone2/app/services/food_service.dart';
 
 class AddFoodBottomSheet extends GetView<DiaryController> {
   final double calorieTarget;
@@ -53,28 +53,40 @@ class AddFoodBottomSheet extends GetView<DiaryController> {
               title: 'Add Breakfast',
               subtitle: 'Add Breakfast',
               iconColor: Colors.green,
-              onTap: () => _showSearchBottomSheet(context), // {{ edit_1 }}
+              onTap: () => {
+                    controller.selectedMealType.value = MealType.BREAKFAST,
+                    _showAddFoodBottomSheet(context),
+                  },
               isChecked: false),
           _buildActionCard(context,
               icon: Icons.lunch_dining,
               title: 'Add Lunch',
               subtitle: 'Add Lunch',
               iconColor: Colors.green,
-              onTap: () {},
+              onTap: () => {
+                    controller.selectedMealType.value = MealType.LUNCH,
+                    _showAddFoodBottomSheet(context),
+                  },
               isChecked: false),
           _buildActionCard(context,
               icon: Icons.dinner_dining,
               title: 'Add Dinner',
               subtitle: 'Add Dinner',
               iconColor: Colors.green,
-              onTap: () {},
+              onTap: () => {
+                    controller.selectedMealType.value = MealType.DINNER,
+                    _showAddFoodBottomSheet(context),
+                  },
               isChecked: false),
           _buildActionCard(context,
               icon: Icons.fastfood,
               title: 'Add Snacks',
               subtitle: 'Add Snacks',
               iconColor: Colors.green,
-              onTap: () {},
+              onTap: () => {
+                    controller.selectedMealType.value = MealType.SNACK,
+                    _showAddFoodBottomSheet(context),
+                  },
               isChecked: false),
         ],
       ),
@@ -114,7 +126,40 @@ class AddFoodBottomSheet extends GetView<DiaryController> {
     );
   }
 
-  void _showSearchBottomSheet(BuildContext context) {
+  void _showAddFoodBottomSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true, // Allow full screen
+      useSafeArea: true,
+      builder: (context) {
+        return Container(
+          height: MediaQuery.of(context).size.height, // Full screen height
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            children: [
+              // Close button
+              Align(
+                alignment: Alignment.topLeft,
+                child: IconButton(
+                  icon: const Icon(Icons.close),
+                  onPressed: () => Navigator.pop(context), // Close the bottom sheet
+                ),
+              ),
+              // Button to open search bottom sheet
+              ElevatedButton(
+                onPressed: () => _showSearchBottomSheet(context), // {{ edit_1 }}
+                child: const Text('Search for Food'),
+              ),
+              const SizedBox(height: 16),
+              _buildMealList(), // Keep the meal list here
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void _showSearchBottomSheet(BuildContext context) { // {{ edit_2 }}
     showModalBottomSheet(
       context: context,
       isScrollControlled: true, // Allow full screen
@@ -141,14 +186,13 @@ class AddFoodBottomSheet extends GetView<DiaryController> {
                 ),
                 onSubmitted: (value) {
                   // Call food_service search method
-                  controller.searchFood(value); // {{ edit_1 }}
+                  controller.searchFood(value);
                   // Navigator.pop(context); // Close the bottom sheet
                 },
               ),
               const SizedBox(height: 16),
               // Check if foodSearchResponse has a value
               Obx(() {
-                // {{ edit_1 }}
                 final foodSearchResponse = controller.foodSearchResults.value;
                 if (foodSearchResponse != null && foodSearchResponse.foods.isNotEmpty) {
                   return Expanded(
@@ -159,15 +203,20 @@ class AddFoodBottomSheet extends GetView<DiaryController> {
                         return ListTile(
                           title: Text(food.description),
                           subtitle: Text('Brand: ${food.brandOwner}'),
-                          onTap: () => _showFoodDetail(context, food), // Show food details on tap
+                          onTap: () => {
+                            controller.selectedFood.value = food,
+                            _showFoodDetail(context),
+                          }, // Show food details on tap
                         );
                       },
                     ),
                   );
-                } else {
+                } else if (controller.searchPerformed.value) {
                   return const Text('No results found'); // Handle no results
+                } else {
+                  return Container();
                 }
-              }), // {{ edit_2 }}
+              }),
             ],
           ),
         );
@@ -175,13 +224,69 @@ class AddFoodBottomSheet extends GetView<DiaryController> {
     );
   }
 
-  void _showFoodDetail(BuildContext context, Food food) {
+  Widget _buildMealList() {
+    // {{ edit_1 }}
+    return Obx(() {
+      if (controller.mealData.isNotEmpty) {
+        return ListView.builder(
+          shrinkWrap: true,
+          itemCount: controller.mealData.length,
+          itemBuilder: (context, index) {
+            final item = controller.mealData[index];
+            final nutritionHealthValue = item.value as NutritionHealthValue;
+            return GestureDetector(
+              // {{ edit_1 }}
+              onLongPress: () async {
+                // Show confirmation dialog
+                final confirm = await showDialog<bool>(
+                  context: context,
+                  builder: (BuildContext context) {
+                    return AlertDialog(
+                      title: const Text('Confirm Deletion'),
+                      content: const Text('Are you sure you want to delete this meal?'),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.of(context).pop(false), // No
+                          child: const Text('No'),
+                        ),
+                        TextButton(
+                          onPressed: () => Navigator.of(context).pop(true), // Yes
+                          child: const Text('Yes'),
+                        ),
+                      ],
+                    );
+                  },
+                );
+
+                // If confirmed, call deleteFood method
+                if (confirm == true) {
+                  controller.deleteFood(item.dateFrom, item.dateTo); // {{ edit_2 }}
+                }
+              },
+              child: ListTile(
+                title:
+                    Text('Meal: ${nutritionHealthValue.name}'), // Assuming meal has a name property
+                subtitle: Text(
+                  'Calories: ${nutritionHealthValue.calories} | Protein: ${nutritionHealthValue.protein}g | '
+                  'Fat: ${nutritionHealthValue.fat}g | Carbs: ${nutritionHealthValue.carbs}g', // Displaying nutritional info
+                ),
+              ),
+            );
+          },
+        );
+      } else {
+        return const Text('No meals logged'); // Handle no meals
+      }
+    });
+  }
+
+  void _showFoodDetail(BuildContext context) {
     showModalBottomSheet(
       isScrollControlled: true, // Allow full screen
       useSafeArea: true,
       context: context,
       builder: (context) {
-        return FoodDetailBottomSheet(food: food); // Pass the selected food
+        return const FoodDetailBottomSheet(); // Pass the selected food
       },
     );
   }

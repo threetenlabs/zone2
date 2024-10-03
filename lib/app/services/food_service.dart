@@ -12,7 +12,7 @@ class FoodSearchResponse {
   final int totalHits;
   final int currentPage;
   final int totalPages;
-  final List<Food> foods;
+  final List<UsdaFood> foods;
 
   FoodSearchResponse({
     required this.foodSearchCriteria,
@@ -29,8 +29,8 @@ class FoodSearchResponse {
       totalHits: json['totalHits'] ?? 0, // Default to 0 if null
       currentPage: json['currentPage'] ?? 1, // Default to 1 if null
       totalPages: json['totalPages'] ?? 1, // Default to 1 if null
-      foods:
-          List<Food>.from(json['foods']?.map((food) => Food.fromJson(food)) ?? []), // Handle null
+      foods: List<UsdaFood>.from(
+          json['foods']?.map((food) => UsdaFood.fromJson(food)) ?? []), // Handle null
     );
   }
 
@@ -85,17 +85,18 @@ class FoodSearchCriteria {
   }
 }
 
-class Food {
+class UsdaFood {
   final int fdcId;
   final String dataType;
   final String description;
-  final List<FoodNutrient> foodNutrients;
+  final List<UsdaFoodNutrient> foodNutrients;
   final String publicationDate;
   final String brandOwner;
   final String servingSizeUnit;
   final double servingSize;
+  final String householdServingFullText;
 
-  Food({
+  UsdaFood({
     required this.fdcId,
     required this.dataType,
     required this.description,
@@ -104,37 +105,40 @@ class Food {
     required this.brandOwner,
     required this.servingSizeUnit,
     required this.servingSize,
+    required this.householdServingFullText,
   });
 
-  factory Food.fromJson(Map<String, dynamic> json) {
-    return Food(
+  factory UsdaFood.fromJson(Map<String, dynamic> json) {
+    return UsdaFood(
       fdcId: json['fdcId'] ?? 0, // Default to 0 if null
       dataType: json['dataType'] ?? '', // Default to empty string if null
       description: json['description'] ?? '', // Default to empty string if null
-      foodNutrients: List<FoodNutrient>.from(
-          json['foodNutrients']?.map((nutrient) => FoodNutrient.fromJson(nutrient)) ??
+      foodNutrients: List<UsdaFoodNutrient>.from(
+          json['foodNutrients']?.map((nutrient) => UsdaFoodNutrient.fromJson(nutrient)) ??
               []), // Handle null
       publicationDate: json['publicationDate'] ?? '', // Default to empty string if null
       brandOwner: json['brandOwner'] ?? '', // Default to empty string if null
       servingSizeUnit: json['servingSizeUnit'] ?? '', // Default to empty string if null
       servingSize: json['servingSize'] ?? 0.0, // Default to 0.0 if null
+      householdServingFullText:
+          json['householdServingFullText'] ?? '', // Default to empty string if null
     );
   }
 }
 
-class FoodNutrient {
+class UsdaFoodNutrient {
   final String name;
   final double amount;
   final String unitName;
 
-  FoodNutrient({
+  UsdaFoodNutrient({
     required this.name,
     required this.amount,
     required this.unitName,
   });
 
-  factory FoodNutrient.fromJson(Map<String, dynamic> json) {
-    return FoodNutrient(
+  factory UsdaFoodNutrient.fromJson(Map<String, dynamic> json) {
+    return UsdaFoodNutrient(
       name: json['nutrientName'],
       amount: json['value'] != null
           ? (json['value'] is int)
@@ -144,6 +148,77 @@ class FoodNutrient {
       unitName: json['unitName'],
     );
   }
+}
+
+/// This class represents a meal in the platform health system.
+class PlatformHealthMeal {
+  /// The name of the meal.
+  final String name;
+  /// The label for the total calories of the meal.
+  final String totalCaloriesLabel;
+  /// The value of the total calories of the meal.
+  final double totalCaloriesValue;
+  /// The label for the protein content of the meal.
+  final String proteinLabel;
+  /// The value of the protein content of the meal.
+  final double proteinValue;
+  /// The label for the total carbs of the meal.
+  final String totalCarbsLabel;
+  /// The value of the total carbs of the meal.
+  final double totalCarbsValue;
+  /// The label for the fiber content of the meal.
+  final String fiberLabel;
+  /// The value of the fiber content of the meal.
+  final double fiberValue;
+  /// The label for the sugar content of the meal.
+  final String sugarLabel;
+  /// The value of the sugar content of the meal.
+  final double sugarValue;
+  /// The label for the total fat of the meal.
+  final String totalFatLabel;
+  /// The value of the total fat of the meal.
+  final double totalFatValue;
+  /// The label for the saturated fat of the meal.
+  final String saturatedLabel;
+  /// The value of the saturated fat of the meal.
+  final double saturatedValue;
+  /// The label for the sodium content of the meal.
+  final String sodiumLabel;
+  /// The value of the sodium content of the meal.
+  final double sodiumValue;
+  /// The label for the cholesterol content of the meal.
+  final String cholesterolLabel;
+  /// The value of the cholesterol content of the meal.
+  final double cholesterolValue;
+  /// The label for the potassium content of the meal.
+  final String potassiumLabel;
+  /// The value of the potassium content of the meal.
+  final double potassiumValue;
+
+  /// Constructor for the PlatformHealthMeal class.
+  PlatformHealthMeal({
+    required this.name,
+    required this.totalCaloriesLabel,
+    required this.totalCaloriesValue,
+    required this.proteinLabel,
+    required this.proteinValue,
+    required this.totalCarbsLabel,
+    required this.totalCarbsValue,
+    required this.fiberLabel,
+    required this.fiberValue,
+    required this.sugarLabel,
+    required this.sugarValue,
+    required this.totalFatLabel,
+    required this.totalFatValue,
+    required this.saturatedLabel,
+    required this.saturatedValue,
+    required this.sodiumLabel,
+    required this.sodiumValue,
+    required this.cholesterolLabel,
+    required this.cholesterolValue,
+    required this.potassiumLabel,
+    required this.potassiumValue,
+  });
 }
 
 class FoodService extends GetxService {

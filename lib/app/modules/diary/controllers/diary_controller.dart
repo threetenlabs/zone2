@@ -1,3 +1,4 @@
+import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:get/get.dart';
 import 'package:logger/logger.dart';
 import 'package:health/health.dart';
@@ -25,10 +26,24 @@ class DiaryController extends GetxController {
   final customWaterWhole = 1.obs;
   final customWaterDecimal = 0.obs;
   final foodSearchResults = Rxn<FoodSearchResponse>();
+  final searchPerformed = false.obs;
+
+  final selectedMealType = Rx<MealType>(MealType.BREAKFAST);
+  final selectedFood = Rxn<UsdaFood>();
+  final foodServingQty = 0.0.obs;
+  final selectedMeal = Rxn<PlatformHealthMeal>();
+  final mealData = RxList<HealthDataPoint>();
+
   @override
   void onInit() async {
     logger.i('DiaryController onInit');
     super.onInit();
+
+    final currentTimeZone = await FlutterTimezone.getLocalTimezone();
+    var userLocation = tz.getLocation(currentTimeZone);
+
+    diaryDate.value = tz.TZDateTime(userLocation, tz.TZDateTime.now(userLocation).year,
+        tz.TZDateTime.now(userLocation).month, tz.TZDateTime.now(userLocation).day, 11, 59, 59);
     ever(healthService.isAuthorized, (isAuthorized) => authorizedChanged(isAuthorized));
     ever(diaryDate, (date) => updateDateLabel());
     updateDateLabel();
@@ -41,7 +56,7 @@ class DiaryController extends GetxController {
         return;
       }
 
-      await healthService.deleteData(HealthDataType.WEIGHT, diaryDate.value, TimeFrame.today);
+      // await healthService.deleteData(HealthDataType.WEIGHT, diaryDate.value, TimeFrame.today);
 
       await getHealthDataForSelectedDay();
       // logger.i('Health data: $healthData');
@@ -83,9 +98,16 @@ class DiaryController extends GetxController {
       double waterIntakeInOunces =
           await healthService.convertWaterUnit(waterIntakeInLiters, WaterUnit.ounce);
       waterIntake.value = waterIntakeInOunces; // Update the water intake observable
-      logger.i('Total water intake: $waterIntakeInLiters oz');
+      logger.i('Total water intake: $waterIntake oz');
       isWaterLogged.value = waterIntake.value > waterGoal.value;
       logger.i('Water logged: $isWaterLogged.value');
+    }
+
+    mealData.value =
+        await healthService.getMealData(timeFrame: TimeFrame.today, endTime: diaryDate.value);
+    logger.i('Meal data length: ${mealData.length}');
+    if (mealData.isNotEmpty) {
+      logger.i('Meal data: ${mealData.first}');
     }
   }
 
@@ -111,6 +133,24 @@ class DiaryController extends GetxController {
     }
   }
 
+  Future<void> saveMealToHealth() async {
+    try {
+      final success = await healthService.saveMealToHealth(
+          selectedMealType.value, selectedMeal.value!, foodServingQty.value);
+      if (success) {
+        // Send success notification
+        NotificationService.to
+            .showSuccess('Meal Saved', 'Your meal has been successfully saved to health data.');
+        await getHealthDataForSelectedDay();
+      } else {
+        NotificationService.to
+            .showError('Meal Not Saved', 'Your meal was not saved to health data.');
+      }
+    } catch (e) {
+      logger.e('Error saving meal to Health: $e');
+    }
+  }
+
   bool isToday(tz.TZDateTime date) {
     final now = tz.TZDateTime.now(tz.local);
     logger.i('date: ${date.year} ${date.month} ${date.day}');
@@ -130,6 +170,7 @@ class DiaryController extends GetxController {
   void updateDateLabel() {
     logger.i('Updating date label: ${diaryDate.value}');
     if (isToday(diaryDate.value)) {
+      // Keep diaryDate as TZDateTime
       logger.i('Updating date label to today: ${diaryDate.value}');
       diaryDateLabel.value = 'Today';
     } else if (isYesterday(diaryDate.value)) {
@@ -172,6 +213,12 @@ class DiaryController extends GetxController {
   }
 
   Future<void> searchFood(String query) async {
+    searchPerformed.value = true;
     foodSearchResults.value = await foodService.searchFood(query);
+  }
+
+  Future<void> deleteFood(DateTime dateFrom, DateTime dateTo) async {
+    await healthService.deleteData(HealthDataType.NUTRITION, dateFrom, dateTo);
+    await getHealthDataForSelectedDay();
   }
 }

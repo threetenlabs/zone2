@@ -1,17 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:zone2/app/modules/diary/controllers/diary_controller.dart';
 import 'package:zone2/app/services/food_service.dart'; // Import your Food model
+import 'package:get/get.dart'; // Import GetX package
 
-class FoodDetailBottomSheet extends StatefulWidget {
-  final Food food; // Assuming Food is your model class for food items
-
-  const FoodDetailBottomSheet({Key? key, required this.food}) : super(key: key);
-
-  @override
-  _FoodDetailBottomSheetState createState() => _FoodDetailBottomSheetState();
-}
-
-class _FoodDetailBottomSheetState extends State<FoodDetailBottomSheet> {
-  int servingCount = 1; // Default serving count
+class FoodDetailBottomSheet extends GetView<DiaryController> {
+  const FoodDetailBottomSheet({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -26,17 +19,18 @@ class _FoodDetailBottomSheetState extends State<FoodDetailBottomSheet> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(widget.food.description,
+            Text(controller.selectedFood.value?.description ?? '',
                 style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
-            Text('Brand: ${widget.food.brandOwner}', style: const TextStyle(fontSize: 18)),
+            Text('Brand: ${controller.selectedFood.value?.brandOwner ?? ''}',
+                style: const TextStyle(fontSize: 18)),
             const SizedBox(height: 16),
             _buildNutritionalCard(),
             const SizedBox(height: 16),
-            _buildAddToMealSection(),
+            _buildAddToMealSection(context),
             const SizedBox(height: 16),
             ElevatedButton(
-              onPressed: () => Navigator.pop(context), // Close the bottom sheet
+              onPressed: () => Navigator.pop(context), // Use GetX to close the bottom sheet
               child: const Text('Close'),
             ),
           ],
@@ -46,6 +40,46 @@ class _FoodDetailBottomSheetState extends State<FoodDetailBottomSheet> {
   }
 
   Widget _buildNutritionalCard() {
+    List<dynamic> energyInfo = _getNutrientInfo('Energy');
+    List<dynamic> proteinInfo = _getNutrientInfo('Protein');
+    List<dynamic> carbsInfo = _getNutrientInfo('Carbohydrate, by difference');
+    List<dynamic> fiberInfo = _getNutrientInfo('Fiber, total dietary');
+    List<dynamic> sugarInfo = _getNutrientInfo('Sugars, Total');
+    List<dynamic> fatInfo = _getNutrientInfo('Total lipid (fat)');
+    List<dynamic> saturatedInfo = _getNutrientInfo('Fatty acids, total saturated');
+    List<dynamic> sodiumInfo = _getNutrientInfo('Sodium, Na');
+    List<dynamic> cholesterolInfo = _getNutrientInfo('Cholesterol');
+    List<dynamic> potassiumInfo = _getNutrientInfo('Potassium, K');
+
+    // Create a Meal instance
+    PlatformHealthMeal meal = PlatformHealthMeal(
+      name: controller.selectedFood.value?.description ?? '',
+      // Store nutrient info in variables to avoid multiple calls
+
+      totalCaloriesLabel: energyInfo[0],
+      totalCaloriesValue: energyInfo[1],
+      proteinLabel: proteinInfo[0],
+      proteinValue: proteinInfo[1],
+      totalCarbsLabel: carbsInfo[0],
+      totalCarbsValue: carbsInfo[1],
+      fiberLabel: fiberInfo[0],
+      fiberValue: fiberInfo[1],
+      sugarLabel: sugarInfo[0],
+      sugarValue: sugarInfo[1],
+      totalFatLabel: fatInfo[0],
+      totalFatValue: fatInfo[1],
+      saturatedLabel: saturatedInfo[0],
+      saturatedValue: saturatedInfo[1],
+      sodiumLabel: sodiumInfo[0],
+      sodiumValue: sodiumInfo[1],
+      cholesterolLabel: cholesterolInfo[0],
+      cholesterolValue: cholesterolInfo[1],
+      potassiumLabel: potassiumInfo[0],
+      potassiumValue: potassiumInfo[1],
+    );
+
+    controller.selectedMeal.value = meal;
+
     return Card(
       elevation: 4,
       child: Padding(
@@ -53,28 +87,28 @@ class _FoodDetailBottomSheetState extends State<FoodDetailBottomSheet> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildNutrientRow('Total Calories', _getNutrientValue('Total lipid (fat)')),
+            _buildNutrientRow('Total Calories', meal.totalCaloriesLabel),
             _buildSeparator(),
-            _buildNutrientRow('Protein', _getNutrientValue('Protein')),
+            _buildNutrientRow('Protein', meal.proteinLabel),
             _buildSeparator(),
-            _buildNutrientRow('Total Carbs', _getNutrientValue('Carbohydrate, by difference')),
-            _buildNutrientRow('Fiber', _getNutrientValue('Fiber, total dietary')),
-            _buildNutrientRow('Sugar', _getNutrientValue('Sugars, Total')),
+            _buildNutrientRow('Total Carbs', meal.totalCarbsLabel),
+            _buildNutrientRow('Fiber', meal.fiberLabel),
+            _buildNutrientRow('Sugar', meal.sugarLabel),
             _buildSeparator(),
-            _buildNutrientRow('Total Fat', _getNutrientValue('Total lipid (fat)')),
-            _buildNutrientRow('Saturated', _getNutrientValue('Fatty acids, total saturated')),
+            _buildNutrientRow('Total Fat', meal.totalFatLabel),
+            _buildNutrientRow('Saturated', meal.saturatedLabel),
             _buildSeparator(),
             _buildNutrientRow('Other', ''),
-            _buildNutrientRow('Sodium', _getNutrientValue('Sodium, Na')),
-            _buildNutrientRow('Cholesterol', _getNutrientValue('Cholesterol')),
-            _buildNutrientRow('Potassium', _getNutrientValue('Potassium, K')),
+            _buildNutrientRow('Sodium', meal.sodiumLabel),
+            _buildNutrientRow('Cholesterol', meal.cholesterolLabel),
+            _buildNutrientRow('Potassium', meal.potassiumLabel),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildAddToMealSection() {
+  Widget _buildAddToMealSection(BuildContext context) {
     return Card(
       elevation: 4,
       child: Padding(
@@ -94,19 +128,17 @@ class _FoodDetailBottomSheetState extends State<FoodDetailBottomSheet> {
                     keyboardType: TextInputType.number,
                     decoration: const InputDecoration(
                       border: OutlineInputBorder(),
-                      hintText: '1',
+                      hintText: 'Qty',
                     ),
                     onChanged: (value) {
-                      setState(() {
-                        servingCount = int.tryParse(value) ?? 1; // Update serving count
-                      });
+                      controller.foodServingQty.value = double.tryParse(value) ?? 0.0;
                     },
                   ),
                 ),
                 // Read-only label for serving size
                 Text(
-                  widget.food.servingSizeUnit.isNotEmpty
-                      ? '${widget.food.servingSize} ${widget.food.servingSizeUnit.toLowerCase()}'
+                  controller.selectedFood.value?.servingSizeUnit.isNotEmpty ?? false
+                      ? '${controller.selectedFood.value?.householdServingFullText}'
                       : 'Serving',
                   style: const TextStyle(fontSize: 16),
                 ),
@@ -115,8 +147,8 @@ class _FoodDetailBottomSheetState extends State<FoodDetailBottomSheet> {
             const SizedBox(height: 16),
             ElevatedButton(
               onPressed: () {
-                // Handle adding to meal logic here
-                debugPrint('Added $servingCount servings of ${widget.food.description} to meal.');
+                controller.saveMealToHealth();
+                Navigator.pop(context);
               },
               child: const Text('Add to Meal'),
             ),
@@ -140,11 +172,32 @@ class _FoodDetailBottomSheetState extends State<FoodDetailBottomSheet> {
     return const Divider();
   }
 
-  String _getNutrientValue(String nutrientName) {
-    final nutrient = widget.food.foodNutrients.firstWhere(
+  List<dynamic> _getNutrientInfo(String nutrientName) {
+    final nutrient = controller.selectedFood.value?.foodNutrients.firstWhere(
       (n) => n.name == nutrientName,
-      orElse: () => FoodNutrient(name: nutrientName, amount: 0, unitName: ''),
+      orElse: () => UsdaFoodNutrient(name: nutrientName, amount: 0, unitName: ''),
     );
-    return '${nutrient.amount} ${nutrient.unitName.toLowerCase()}';
+
+    var unit = nutrient?.unitName.toLowerCase();
+    var value = nutrient?.amount ?? 0.0;
+    var displayValue = value;
+
+    // Convert mg to g (grams) if unitName is 'mg'
+    if (unit == 'mg') {
+      value = (value / 1000).roundToDouble();
+      if (value > 1000) {
+        displayValue = (displayValue / 1000).roundToDouble();
+        unit = 'g';
+      }
+    }
+
+    // Convert kj to kcal
+    if (unit == 'kj') {
+      value = (value / 4.184).roundToDouble();
+      displayValue = (displayValue / 4.184).roundToDouble();
+      unit = 'kcal';
+    }
+
+    return ['${displayValue.toString()} $unit', value];
   }
 }
