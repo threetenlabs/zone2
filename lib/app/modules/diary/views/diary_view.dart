@@ -1,3 +1,4 @@
+import 'package:animated_icon/animated_icon.dart';
 import 'package:flutter/material.dart';
 
 import 'package:get/get.dart';
@@ -29,9 +30,10 @@ class DiaryView extends GetView<DiaryController> {
                       icon: Icons.scale,
                       title: 'Log Weight',
                       subtitle: 'Track your weight progress',
-                      iconColor: Theme.of(context).colorScheme.primary, // {{ edit_3 }}
-                      onTap: () => _showWeightBottomSheet(context), // {{ edit_1 }}
-                      isChecked: controller.isWeightLogged.value, // Pass the checkbox state
+                      iconColor: Theme.of(context).colorScheme.primary,
+                      isChecked: controller.isWeightLogged.value,
+                      animateIcon: AnimateIcons.bell,
+                      onTap: () => _showWeightBottomSheet(context),
                     ),
                   ),
                   _buildDiaryCard(
@@ -42,6 +44,8 @@ class DiaryView extends GetView<DiaryController> {
                     iconColor: Theme.of(context).colorScheme.secondary,
                     onTap: () => _showAddFoodBottomSheet(context), // Show the new bottom sheet
                     isChecked: false,
+                    animateIcon: AnimateIcons.wink,
+                    delay: Duration(seconds: 1),
                   ),
                   _buildDiaryCard(
                     context,
@@ -51,6 +55,8 @@ class DiaryView extends GetView<DiaryController> {
                     iconColor: Theme.of(context).colorScheme.tertiary, // {{ edit_5 }}
                     onTap: () => _showBottomSheet(context, 'Zone 2'),
                     isChecked: false,
+                    animateIcon: AnimateIcons.heart2,
+                    delay: Duration(seconds: 2),
                   ),
                   Obx(
                     () => _buildDiaryCard(
@@ -61,6 +67,8 @@ class DiaryView extends GetView<DiaryController> {
                       iconColor: Theme.of(context).colorScheme.tertiary, // {{ edit_6 }}
                       onTap: () => _showWaterBottomSheet(context),
                       isChecked: controller.isWaterLogged.value, // Check if water intake is logged
+                      animateIcon: AnimateIcons.water,
+                      delay: Duration(seconds: 3),
                     ),
                   ),
                 ],
@@ -103,20 +111,32 @@ class DiaryView extends GetView<DiaryController> {
       required String subtitle,
       required Color iconColor,
       required VoidCallback onTap,
-      required bool isChecked}) {
-    // {{ edit_1 }}
+      required bool isChecked,
+      required AnimateIcons animateIcon,
+      Duration? delay}) {
+    debugPrint('isChecked: $isChecked');
     return Card(
-      margin: const EdgeInsets.symmetric(vertical: 8.0),
-      child: ListTile(
-        leading: Icon(icon, color: iconColor),
-        title: Text(title),
-        subtitle: Text(subtitle),
-        onTap: onTap,
-        trailing: isChecked
-            ? Icon(Icons.check_circle_outline, color: Theme.of(context).colorScheme.primary)
-            : null,
-      ),
-    );
+        margin: const EdgeInsets.symmetric(vertical: 8.0),
+        child: ListTile(
+          leading: Icon(icon, color: iconColor),
+          title: Text(title),
+          subtitle: Text(subtitle),
+          onTap: onTap,
+          trailing: isChecked
+              ? AnimateIcon(
+                  key: UniqueKey(),
+                  onTap: () => {},
+                  delay: delay,
+                  iconType: IconType.toggleIcon,
+                  onHover: () {},
+                  height: 70,
+                  width: 70,
+                  color: Theme.of(context).colorScheme.tertiary,
+                  animateIcon: animateIcon,
+                  toggled: isChecked,
+                )
+              : null,
+        ));
   }
 
   void _showWeightBottomSheet(BuildContext context) {

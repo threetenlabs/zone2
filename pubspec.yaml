@@ -11,6 +11,8 @@ dependencies:
   flutter:
     sdk: flutter
 
+  animated_icon:
+    path: ./packages/animated_icon
   app_links: ^6.0.1
   audioplayers: ^6.0.0
   auto_size_text: ^3.0.0

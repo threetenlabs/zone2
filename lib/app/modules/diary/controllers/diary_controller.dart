@@ -177,15 +177,22 @@ class DiaryController extends GetxController {
     }
   }
 
+  Future<void> resetTracking() async {
+    isWeightLogged.value = false;
+    isWaterLogged.value = false;
+  }
+
   Future<void> navigateToNextDay() async {
     if (!isToday(diaryDate.value) && diaryDate.value.isBefore(DateTime.now())) {
       diaryDate.value = diaryDate.value.add(const Duration(days: 1));
+      await resetTracking();
     }
     await getHealthDataForSelectedDay();
   }
 
   Future<void> navigateToPreviousDay() async {
     diaryDate.value = diaryDate.value.subtract(const Duration(days: 1));
+    await resetTracking();
     await getHealthDataForSelectedDay();
   }
 
