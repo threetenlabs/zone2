@@ -1,13 +1,10 @@
-import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:get/get.dart';
 import 'package:logger/logger.dart';
 import 'package:health/health.dart';
 import 'package:zone2/app/services/food_service.dart';
 import 'package:zone2/app/services/health_service.dart';
-
-import 'package:zone2/app/services/notification_service.dart';
-import 'package:timezone/timezone.dart' as tz;
 import 'package:intl/intl.dart'; // Added for date formatting
+import 'package:zone2/app/services/notification_service.dart';
 
 class DiaryController extends GetxController {
   final logger = Get.find<Logger>();
@@ -18,7 +15,7 @@ class DiaryController extends GetxController {
   final weightDecimal = 0.obs;
   final healthData = RxList<HealthDataPoint>();
   final isWeightLogged = false.obs; // Track if weight is logged
-  final diaryDate = tz.TZDateTime.now(tz.local).obs;
+  final diaryDate = DateTime.now().obs;
   final diaryDateLabel = ''.obs; // Observable for date label
   final waterIntake = 0.0.obs; // Track total water intake
   final waterGoal = 120.0.obs; // Set water goal
@@ -38,12 +35,9 @@ class DiaryController extends GetxController {
   void onInit() async {
     logger.i('DiaryController onInit');
     super.onInit();
+    final now = DateTime.now();
+    diaryDate.value = DateTime(now.year, now.month, now.day, 11, 58, 0);
 
-    final currentTimeZone = await FlutterTimezone.getLocalTimezone();
-    var userLocation = tz.getLocation(currentTimeZone);
-
-    diaryDate.value = tz.TZDateTime(userLocation, tz.TZDateTime.now(userLocation).year,
-        tz.TZDateTime.now(userLocation).month, tz.TZDateTime.now(userLocation).day, 11, 59, 59);
     ever(healthService.isAuthorized, (isAuthorized) => authorizedChanged(isAuthorized));
     ever(diaryDate, (date) => updateDateLabel());
     updateDateLabel();
@@ -67,8 +61,12 @@ class DiaryController extends GetxController {
 
   Future<void> getHealthDataForSelectedDay() async {
     // Retrieve weight data
+    final sameDay = diaryDate.value.year == DateTime.now().year &&
+        diaryDate.value.month == DateTime.now().month &&
+        diaryDate.value.day == DateTime.now().day;
+    final endTime = sameDay ? null : diaryDate.value;
     final weightData =
-        await healthService.getWeightData(timeFrame: TimeFrame.thisMonth, endTime: diaryDate.value);
+        await healthService.getWeightData(timeFrame: TimeFrame.thisMonth, endTime: endTime);
     logger.i('Weight data length: ${weightData.length}');
     weightData.sort((a, b) => b.dateTo.compareTo(a.dateTo));
 
@@ -87,7 +85,7 @@ class DiaryController extends GetxController {
 
     // Retrieve water data
     final waterData =
-        await healthService.getWaterData(timeFrame: TimeFrame.today, endTime: diaryDate.value);
+        await healthService.getWaterData(timeFrame: TimeFrame.today, endTime: endTime);
     logger.i('Water data length: ${waterData.length}');
 
     // Process water data as needed
@@ -103,8 +101,7 @@ class DiaryController extends GetxController {
       logger.i('Water logged: $isWaterLogged.value');
     }
 
-    mealData.value =
-        await healthService.getMealData(timeFrame: TimeFrame.today, endTime: diaryDate.value);
+    mealData.value = await healthService.getMealData(timeFrame: TimeFrame.today, endTime: endTime);
     logger.i('Meal data length: ${mealData.length}');
     if (mealData.isNotEmpty) {
       logger.i('Meal data: ${mealData.first}');
@@ -151,15 +148,15 @@ class DiaryController extends GetxController {
     }
   }
 
-  bool isToday(tz.TZDateTime date) {
-    final now = tz.TZDateTime.now(tz.local);
+  bool isToday(DateTime date) {
+    final now = DateTime.now();
     logger.i('date: ${date.year} ${date.month} ${date.day}');
     logger.i('now: ${now.year} ${now.month} ${now.day}');
     return date.year == now.year && date.month == now.month && date.day == now.day;
   }
 
-  bool isYesterday(tz.TZDateTime date) {
-    final yesterday = tz.TZDateTime.now(tz.local).subtract(const Duration(days: 1));
+  bool isYesterday(DateTime date) {
+    final yesterday = DateTime.now().subtract(const Duration(days: 1));
     logger.i('date: ${date.year} ${date.month} ${date.day}');
     logger.i('yesterday: ${yesterday.year} ${yesterday.month} ${yesterday.day}');
     return date.year == yesterday.year &&
@@ -205,8 +202,10 @@ class DiaryController extends GetxController {
       await healthService.saveWaterToHealth(waterIntakeInLiters);
 
       // Send success notification
-      NotificationService.to
-          .showSuccess('Weight Saved', 'Your weight has been successfully saved to health data.');
+      NotificationService.to.showSuccess(
+          'Water Saved', 'Your water intake has been successfully saved to health data.');
+
+      await getHealthDataForSelectedDay();
     } catch (e) {
       logger.e('Error saving weight to Health: $e');
     }

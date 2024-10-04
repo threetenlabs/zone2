@@ -1,7 +1,7 @@
-import 'package:zone2/app/services/auth_service.dart';
+import 'package:flutter/foundation.dart';
+import 'package:zone2/app/services/shared_preferences_service.dart';
 import 'package:zone2/app/style/palette.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
 
 import '../controllers/profile_controller.dart';
@@ -12,113 +12,69 @@ class ProfileViewPortraitSmall extends GetWidget<ProfileController> {
   @override
   Widget build(BuildContext context) {
     final Palette palette = Palette();
-    final AuthService authService = Get.find<AuthService>();
+    final settings = SharedPreferencesService.to;
+
     return PopScope(
       onPopInvokedWithResult: (bool value, Object? result) {
         return; // Updated to use onPopInvokedWithResult
       },
       child: LayoutBuilder(
         builder: (BuildContext context, BoxConstraints constraints) {
-          var height = MediaQuery.of(context).size.height;
           return GetBuilder<ProfileController>(
             builder: (controller) => Theme(
               data: palette.primaryTheme,
               child: PopScope(
                 canPop: false,
                 child: Scaffold(
-                  body: SafeArea(
-                    child: Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.only(top: 24.0),
-                            child: CircleAvatar(
-                              backgroundColor: Colors.grey,
-                              radius: height * 0.1,
-                              child: Obx(() {
-                                return SvgPicture.string(
-                                  authService.appUser.value.svgString,
-                                  width: height * 0.2,
-                                  fit: BoxFit.cover,
-                                );
-                              }),
-                            ),
-                            //FluttermojiCircleAvatar(
-                            //  radius: min(80, height * 0.1),
-                            //  backgroundColor: Colors.grey[200],
-                            //),
+                  appBar: AppBar(
+                    title: const Text('Zone 2 Profile'),
+                    centerTitle: true,
+                  ),
+                  body: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Text(
+                          'Settings',
+                          style: TextStyle(
+                            color: context.theme.colorScheme.inverseSurface,
+                            fontWeight: FontWeight.normal,
+                            fontSize: context.theme.textTheme.headlineSmall?.fontSize,
                           ),
-                          OutlinedButton(
-                            style: palette.primaryTheme.outlinedButtonTheme.style?.copyWith(
-                                side: WidgetStateProperty.all<BorderSide>(
-                                    BorderSide(color: palette.mainMenuProfile))),
-                            onPressed: () {},
-                            child: Text('Change Profile Picture',
-                                style: palette.primaryTheme.textTheme.bodyMedium),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.all(16.0),
-                            child: Form(
-                              autovalidateMode: AutovalidateMode.onUserInteraction,
-                              child: TextFormField(
-                                controller: controller.userNameController,
-                                onChanged: (text) {},
-                                validator: (value) {
-                                  return null;
-                                },
-                                decoration: InputDecoration(
-                                  labelText: 'Display Name',
-                                  labelStyle: TextStyle(color: palette.mainMenuProfile),
-                                  hintText: 'Enter your display name',
-                                  hintStyle: const TextStyle(color: Colors.grey),
-                                  errorStyle: const TextStyle(color: Colors.red),
-                                  border: const OutlineInputBorder(),
-                                  enabledBorder: OutlineInputBorder(
-                                    borderSide:
-                                        BorderSide(color: palette.mainMenuProfile, width: 2.0),
+                        ),
+                        const SizedBox(height: 8.0),
+                        SettingsToggle(
+                          settings.isDarkMode ? 'Dark Mode' : 'Light Mode',
+                          Icon(settings.isDarkMode
+                              ? Icons.dark_mode_outlined
+                              : Icons.light_mode_outlined),
+                          onSelected: () => settings.toggleDarkMode(),
+                        ),
+                        const SizedBox(height: 8.0),
+                        Expanded(child: Container()),
+                        if (kDebugMode)
+                          OutlinedButton.icon(
+                            icon: const Icon(Icons.delete_forever_outlined),
+                            onPressed: () async {
+                              settings.resetPersistedSettings();
+                              Get.defaultDialog(
+                                title: 'Settings Reset',
+                                middleText: 'All settings have been reset to default',
+                                actions: [
+                                  TextButton(
+                                    onPressed: () {
+                                      Get.back();
+                                    },
+                                    child: const Text('OK'),
                                   ),
-                                  focusedBorder: OutlineInputBorder(
-                                    borderSide:
-                                        BorderSide(color: palette.mainMenuProfile, width: 2.0),
-                                  ),
-                                  errorBorder: OutlineInputBorder(
-                                    borderSide:
-                                        BorderSide(color: palette.mainMenuProfile, width: 2.0),
-                                  ),
-                                  focusedErrorBorder: OutlineInputBorder(
-                                    borderSide:
-                                        BorderSide(color: palette.mainMenuProfile, width: 2.5),
-                                  ),
-                                ),
-                                // decoration: InputDecoration(
-                                //   labelText: "Username",
-                                //   labelStyle: palette.mobilePrimaryTheme.textTheme.bodyMedium,
-                                //   hintStyle: palette.mobilePrimaryTheme.textTheme.bodyMedium,
-                                //   errorStyle: TextStyle(color: Colors.red),
-                                // ),
-                                style: palette.primaryTheme.textTheme.bodyMedium,
-                              ),
-                            ),
-                          ),
-                          if (authService.isAuthenticatedUser.value == true ||
-                              authService.firebaseUser.value != null)
-                            OutlinedButton(
-                              onPressed: () => {authService.signOut()},
-                              style: palette.primaryTheme.outlinedButtonTheme.style?.copyWith(
-                                  side: WidgetStateProperty.all<BorderSide>(
-                                      BorderSide(color: palette.mainMenuProfile))),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  const Icon(Icons.logout_outlined),
-                                  Text('Sign Out',
-                                      style: palette.primaryTheme.textTheme.bodyMedium),
                                 ],
-                              ),
-                            ),
-                        ],
-                      ),
+                              );
+                            },
+                            label: const Text('Reset Persisted Settings'),
+                          ),
+                      ],
                     ),
                   ),
                 ),
@@ -126,6 +82,42 @@ class ProfileViewPortraitSmall extends GetWidget<ProfileController> {
             ),
           );
         },
+      ),
+    );
+  }
+}
+
+class SettingsToggle extends StatelessWidget {
+  final String title;
+
+  final Widget icon;
+
+  final VoidCallback? onSelected;
+
+  const SettingsToggle(this.title, this.icon, {super.key, this.onSelected});
+
+  @override
+  Widget build(BuildContext context) {
+    return InkResponse(
+      highlightShape: BoxShape.rectangle,
+      onTap: onSelected,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 8),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            Expanded(
+              child: Text(
+                title,
+                maxLines: 1,
+                style: const TextStyle(
+                  fontSize: 14,
+                ),
+              ),
+            ),
+            icon,
+          ],
+        ),
       ),
     );
   }

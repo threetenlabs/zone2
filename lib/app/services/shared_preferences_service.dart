@@ -14,6 +14,7 @@ class SharedPreferencesService {
 
   final _userHasRemovedAds = false.obs;
   final _soundsOn = true.obs;
+  final _darkMode = false.obs;
   final _isFirstScribologyVisit = true.obs;
   final _isFirstScribologyDraw = true.obs;
   final _isIntroductionFinished = true.obs;
@@ -22,6 +23,7 @@ class SharedPreferencesService {
 
   final StreamController<bool> _userRemovedAdsStreamController = StreamController<bool>.broadcast();
   final StreamController<bool> _soundsOnStreamController = StreamController<bool>.broadcast();
+  final StreamController<bool> _darkModeStreamController = StreamController<bool>.broadcast();
 
   /// Creates a new instance of [SharedPreferencesService] backed by [persistence].
   SharedPreferencesService() : _persistence = GetStoragePersistence() {
@@ -30,6 +32,9 @@ class SharedPreferencesService {
     });
     _persistence.box.listenKey(_persistence.soundOnKey, (value) {
       _soundsOnStreamController.add(value ?? false);
+    });
+    _persistence.box.listenKey(_persistence.darkModeKey, (value) {
+      _darkModeStreamController.add(value ?? false);
     });
   }
 
@@ -41,6 +46,11 @@ class SharedPreferencesService {
     // On the web, sound can only start after user interaction, so
     // we need to prompt user.
     _soundsOn.value = _persistence.getSoundsOn() || _soundsOn.value;
+  }
+
+  void resetPersistedSettings() {
+    _persistence.erase();
+    loadStateFromPersistence();
   }
 
   bool get userRemovedAds => _getUserHasRemovedAds();
@@ -77,7 +87,7 @@ class SharedPreferencesService {
   }
 
   Stream<bool> get soundsOnStream => _soundsOnStreamController.stream;
-
+  Stream<bool> get darkModeStream => _darkModeStreamController.stream;
   // First Scribology Visit
   bool get isFirstScribologyVisit => _getIsFirstScribologyVisit();
 
@@ -106,6 +116,17 @@ class SharedPreferencesService {
   Future<void> deleteAll() async {
     await _persistence.box.erase();
     logger.i('All shared preferences deleted');
+  }
+
+  Future<void> toggleDarkMode() async {
+    _darkMode.value = !_darkMode.value;
+    await _persistence.saveDarkMode(_darkMode.value);
+  }
+
+  bool get isDarkMode => _getIsDarkMode();
+
+  bool _getIsDarkMode() {
+    return _persistence.box.read(_persistence.darkModeKey) ?? false;
   }
 
   Future<bool> setIsAboveMinimumSupportedVersion() async {

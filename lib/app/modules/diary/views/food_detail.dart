@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:zone2/app/modules/diary/controllers/diary_controller.dart';
 import 'package:zone2/app/services/food_service.dart'; // Import your Food model
-import 'package:get/get.dart'; // Import GetX package
+import 'package:get/get.dart';
+import 'package:zone2/app/services/health_service.dart'; // Import GetX package
 
 class FoodDetailBottomSheet extends GetView<DiaryController> {
   const FoodDetailBottomSheet({super.key});
@@ -53,30 +54,31 @@ class FoodDetailBottomSheet extends GetView<DiaryController> {
 
     // Create a Meal instance
     PlatformHealthMeal meal = PlatformHealthMeal(
-      name: controller.selectedFood.value?.description ?? '',
-      // Store nutrient info in variables to avoid multiple calls
+        name: controller.selectedFood.value?.description ?? '',
+        // Store nutrient info in variables to avoid multiple calls
 
-      totalCaloriesLabel: energyInfo[0],
-      totalCaloriesValue: energyInfo[1],
-      proteinLabel: proteinInfo[0],
-      proteinValue: proteinInfo[1],
-      totalCarbsLabel: carbsInfo[0],
-      totalCarbsValue: carbsInfo[1],
-      fiberLabel: fiberInfo[0],
-      fiberValue: fiberInfo[1],
-      sugarLabel: sugarInfo[0],
-      sugarValue: sugarInfo[1],
-      totalFatLabel: fatInfo[0],
-      totalFatValue: fatInfo[1],
-      saturatedLabel: saturatedInfo[0],
-      saturatedValue: saturatedInfo[1],
-      sodiumLabel: sodiumInfo[0],
-      sodiumValue: sodiumInfo[1],
-      cholesterolLabel: cholesterolInfo[0],
-      cholesterolValue: cholesterolInfo[1],
-      potassiumLabel: potassiumInfo[0],
-      potassiumValue: potassiumInfo[1],
-    );
+        totalCaloriesLabel: energyInfo[0],
+        totalCaloriesValue: energyInfo[1],
+        proteinLabel: proteinInfo[0],
+        proteinValue: proteinInfo[1],
+        totalCarbsLabel: carbsInfo[0],
+        totalCarbsValue: carbsInfo[1],
+        fiberLabel: fiberInfo[0],
+        fiberValue: fiberInfo[1],
+        sugarLabel: sugarInfo[0],
+        sugarValue: sugarInfo[1],
+        totalFatLabel: fatInfo[0],
+        totalFatValue: fatInfo[1],
+        saturatedLabel: saturatedInfo[0],
+        saturatedValue: saturatedInfo[1],
+        sodiumLabel: sodiumInfo[0],
+        sodiumValue: sodiumInfo[1],
+        cholesterolLabel: cholesterolInfo[0],
+        cholesterolValue: cholesterolInfo[1],
+        potassiumLabel: potassiumInfo[0],
+        potassiumValue: potassiumInfo[1],
+        mealTypeLabel: controller.selectedMealType.value.name,
+        mealTypeValue: HealthService.to.convertDataTypeToDouble(controller.selectedMealType.value));
 
     controller.selectedMeal.value = meal;
 

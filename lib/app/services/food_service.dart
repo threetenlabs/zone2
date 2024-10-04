@@ -154,46 +154,72 @@ class UsdaFoodNutrient {
 class PlatformHealthMeal {
   /// The name of the meal.
   final String name;
+
   /// The label for the total calories of the meal.
   final String totalCaloriesLabel;
+
   /// The value of the total calories of the meal.
   final double totalCaloriesValue;
+
   /// The label for the protein content of the meal.
   final String proteinLabel;
+
   /// The value of the protein content of the meal.
   final double proteinValue;
+
   /// The label for the total carbs of the meal.
   final String totalCarbsLabel;
+
   /// The value of the total carbs of the meal.
   final double totalCarbsValue;
+
   /// The label for the fiber content of the meal.
   final String fiberLabel;
+
   /// The value of the fiber content of the meal.
   final double fiberValue;
+
   /// The label for the sugar content of the meal.
   final String sugarLabel;
+
   /// The value of the sugar content of the meal.
   final double sugarValue;
+
   /// The label for the total fat of the meal.
   final String totalFatLabel;
+
   /// The value of the total fat of the meal.
   final double totalFatValue;
+
   /// The label for the saturated fat of the meal.
   final String saturatedLabel;
+
   /// The value of the saturated fat of the meal.
   final double saturatedValue;
+
   /// The label for the sodium content of the meal.
   final String sodiumLabel;
+
   /// The value of the sodium content of the meal.
   final double sodiumValue;
+
   /// The label for the cholesterol content of the meal.
   final String cholesterolLabel;
+
   /// The value of the cholesterol content of the meal.
   final double cholesterolValue;
+
   /// The label for the potassium content of the meal.
   final String potassiumLabel;
+
   /// The value of the potassium content of the meal.
   final double potassiumValue;
+
+  /// The label for the zinc content of the meal.
+  final String mealTypeLabel;
+
+  /// The value of the zinc content of the meal.
+  final double mealTypeValue;
 
   /// Constructor for the PlatformHealthMeal class.
   PlatformHealthMeal({
@@ -218,6 +244,8 @@ class PlatformHealthMeal {
     required this.cholesterolValue,
     required this.potassiumLabel,
     required this.potassiumValue,
+    required this.mealTypeLabel,
+    required this.mealTypeValue,
   });
 }
 

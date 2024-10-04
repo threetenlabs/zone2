@@ -16,6 +16,7 @@ class GetStoragePersistence {
   final String isIntroductionFinished = 'isIntroductionFinishedKey';
   final String soundOnKey = 'soundsOnKey';
   final String isAboveMinimumSupportedVersionKey = 'isAboveMinimumSupportedVersionKey';
+  final String darkModeKey = 'darkModeKey';
 
   bool getUserHasRemovedAds() {
     return box.read(userHasRemovedAdsKey) ?? false;
@@ -47,5 +48,13 @@ class GetStoragePersistence {
 
   Future<void> saveIsAboveMinimumSupportedVersion(bool value) async {
     await box.write(isAboveMinimumSupportedVersionKey, value);
+  }
+
+  Future<void> saveDarkMode(bool value) async {
+    await box.write(darkModeKey, value);
+  }
+
+  void erase() {
+    box.erase();
   }
 }

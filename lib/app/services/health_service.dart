@@ -18,6 +18,7 @@ enum TimeFrame {
 }
 
 class HealthService extends GetxService {
+  static HealthService to = Get.find();
   final logger = Get.find<Logger>();
   final isAuthorized = false.obs;
   final status = HealthConnectSdkStatus.sdkUnavailable.obs;
@@ -133,6 +134,36 @@ class HealthService extends GetxService {
     HealthDataType.MENSTRUATION_FLOW,
   ];
 
+  double convertDataTypeToDouble(MealType type) {
+    switch (type) {
+      case MealType.BREAKFAST:
+        return 1.0;
+      case MealType.LUNCH:
+        return 2.0;
+      case MealType.DINNER:
+        return 3.0;
+      case MealType.SNACK:
+        return 4.0;
+      default:
+        return 0.0;
+    }
+  }
+
+  MealType convertDoubleToMealType(double value) {
+    switch (value) {
+      case 1.0:
+        return MealType.BREAKFAST;
+      case 2.0:
+        return MealType.LUNCH;
+      case 3.0:
+        return MealType.DINNER;
+      case 4.0:
+        return MealType.SNACK;
+      default:
+        return MealType.UNKNOWN;
+    }
+  }
+
   Future<double> convertWeightUnit(dynamic weight, WeightUnit toUnit) async {
     double convertedWeight;
     if (toUnit == WeightUnit.pound) {
@@ -157,29 +188,32 @@ class HealthService extends GetxService {
     return convertedWater; // Ensure a return statement is present
   }
 
-  Future<DateTime> getStartTimeForTimeFrame(
-      [DateTime? endTime, TimeFrame timeFrame = TimeFrame.today]) async {
-    endTime ??= DateTime.now(); // Use now if endTime is not specified
+  Future<DateTime> getStartTimeForTimeFrame([TimeFrame timeFrame = TimeFrame.today]) async {
+    final nowPlus = DateTime.now().add(const Duration(hours: 1));
     DateTime startTime;
 
     switch (timeFrame) {
       case TimeFrame.today:
-        startTime = DateTime(endTime.year, endTime.month, endTime.day); // Midnight of today
+        startTime =
+            DateTime(nowPlus.year, nowPlus.month, nowPlus.day, 0, 1, 0); // Midnight of today
         break;
       case TimeFrame.thisWeek:
-        startTime =
-            endTime.subtract(Duration(days: endTime.weekday - 1)); // Monday of the current week
+        final lastweek =
+            nowPlus.subtract(Duration(days: nowPlus.weekday - 1)); // Monday of the current week
+        startTime = DateTime(lastweek.year, lastweek.month, lastweek.day, 0, 1, 0);
+
         break;
       case TimeFrame.thisMonth:
-        startTime = DateTime(endTime.year, endTime.month, 1); // 1st of the current month
+        startTime = DateTime(nowPlus.year, nowPlus.month, 1, 0, 1, 0); // 1st of the current month
         break;
       case TimeFrame.lastSixMonths:
-        startTime = endTime.isBefore(DateTime(endTime.year, endTime.month - 6, endTime.day))
-            ? DateTime(endTime.year, endTime.month - 6, endTime.day)
-            : DateTime(endTime.year, endTime.month - 6, 1); // Adjust based on the current date
+        startTime = nowPlus.isBefore(DateTime(nowPlus.year, nowPlus.month - 6, nowPlus.day))
+            ? DateTime(nowPlus.year, nowPlus.month - 6, nowPlus.day, 0, 1, 0)
+            : DateTime(
+                nowPlus.year, nowPlus.month - 6, 1, 0, 1, 0); // Adjust based on the current date
         break;
       case TimeFrame.thisYear:
-        startTime = DateTime(endTime.year, 1, 1); // Start of the current year
+        startTime = DateTime(nowPlus.year, 1, 1, 0, 1, 0); // Start of the current year
         break;
       default:
         return DateTime.now(); // Return current time for unhandled cases
@@ -228,76 +262,49 @@ class HealthService extends GetxService {
     return authorized;
   }
 
-  Future<List<HealthDataPoint>> getHealthData(
-      {required DateTime endTime, required TimeFrame timeFrame}) async {
-    final types = GetPlatform.isIOS ? dataTypesIOS : dataTypesAndroid;
-    try {
-      DateTime startTime = await getStartTimeForTimeFrame(endTime, timeFrame); // Use the new method
-      final healthData = await health.value!
-          .getHealthDataFromTypes(types: types, startTime: startTime, endTime: endTime);
-
-      return health.value!.removeDuplicates(healthData);
-    } catch (e) {
-      logger.e('Error loading health data: $e');
-      return [];
-    }
-  }
-
   Future<List<HealthDataPoint>> getWaterData(
-      {required DateTime endTime, required TimeFrame timeFrame}) async {
+      {required TimeFrame timeFrame, DateTime? endTime}) async {
     final types = [HealthDataType.WATER];
-    DateTime startTime = await getStartTimeForTimeFrame(endTime, timeFrame);
-    logger.i('Start Time: ${startTime.toString()}');
+    DateTime startTime = await getStartTimeForTimeFrame(timeFrame);
+
+    final nowPlus = endTime ?? DateTime.now().add(const Duration(hours: 1));
     final healthData = await health.value!
-        .getHealthDataFromTypes(types: types, startTime: startTime, endTime: endTime);
+        .getHealthDataFromTypes(types: types, startTime: startTime, endTime: nowPlus);
     logger.i('Water Health data: $healthData');
     return health.value!.removeDuplicates(healthData);
   }
 
   Future<List<HealthDataPoint>> getStepData(
-      {required DateTime endTime, required TimeFrame timeFrame}) async {
+      {required TimeFrame timeFrame, DateTime? endTime}) async {
     final types = [HealthDataType.STEPS];
-    DateTime startTime = await getStartTimeForTimeFrame(endTime, timeFrame);
+    DateTime startTime = await getStartTimeForTimeFrame(timeFrame);
+    final nowPlus = endTime ?? DateTime.now().add(const Duration(hours: 1));
     final healthData = await health.value!
-        .getHealthDataFromTypes(types: types, startTime: startTime, endTime: endTime);
+        .getHealthDataFromTypes(types: types, startTime: startTime, endTime: nowPlus);
     return health.value!.removeDuplicates(healthData);
   }
 
   Future<List<HealthDataPoint>> getWeightData(
-      {required DateTime endTime, required TimeFrame timeFrame}) async {
+      {required TimeFrame timeFrame, DateTime? endTime}) async {
     final types = [HealthDataType.WEIGHT];
-    DateTime startTime = await getStartTimeForTimeFrame(endTime, timeFrame);
+    DateTime startTime = await getStartTimeForTimeFrame(timeFrame);
+    final nowPlus = endTime ?? DateTime.now().add(const Duration(hours: 1));
     final healthData = await health.value!
-        .getHealthDataFromTypes(types: types, startTime: startTime, endTime: endTime);
+        .getHealthDataFromTypes(types: types, startTime: startTime, endTime: nowPlus);
     return health.value!.removeDuplicates(healthData);
   }
 
   Future<List<HealthDataPoint>> getMealData(
-      {required DateTime endTime, required TimeFrame timeFrame}) async {
+      {required TimeFrame timeFrame, DateTime? endTime}) async {
     final types = [HealthDataType.NUTRITION];
-    // DateTime startTime = await getStartTimeForTimeFrame(endTime, timeFrame);
+    DateTime calculatedStartTime = await getStartTimeForTimeFrame(timeFrame);
 
-    final now = DateTime.now().add(const Duration(minutes: 10));
-    final earlier = DateTime.now().subtract(const Duration(minutes: 30));
+    final nowPlus = endTime ?? DateTime.now().add(const Duration(hours: 1));
 
-    final healthData =
-        await health.value!.getHealthDataFromTypes(types: types, startTime: earlier, endTime: now);
+    final healthData = await health.value!
+        .getHealthDataFromTypes(types: types, startTime: calculatedStartTime, endTime: nowPlus);
+    logger.i('Health Data: $healthData');
     return health.value!.removeDuplicates(healthData);
-  }
-
-  Future<void> writeHealthData(HealthDataType type, double value, HealthDataUnit unit,
-      DateTime startTime, DateTime endTime) async {
-    try {
-      await health.value!.writeHealthData(
-        unit: unit,
-        value: value,
-        type: type,
-        startTime: startTime,
-        endTime: endTime,
-      );
-    } catch (e) {
-      logger.e('Error saving weight to Health: $e');
-    }
   }
 
   Future<HealthConnectSdkStatus> getHealthConnectSdkStatus() async {
@@ -353,11 +360,11 @@ class HealthService extends GetxService {
 
   Future<bool> saveMealToHealth(MealType mealtype, PlatformHealthMeal meal, double qty) async {
     final now = DateTime.now();
-    final earlier = DateTime.now().subtract(const Duration(minutes: 1));
+    final earlier = now.subtract(const Duration(minutes: 1));
 
     try {
       final result = await health.value!.writeMeal(
-          mealType: mealtype,
+          mealType: MealType.BREAKFAST,
           startTime: earlier,
           endTime: now,
           caloriesConsumed: meal.totalCaloriesValue * qty,
@@ -371,6 +378,7 @@ class HealthService extends GetxService {
           fatUnsaturated: (meal.totalFatValue - meal.saturatedValue) * qty,
           fatSaturated: meal.saturatedValue * qty,
           sugar: meal.sugarValue * qty,
+          zinc: meal.mealTypeValue,
           recordingMethod: RecordingMethod.manual);
       return result;
     } catch (e) {

@@ -26,8 +26,8 @@ if (flutterVersionName == null) {
 
 android {
     namespace "com.threetenlabs.zone2"
-    compileSdk 34
-    compileSdkVersion 34
+    compileSdk 35
+    compileSdkVersion 35
     ndkVersion "26.1.10909125"
 
     compileOptions {
