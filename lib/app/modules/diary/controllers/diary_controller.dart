@@ -66,8 +66,7 @@ class DiaryController extends GetxController {
         diaryDate.value.day == DateTime.now().day;
     final endTime = sameDay ? null : diaryDate.value;
     final weightData =
-        await healthService.getWeightData(timeFrame: TimeFrame.thisMonth, endTime: endTime);
-    logger.i('Weight data length: ${weightData.length}');
+        await healthService.getWeightData(timeFrame: TimeFrame.today, endTime: endTime);
     weightData.sort((a, b) => b.dateTo.compareTo(a.dateTo));
 
     if (weightData.isNotEmpty) {
@@ -81,6 +80,9 @@ class DiaryController extends GetxController {
       weightDecimal.value =
           ((weightInPounds - weightWhole.value) * 10).round(); // Update to single digit
       isWeightLogged.value = true;
+    } else {
+      logger.w('No weight data found');
+      isWeightLogged.value = false;
     }
 
     // Retrieve water data
@@ -99,12 +101,16 @@ class DiaryController extends GetxController {
       logger.i('Total water intake: $waterIntake oz');
       isWaterLogged.value = waterIntake.value > waterGoal.value;
       logger.i('Water logged: $isWaterLogged.value');
+    } else {
+      logger.w('No water data found');
+      isWaterLogged.value = false;
     }
 
     mealData.value = await healthService.getMealData(timeFrame: TimeFrame.today, endTime: endTime);
-    logger.i('Meal data length: ${mealData.length}');
     if (mealData.isNotEmpty) {
       logger.i('Meal data: ${mealData.first}');
+    } else {
+      logger.w('No meal data found');
     }
   }
 
@@ -150,53 +156,43 @@ class DiaryController extends GetxController {
 
   bool isToday(DateTime date) {
     final now = DateTime.now();
-    logger.i('date: ${date.year} ${date.month} ${date.day}');
-    logger.i('now: ${now.year} ${now.month} ${now.day}');
     return date.year == now.year && date.month == now.month && date.day == now.day;
   }
 
   bool isYesterday(DateTime date) {
     final yesterday = DateTime.now().subtract(const Duration(days: 1));
-    logger.i('date: ${date.year} ${date.month} ${date.day}');
-    logger.i('yesterday: ${yesterday.year} ${yesterday.month} ${yesterday.day}');
     return date.year == yesterday.year &&
         date.month == yesterday.month &&
         date.day == yesterday.day;
   }
 
   void updateDateLabel() {
-    logger.i('Updating date label: ${diaryDate.value}');
     if (isToday(diaryDate.value)) {
-      // Keep diaryDate as TZDateTime
-      logger.i('Updating date label to today: ${diaryDate.value}');
       diaryDateLabel.value = 'Today';
     } else if (isYesterday(diaryDate.value)) {
-      logger.i('Updating date label to yesterday: ${diaryDate.value}');
       diaryDateLabel.value = 'Yesterday';
     } else {
-      logger.i('Updating date label to full date: ${diaryDate.value}');
-      String dateLabel =
-          DateFormat('MM/dd/yyyy').format(diaryDate.value); // Show full date for other days
+      String dateLabel = DateFormat('MM/dd/yyyy').format(diaryDate.value);
       diaryDateLabel.value = dateLabel;
     }
   }
 
-  void navigateToNextDay() {
+  Future<void> navigateToNextDay() async {
     if (!isToday(diaryDate.value) && diaryDate.value.isBefore(DateTime.now())) {
       diaryDate.value = diaryDate.value.add(const Duration(days: 1));
     }
+    await getHealthDataForSelectedDay();
   }
 
-  void navigateToPreviousDay() {
+  Future<void> navigateToPreviousDay() async {
     diaryDate.value = diaryDate.value.subtract(const Duration(days: 1));
+    await getHealthDataForSelectedDay();
   }
 
   Future<void> addWater(double ounces) async {
     double waterIntakeInOunces = ounces;
     double waterIntakeInLiters =
         await healthService.convertWaterUnit(waterIntakeInOunces, WaterUnit.liter);
-    logger.i('Added $ounces oz of water. Total water intake: ${waterIntake.value} oz');
-
     try {
       // Call the HealthService to save the weight
       await healthService.saveWaterToHealth(waterIntakeInLiters);

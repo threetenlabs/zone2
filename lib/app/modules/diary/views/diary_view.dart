@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:numberpicker/numberpicker.dart';
 import 'package:zone2/app/modules/diary/views/add_food.dart';
+import 'package:zone2/app/modules/diary/views/manage_water.dart';
+import 'package:zone2/app/modules/diary/views/manage_weight.dart';
 
 import '../controllers/diary_controller.dart';
 
@@ -23,7 +25,7 @@ class DiaryView extends GetView<DiaryController> {
                 padding: const EdgeInsets.all(16.0),
                 children: [
                   Obx(
-                    () => _buildCard(
+                    () => _buildDiaryCard(
                       context,
                       icon: Icons.scale,
                       title: 'Log Weight',
@@ -33,7 +35,7 @@ class DiaryView extends GetView<DiaryController> {
                       isChecked: controller.isWeightLogged.value, // Pass the checkbox state
                     ),
                   ),
-                  _buildCard(
+                  _buildDiaryCard(
                     context,
                     icon: Icons.fastfood,
                     title: 'Add Food', // New card for adding food
@@ -42,7 +44,7 @@ class DiaryView extends GetView<DiaryController> {
                     onTap: () => _showAddFoodBottomSheet(context), // Show the new bottom sheet
                     isChecked: false,
                   ),
-                  _buildCard(
+                  _buildDiaryCard(
                     context,
                     icon: Icons.run_circle,
                     title: 'Zone 2',
@@ -52,7 +54,7 @@ class DiaryView extends GetView<DiaryController> {
                     isChecked: false,
                   ),
                   Obx(
-                    () => _buildCard(
+                    () => _buildDiaryCard(
                       context,
                       icon: Icons.local_drink,
                       title: 'Hydration',
@@ -72,8 +74,6 @@ class DiaryView extends GetView<DiaryController> {
   }
 
   Widget _buildDateNavigation() {
-    // {{ edit_3 }}
-
     return Row(
       mainAxisAlignment: MainAxisAlignment.center, // Center the row
       children: [
@@ -98,11 +98,11 @@ class DiaryView extends GetView<DiaryController> {
     );
   }
 
-  Widget _buildCard(BuildContext context,
+  Widget _buildDiaryCard(BuildContext context,
       {required IconData icon,
       required String title,
       required String subtitle,
-      required Color iconColor, // {{ edit_1 }}
+      required Color iconColor,
       required VoidCallback onTap,
       required bool isChecked}) {
     // {{ edit_1 }}
@@ -113,7 +113,7 @@ class DiaryView extends GetView<DiaryController> {
         title: Text(title),
         subtitle: Text(subtitle),
         onTap: onTap,
-        trailing: isChecked ? const Icon(Icons.check_box) : null, // {{ edit_2 }}
+        trailing: isChecked ? const Icon(Icons.check_box) : null,
       ),
     );
   }
@@ -121,53 +121,7 @@ class DiaryView extends GetView<DiaryController> {
   void _showWeightBottomSheet(BuildContext context) {
     showModalBottomSheet(
       context: context,
-      builder: (context) {
-        return Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Text('Select your weight in pounds:', style: TextStyle(fontSize: 18)),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Obx(
-                    () => NumberPicker(
-                      value: controller.weightWhole.value,
-                      minValue: 70,
-                      maxValue: 550,
-                      onChanged: (value) =>
-                          controller.weightWhole.value = value, // Update whole pounds
-                    ),
-                  ),
-                  const Text('.', style: TextStyle(fontSize: 24)), // Decimal point
-                  Obx(
-                    () => NumberPicker(
-                      value: controller.weightDecimal.value,
-                      minValue: 0,
-                      maxValue: 9,
-                      onChanged: (value) =>
-                          controller.weightDecimal.value = value, // Update decimal
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              ElevatedButton.icon(
-                onPressed: () async {
-                  await controller.saveWeightToHealth(); // Call saveWeightToHealth
-                  if (context.mounted) {
-                    // Check if the widget is still mounted
-                    Navigator.pop(context); // Close the bottom sheet
-                  }
-                },
-                icon: const Icon(Icons.save),
-                label: const Text('Save'),
-              ),
-            ],
-          ),
-        );
-      },
+      builder: (context) => const ManageWeightBottomSheet(),
     );
   }
 
@@ -209,89 +163,7 @@ class DiaryView extends GetView<DiaryController> {
   void _showWaterBottomSheet(BuildContext context) {
     showModalBottomSheet(
       context: context,
-      builder: (context) {
-        return Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Text('Add Water Intake:', style: TextStyle(fontSize: 18)),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  _buildWaterButton(context, 8, Icons.local_drink, '8 oz'),
-                  _buildWaterButton(context, 12, Icons.local_drink, '12 oz'),
-                  _buildWaterButton(context, 16.9, Icons.local_drink, '16.9 oz'),
-                  _buildWaterButton(context, 20, Icons.local_drink, '20 oz'),
-                ],
-              ),
-              const SizedBox(height: 16),
-              Obx(() => LinearProgressIndicator(
-                    value: controller.waterIntake.value / controller.waterGoal.value,
-                    minHeight: 10,
-                  )),
-              const SizedBox(height: 16),
-              _buildCustomWaterInput(context),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildWaterButton(BuildContext context, double ounces, IconData icon, String label) {
-    return Column(
-      children: [
-        ElevatedButton(
-          onPressed: () => controller.addWater(ounces),
-          style: ElevatedButton.styleFrom(
-            shape: const RoundedRectangleBorder(), // Use RoundedRectangleBorder instead
-            padding: const EdgeInsets.all(16),
-          ),
-          child: Column(
-            children: [
-              Icon(icon),
-              Text(label),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildCustomWaterInput(BuildContext context) {
-    return Column(
-      children: [
-        const Text('Add Custom Amount:', style: TextStyle(fontSize: 16)),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Obx(() => NumberPicker(
-                  value: controller.customWaterWhole.value,
-                  minValue: 1,
-                  maxValue: 100, // Adjust as needed
-                  onChanged: (value) => controller.customWaterWhole.value = value, // Update whole
-                )),
-            const Text('.'),
-            Obx(() => NumberPicker(
-                  value: controller.customWaterDecimal.value,
-                  minValue: 0,
-                  maxValue: 9,
-                  onChanged: (value) =>
-                      controller.customWaterDecimal.value = value, // Update decimal
-                )),
-          ],
-        ),
-        ElevatedButton(
-          onPressed: () {
-            final total =
-                controller.customWaterWhole.value + (controller.customWaterDecimal.value / 10);
-            controller.addWater(total);
-            Navigator.pop(context); // Close the bottom sheet
-          },
-          child: const Text('Add Custom Amount'),
-        ),
-      ],
+      builder: (context) => const WaterBottomSheet(),
     );
   }
 

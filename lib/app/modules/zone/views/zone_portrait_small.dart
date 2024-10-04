@@ -1,11 +1,11 @@
-import 'package:zone2/app/modules/settings/controllers/settings_controller.dart';
+import 'package:zone2/app/modules/zone/controllers/zone_controller.dart';
 import 'package:zone2/app/style/palette.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
-class SettingsPortraitSmall extends GetWidget<SettingsController> {
-  const SettingsPortraitSmall({super.key});
+class ZonePortraitSmall extends GetWidget<ZoneController> {
+  const ZonePortraitSmall({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -16,7 +16,7 @@ class SettingsPortraitSmall extends GetWidget<SettingsController> {
       },
       child: LayoutBuilder(
         builder: (BuildContext context, BoxConstraints constraints) {
-          return GetBuilder<SettingsController>(
+          return GetBuilder<ZoneController>(
             builder: (controller) => Theme(
               data: palette.primaryTheme,
               child: PopScope(

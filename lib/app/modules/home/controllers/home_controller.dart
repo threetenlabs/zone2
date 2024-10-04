@@ -6,8 +6,8 @@ import 'package:zone2/app/modules/diary/views/diary_view.dart';
 
 import 'package:zone2/app/modules/profile/bindings/profile_binding.dart';
 import 'package:zone2/app/modules/profile/views/profile_view.dart';
-import 'package:zone2/app/modules/settings/bindings/settings_binding.dart';
-import 'package:zone2/app/modules/settings/views/settings_view.dart';
+import 'package:zone2/app/modules/zone/bindings/zone_binding.dart';
+import 'package:zone2/app/modules/zone/views/zone_view.dart';
 import 'package:zone2/app/modules/track/bindings/track_binding.dart';
 import 'package:zone2/app/modules/track/views/track_view.dart';
 import 'package:zone2/app/services/firebase_service.dart';
@@ -64,8 +64,8 @@ class HomeController extends GetxController {
     if (settings.name == '/zone') {
       return GetPageRoute(
         settings: settings,
-        page: () => const SettingsView(),
-        binding: SettingsBinding(),
+        page: () => const ZoneView(),
+        binding: ZoneBinding(),
       );
     }
 

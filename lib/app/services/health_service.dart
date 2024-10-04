@@ -188,8 +188,9 @@ class HealthService extends GetxService {
     return convertedWater; // Ensure a return statement is present
   }
 
-  Future<DateTime> getStartTimeForTimeFrame([TimeFrame timeFrame = TimeFrame.today]) async {
-    final nowPlus = DateTime.now().add(const Duration(hours: 1));
+  Future<DateTime> getStartTimeForTimeFrame(
+      {TimeFrame timeFrame = TimeFrame.today, DateTime? endTime}) async {
+    final nowPlus = endTime ?? DateTime.now().add(const Duration(hours: 1));
     DateTime startTime;
 
     switch (timeFrame) {
@@ -265,7 +266,7 @@ class HealthService extends GetxService {
   Future<List<HealthDataPoint>> getWaterData(
       {required TimeFrame timeFrame, DateTime? endTime}) async {
     final types = [HealthDataType.WATER];
-    DateTime startTime = await getStartTimeForTimeFrame(timeFrame);
+    DateTime startTime = await getStartTimeForTimeFrame(timeFrame: timeFrame, endTime: endTime);
 
     final nowPlus = endTime ?? DateTime.now().add(const Duration(hours: 1));
     final healthData = await health.value!
@@ -277,7 +278,7 @@ class HealthService extends GetxService {
   Future<List<HealthDataPoint>> getStepData(
       {required TimeFrame timeFrame, DateTime? endTime}) async {
     final types = [HealthDataType.STEPS];
-    DateTime startTime = await getStartTimeForTimeFrame(timeFrame);
+    DateTime startTime = await getStartTimeForTimeFrame(timeFrame: timeFrame, endTime: endTime);
     final nowPlus = endTime ?? DateTime.now().add(const Duration(hours: 1));
     final healthData = await health.value!
         .getHealthDataFromTypes(types: types, startTime: startTime, endTime: nowPlus);
@@ -287,7 +288,7 @@ class HealthService extends GetxService {
   Future<List<HealthDataPoint>> getWeightData(
       {required TimeFrame timeFrame, DateTime? endTime}) async {
     final types = [HealthDataType.WEIGHT];
-    DateTime startTime = await getStartTimeForTimeFrame(timeFrame);
+    DateTime startTime = await getStartTimeForTimeFrame(timeFrame: timeFrame, endTime: endTime);
     final nowPlus = endTime ?? DateTime.now().add(const Duration(hours: 1));
     final healthData = await health.value!
         .getHealthDataFromTypes(types: types, startTime: startTime, endTime: nowPlus);
@@ -297,7 +298,8 @@ class HealthService extends GetxService {
   Future<List<HealthDataPoint>> getMealData(
       {required TimeFrame timeFrame, DateTime? endTime}) async {
     final types = [HealthDataType.NUTRITION];
-    DateTime calculatedStartTime = await getStartTimeForTimeFrame(timeFrame);
+    DateTime calculatedStartTime =
+        await getStartTimeForTimeFrame(timeFrame: timeFrame, endTime: endTime);
 
     final nowPlus = endTime ?? DateTime.now().add(const Duration(hours: 1));
 

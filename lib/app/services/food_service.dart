@@ -33,15 +33,6 @@ class FoodSearchResponse {
           json['foods']?.map((food) => UsdaFood.fromJson(food)) ?? []), // Handle null
     );
   }
-
-  int _compareDataType(String a, String b) {
-    const order = {
-      'Foundation': 0,
-      'SR Legacy': 1,
-      'Branded': 2,
-    };
-    return (order[a] ?? 3).compareTo(order[b] ?? 3); // Default to 3 for unknown types
-  }
 }
 
 class FoodSearchCriteria {
