@@ -28,67 +28,78 @@ class AddFoodBottomSheet extends GetView<DiaryController> {
 
     return Padding(
       padding: const EdgeInsets.all(16.0),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Card(
-            elevation: 8, // Higher elevation for the top card
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                children: [
-                  Text('Remaining Calories: $remainingCalories',
-                      style: const TextStyle(fontSize: 20)),
-                  const SizedBox(height: 16),
-                  _buildProgressBar('Protein', proteinConsumed, 100), // Assuming 100g as target
-                  _buildProgressBar('Carbs', carbsConsumed, 100), // Assuming 100g as target
-                  _buildProgressBar('Fat', fatConsumed, 100), // Assuming 100g as target
-                ],
+      child: SizedBox(
+        height: MediaQuery.of(context).size.height,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Close button
+            Align(
+              alignment: Alignment.topLeft,
+              child: IconButton(
+                icon: const Icon(Icons.close),
+                onPressed: () => Navigator.pop(context), // Close the bottom sheet
               ),
             ),
-          ),
-          const SizedBox(height: 16),
-          _buildActionCard(context,
-              icon: Icons.egg_alt_outlined,
-              title: 'Add Breakfast',
-              subtitle: 'Add Breakfast',
-              iconColor: Colors.green,
-              onTap: () => {
-                    controller.selectedMealType.value = MealType.BREAKFAST,
-                    _showAddFoodBottomSheet(context),
-                  },
-              isChecked: false),
-          _buildActionCard(context,
-              icon: Icons.lunch_dining,
-              title: 'Add Lunch',
-              subtitle: 'Add Lunch',
-              iconColor: Colors.green,
-              onTap: () => {
-                    controller.selectedMealType.value = MealType.LUNCH,
-                    _showAddFoodBottomSheet(context),
-                  },
-              isChecked: false),
-          _buildActionCard(context,
-              icon: Icons.dinner_dining,
-              title: 'Add Dinner',
-              subtitle: 'Add Dinner',
-              iconColor: Colors.green,
-              onTap: () => {
-                    controller.selectedMealType.value = MealType.DINNER,
-                    _showAddFoodBottomSheet(context),
-                  },
-              isChecked: false),
-          _buildActionCard(context,
-              icon: Icons.fastfood,
-              title: 'Add Snacks',
-              subtitle: 'Add Snacks',
-              iconColor: Colors.green,
-              onTap: () => {
-                    controller.selectedMealType.value = MealType.SNACK,
-                    _showAddFoodBottomSheet(context),
-                  },
-              isChecked: false),
-        ],
+            Card(
+              elevation: 8, // Higher elevation for the top card
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  children: [
+                    Text('Remaining Calories: $remainingCalories',
+                        style: const TextStyle(fontSize: 20)),
+                    const SizedBox(height: 16),
+                    _buildProgressBar('Protein', proteinConsumed, 100), // Assuming 100g as target
+                    _buildProgressBar('Carbs', carbsConsumed, 100), // Assuming 100g as target
+                    _buildProgressBar('Fat', fatConsumed, 100), // Assuming 100g as target
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            _buildActionCard(context,
+                icon: Icons.egg_alt_outlined,
+                title: 'Add Breakfast',
+                subtitle: 'Add Breakfast',
+                iconColor: Colors.green,
+                onTap: () => {
+                      controller.selectedMealType.value = MealType.BREAKFAST,
+                      _showAddFoodBottomSheet(context),
+                    },
+                isChecked: false),
+            _buildActionCard(context,
+                icon: Icons.lunch_dining,
+                title: 'Add Lunch',
+                subtitle: 'Add Lunch',
+                iconColor: Colors.green,
+                onTap: () => {
+                      controller.selectedMealType.value = MealType.LUNCH,
+                      _showAddFoodBottomSheet(context),
+                    },
+                isChecked: false),
+            _buildActionCard(context,
+                icon: Icons.dinner_dining,
+                title: 'Add Dinner',
+                subtitle: 'Add Dinner',
+                iconColor: Colors.green,
+                onTap: () => {
+                      controller.selectedMealType.value = MealType.DINNER,
+                      _showAddFoodBottomSheet(context),
+                    },
+                isChecked: false),
+            _buildActionCard(context,
+                icon: Icons.fastfood,
+                title: 'Add Snacks',
+                subtitle: 'Add Snacks',
+                iconColor: Colors.green,
+                onTap: () => {
+                      controller.selectedMealType.value = MealType.SNACK,
+                      _showAddFoodBottomSheet(context),
+                    },
+                isChecked: false),
+          ],
+        ),
       ),
     );
   }
@@ -159,7 +170,8 @@ class AddFoodBottomSheet extends GetView<DiaryController> {
     );
   }
 
-  void _showSearchBottomSheet(BuildContext context) { // {{ edit_2 }}
+  void _showSearchBottomSheet(BuildContext context) {
+    // {{ edit_2 }}
     showModalBottomSheet(
       context: context,
       isScrollControlled: true, // Allow full screen

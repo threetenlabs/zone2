@@ -22,7 +22,9 @@ class ManageWeightBottomSheet extends GetView<DiaryController> {
                   value: controller.weightWhole.value,
                   minValue: 70,
                   maxValue: 550,
-                  onChanged: (value) => controller.weightWhole.value = value, // Update whole pounds
+                  onChanged: controller.isWeightLogged.value
+                      ? (value) {} // Empty function when weight is logged
+                      : (value) => controller.weightWhole.value = value, // Update whole pounds
                 ),
               ),
               const Text('.', style: TextStyle(fontSize: 24)), // Decimal point
@@ -31,22 +33,28 @@ class ManageWeightBottomSheet extends GetView<DiaryController> {
                   value: controller.weightDecimal.value,
                   minValue: 0,
                   maxValue: 9,
-                  onChanged: (value) => controller.weightDecimal.value = value, // Update decimal
+                  onChanged: controller.isWeightLogged.value
+                      ? (value) {} // Empty function when weight is logged
+                      : (value) => controller.weightDecimal.value = value, // Update decimal
                 ),
               ),
             ],
           ),
           const SizedBox(height: 16),
-          FilledButton.icon(
-            onPressed: () async {
-              await controller.saveWeightToHealth(); // Call saveWeightToHealth
-              if (context.mounted) {
-                // Check if the widget is still mounted
-                Navigator.pop(context); // Close the bottom sheet
-              }
-            },
-            icon: const Icon(Icons.save),
-            label: const Text('Save'),
+          Obx(
+            () => FilledButton.icon(
+              onPressed: controller.isWeightLogged.value
+                  ? null
+                  : () async {
+                      await controller.saveWeightToHealth(); // Call saveWeightToHealth
+                      if (context.mounted) {
+                        // Check if the widget is still mounted
+                        Navigator.pop(context); // Close the bottom sheet
+                      }
+                    },
+              icon: const Icon(Icons.save),
+              label: const Text('Save'),
+            ),
           ),
         ],
       ),

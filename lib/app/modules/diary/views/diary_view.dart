@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 import 'package:get/get.dart';
-import 'package:numberpicker/numberpicker.dart';
 import 'package:zone2/app/modules/diary/views/add_food.dart';
 import 'package:zone2/app/modules/diary/views/manage_water.dart';
 import 'package:zone2/app/modules/diary/views/manage_weight.dart';
@@ -113,7 +112,9 @@ class DiaryView extends GetView<DiaryController> {
         title: Text(title),
         subtitle: Text(subtitle),
         onTap: onTap,
-        trailing: isChecked ? const Icon(Icons.check_box) : null,
+        trailing: isChecked
+            ? Icon(Icons.check_circle_outline, color: Theme.of(context).colorScheme.primary)
+            : null,
       ),
     );
   }
@@ -131,30 +132,13 @@ class DiaryView extends GetView<DiaryController> {
       isScrollControlled: true, // Allow full screen
       useSafeArea: true,
       builder: (context) {
-        return SizedBox(
-          height: MediaQuery.of(context).size.height, // Full screen height
-          child: Column(
-            children: [
-              // Close button
-              Align(
-                alignment: Alignment.topLeft,
-                child: IconButton(
-                  icon: const Icon(Icons.close),
-                  onPressed: () => Navigator.pop(context), // Close the bottom sheet
-                ),
-              ),
-              const Expanded(
-                child: AddFoodBottomSheet(
-                  calorieTarget: 2000, // Example target
-                  caloriesConsumed: 1200, // Example consumed
-                  caloriesBurned: 300, // Example burned
-                  proteinConsumed: 80, // Example protein
-                  carbsConsumed: 150, // Example carbs
-                  fatConsumed: 50, // Example fat
-                ),
-              ),
-            ],
-          ),
+        return const AddFoodBottomSheet(
+          calorieTarget: 2000, // Example target
+          caloriesConsumed: 1200, // Example consumed
+          caloriesBurned: 300, // Example burned
+          proteinConsumed: 80, // Example protein
+          carbsConsumed: 150, // Example carbs
+          fatConsumed: 50, // Example fat
         );
       },
     );
