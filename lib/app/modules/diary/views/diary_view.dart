@@ -32,7 +32,7 @@ class DiaryView extends GetView<DiaryController> {
                       subtitle: 'Track your weight progress',
                       iconColor: Theme.of(context).colorScheme.primary,
                       isChecked: controller.isWeightLogged.value,
-                      animateIcon: AnimateIcons.bell,
+                      animateIcon: AnimateIcons.calculator,
                       onTap: () => _showWeightBottomSheet(context),
                     ),
                   ),
@@ -43,9 +43,9 @@ class DiaryView extends GetView<DiaryController> {
                     subtitle: 'Log your meals and snacks',
                     iconColor: Theme.of(context).colorScheme.secondary,
                     onTap: () => _showAddFoodBottomSheet(context), // Show the new bottom sheet
-                    isChecked: false,
-                    animateIcon: AnimateIcons.wink,
-                    delay: Duration(seconds: 1),
+                    isChecked: controller.isWeightLogged.value,
+                    animateIcon: AnimateIcons.battery,
+                    delay: Duration(milliseconds: 100),
                   ),
                   _buildDiaryCard(
                     context,
@@ -54,9 +54,11 @@ class DiaryView extends GetView<DiaryController> {
                     subtitle: 'Monitor your Zone 2 training',
                     iconColor: Theme.of(context).colorScheme.tertiary, // {{ edit_5 }}
                     onTap: () => _showBottomSheet(context, 'Zone 2'),
-                    isChecked: false,
-                    animateIcon: AnimateIcons.heart2,
-                    delay: Duration(seconds: 2),
+                    isChecked: controller.isWeightLogged.value,
+                    animateIcon: AnimateIcons.zone,
+                    width: 40,
+                    height: 40,
+                    delay: Duration(milliseconds: 200),
                   ),
                   Obx(
                     () => _buildDiaryCard(
@@ -68,7 +70,7 @@ class DiaryView extends GetView<DiaryController> {
                       onTap: () => _showWaterBottomSheet(context),
                       isChecked: controller.isWaterLogged.value, // Check if water intake is logged
                       animateIcon: AnimateIcons.water,
-                      delay: Duration(seconds: 3),
+                      delay: Duration(milliseconds: 300),
                     ),
                   ),
                 ],
@@ -113,6 +115,8 @@ class DiaryView extends GetView<DiaryController> {
       required VoidCallback onTap,
       required bool isChecked,
       required AnimateIcons animateIcon,
+      double? width,
+      double? height,
       Duration? delay}) {
     debugPrint('isChecked: $isChecked');
     return Card(
@@ -129,8 +133,8 @@ class DiaryView extends GetView<DiaryController> {
                   delay: delay,
                   iconType: IconType.toggleIcon,
                   onHover: () {},
-                  height: 70,
-                  width: 70,
+                  height: height ?? 30,
+                  width: width ?? 30,
                   color: Theme.of(context).colorScheme.tertiary,
                   animateIcon: animateIcon,
                   toggled: isChecked,

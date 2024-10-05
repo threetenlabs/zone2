@@ -127,7 +127,8 @@ enum AnimateIcons {
   loading5,
   loading6,
   loading7,
-  water
+  water,
+  zone
 }
 
 /// [AnimatedIconsExtension] is used to return relevant filepath depend on [AnimateIcons]
@@ -352,6 +353,8 @@ extension AnimatedIconsExtension on AnimateIcons {
         return 'assets/loading_7.json';
       case AnimateIcons.water:
         return 'assets/water.json';
+      case AnimateIcons.zone:
+        return 'assets/zone.json';
       default:
         return 'assets/heart.json';
     }

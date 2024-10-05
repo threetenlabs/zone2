@@ -29,7 +29,10 @@ class DiaryController extends GetxController {
   final selectedFood = Rxn<UsdaFood>();
   final foodServingQty = 0.0.obs;
   final selectedMeal = Rxn<PlatformHealthMeal>();
-  final mealData = RxList<HealthDataPoint>();
+  final breakfastData = RxList<HealthDataPoint>();
+  final lunchData = RxList<HealthDataPoint>();
+  final dinnerData = RxList<HealthDataPoint>();
+  final snackData = RxList<HealthDataPoint>();
 
   @override
   void onInit() async {
@@ -106,9 +109,22 @@ class DiaryController extends GetxController {
       isWaterLogged.value = false;
     }
 
-    mealData.value = await healthService.getMealData(timeFrame: TimeFrame.today, endTime: endTime);
-    if (mealData.isNotEmpty) {
-      logger.i('Meal data: ${mealData.first}');
+    final allMeals =
+        await healthService.getMealData(timeFrame: TimeFrame.today, endTime: endTime);
+    breakfastData.value = allMeals
+        .where((meal) => (meal.value as NutritionHealthValue).zinc == 1.0)
+        .toList();
+    lunchData.value = allMeals
+        .where((meal) => (meal.value as NutritionHealthValue).zinc == 2.0)
+        .toList();
+    dinnerData.value = allMeals
+        .where((meal) => (meal.value as NutritionHealthValue).zinc == 3.0)
+        .toList();
+    snackData.value = allMeals
+        .where((meal) => (meal.value as NutritionHealthValue).zinc == 4.0)
+        .toList();
+    if (breakfastData.isNotEmpty) {
+      logger.i('Meal data: ${breakfastData.first}');
     } else {
       logger.w('No meal data found');
     }

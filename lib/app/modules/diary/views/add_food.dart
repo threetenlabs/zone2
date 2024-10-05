@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:health/health.dart';
 import 'package:zone2/app/modules/diary/controllers/diary_controller.dart';
 import 'package:zone2/app/modules/diary/views/food_detail.dart';
+import 'package:zone2/app/modules/diary/views/food_search.dart';
 
 class AddFoodBottomSheet extends GetView<DiaryController> {
   final double calorieTarget;
@@ -156,13 +157,53 @@ class AddFoodBottomSheet extends GetView<DiaryController> {
                   onPressed: () => Navigator.pop(context), // Close the bottom sheet
                 ),
               ),
-              // Button to open search bottom sheet
-              ElevatedButton(
-                onPressed: () => _showSearchBottomSheet(context), // {{ edit_1 }}
-                child: const Text('Search for Food'),
+             Text(
+               'Add ${controller.selectedMealType.value.toString().split('.').last}',
+               style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+             ),
+             Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  // Add Calories button
+                  ElevatedButton(
+                    onPressed: () {
+                      // Add your add calories logic here
+                    },
+                    style: ElevatedButton.styleFrom(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10), // Rounded corners
+                      ),
+                    ),
+                    child: const Text('Add Calories'),
+                  ),
+                  // Search button
+                  ElevatedButton(
+                    onPressed: () => _showSearchBottomSheet(context), // Call search method
+                    style: ElevatedButton.styleFrom(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10), // Rounded corners
+                      ),
+                    ),
+                    child: const Text('Search'),
+                  ),
+                  // Scan Barcode button
+                  ElevatedButton(
+                    onPressed: () {
+                      // Add your scan barcode logic here
+                    },
+                    style: ElevatedButton.styleFrom(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10), // Rounded corners
+                      ),
+                    ),
+                    child: const Text('Scan Barcode'),
+                  ),
+                ],
               ),
               const SizedBox(height: 16),
               _buildMealList(), // Keep the meal list here
+              // New button row
+              
             ],
           ),
         );
@@ -171,80 +212,42 @@ class AddFoodBottomSheet extends GetView<DiaryController> {
   }
 
   void _showSearchBottomSheet(BuildContext context) {
-    // {{ edit_2 }}
     showModalBottomSheet(
       context: context,
       isScrollControlled: true, // Allow full screen
       useSafeArea: true,
       builder: (context) {
-        return Container(
-          height: MediaQuery.of(context).size.height, // Full screen height
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            children: [
-              // Close button
-              Align(
-                alignment: Alignment.topLeft,
-                child: IconButton(
-                  icon: const Icon(Icons.close),
-                  onPressed: () => Navigator.pop(context), // Close the bottom sheet
-                ),
-              ),
-              // Search input
-              TextField(
-                decoration: const InputDecoration(
-                  hintText: 'Search for food...',
-                  border: OutlineInputBorder(),
-                ),
-                onSubmitted: (value) {
-                  // Call food_service search method
-                  controller.searchFood(value);
-                  // Navigator.pop(context); // Close the bottom sheet
-                },
-              ),
-              const SizedBox(height: 16),
-              // Check if foodSearchResponse has a value
-              Obx(() {
-                final foodSearchResponse = controller.foodSearchResults.value;
-                if (foodSearchResponse != null && foodSearchResponse.foods.isNotEmpty) {
-                  return Expanded(
-                    child: ListView.builder(
-                      itemCount: foodSearchResponse.foods.length,
-                      itemBuilder: (context, index) {
-                        final food = foodSearchResponse.foods[index];
-                        return ListTile(
-                          title: Text(food.description),
-                          subtitle: Text('Brand: ${food.brandOwner}'),
-                          onTap: () => {
-                            controller.selectedFood.value = food,
-                            _showFoodDetail(context),
-                          }, // Show food details on tap
-                        );
-                      },
-                    ),
-                  );
-                } else if (controller.searchPerformed.value) {
-                  return const Text('No results found'); // Handle no results
-                } else {
-                  return Container();
-                }
-              }),
-            ],
-          ),
-        );
+        return const FoodSearchWidget(); // Use the new widget here
       },
     );
   }
 
   Widget _buildMealList() {
-    // {{ edit_1 }}
+    RxList<HealthDataPoint> mealList;
+    switch (controller.selectedMealType.value) {
+      case MealType.BREAKFAST:
+        mealList = controller.breakfastData;
+        break;
+      case MealType.LUNCH:
+        mealList = controller.lunchData;
+        break;
+      case MealType.DINNER:
+        mealList = controller.dinnerData;
+        break;
+      case MealType.SNACK:
+        mealList = controller.snackData;
+        break;
+      default:
+        mealList = controller.breakfastData;
+        break;
+    }
     return Obx(() {
-      if (controller.mealData.isNotEmpty) {
+      if (mealList.isNotEmpty) {
         return ListView.builder(
           shrinkWrap: true,
-          itemCount: controller.mealData.length,
+          itemCount: mealList.length,
           itemBuilder: (context, index) {
-            final item = controller.mealData[index];
+            final item = mealList[index];
             final nutritionHealthValue = item.value as NutritionHealthValue;
             return GestureDetector(
               // {{ edit_1 }}
@@ -290,16 +293,5 @@ class AddFoodBottomSheet extends GetView<DiaryController> {
         return const Text('No meals logged'); // Handle no meals
       }
     });
-  }
-
-  void _showFoodDetail(BuildContext context) {
-    showModalBottomSheet(
-      isScrollControlled: true, // Allow full screen
-      useSafeArea: true,
-      context: context,
-      builder: (context) {
-        return const FoodDetailBottomSheet(); // Pass the selected food
-      },
-    );
   }
 }
