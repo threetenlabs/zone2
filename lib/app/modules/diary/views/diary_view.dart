@@ -1,10 +1,10 @@
-import 'package:animated_icon/animated_icon.dart';
 import 'package:flutter/material.dart';
 
 import 'package:get/get.dart';
 import 'package:zone2/app/modules/diary/views/add_food.dart';
 import 'package:zone2/app/modules/diary/views/manage_water.dart';
 import 'package:zone2/app/modules/diary/views/manage_weight.dart';
+import 'package:ionicons/ionicons.dart';
 
 import '../controllers/diary_controller.dart';
 
@@ -27,12 +27,11 @@ class DiaryView extends GetView<DiaryController> {
                   Obx(
                     () => _buildDiaryCard(
                       context,
-                      icon: Icons.scale,
+                      icon: Ionicons.scale,
                       title: 'Log Weight',
                       subtitle: 'Track your weight progress',
                       iconColor: Theme.of(context).colorScheme.primary,
                       isChecked: controller.isWeightLogged.value,
-                      animateIcon: AnimateIcons.calculator,
                       onTap: () => _showWeightBottomSheet(context),
                     ),
                   ),
@@ -44,8 +43,6 @@ class DiaryView extends GetView<DiaryController> {
                     iconColor: Theme.of(context).colorScheme.secondary,
                     onTap: () => _showAddFoodBottomSheet(context), // Show the new bottom sheet
                     isChecked: controller.isWeightLogged.value,
-                    animateIcon: AnimateIcons.battery,
-                    delay: Duration(milliseconds: 100),
                   ),
                   _buildDiaryCard(
                     context,
@@ -55,23 +52,15 @@ class DiaryView extends GetView<DiaryController> {
                     iconColor: Theme.of(context).colorScheme.tertiary, // {{ edit_5 }}
                     onTap: () => _showBottomSheet(context, 'Zone 2'),
                     isChecked: controller.isWeightLogged.value,
-                    animateIcon: AnimateIcons.zone,
-                    width: 40,
-                    height: 40,
-                    delay: Duration(milliseconds: 200),
                   ),
                   Obx(
-                    () => _buildDiaryCard(
-                      context,
-                      icon: Icons.local_drink,
-                      title: 'Hydration',
-                      subtitle: 'Keep track of your water intake',
-                      iconColor: Theme.of(context).colorScheme.tertiary, // {{ edit_6 }}
-                      onTap: () => _showWaterBottomSheet(context),
-                      isChecked: controller.isWaterLogged.value, // Check if water intake is logged
-                      animateIcon: AnimateIcons.water,
-                      delay: Duration(milliseconds: 300),
-                    ),
+                    () => _buildDiaryCard(context,
+                        icon: Icons.local_drink,
+                        title: 'Hydration',
+                        subtitle: 'Keep track of your water intake',
+                        iconColor: Theme.of(context).colorScheme.tertiary, // {{ edit_6 }}
+                        onTap: () => _showWaterBottomSheet(context),
+                        isChecked: controller.isWaterLogged.value),
                   ),
                 ],
               ),
@@ -113,11 +102,7 @@ class DiaryView extends GetView<DiaryController> {
       required String subtitle,
       required Color iconColor,
       required VoidCallback onTap,
-      required bool isChecked,
-      required AnimateIcons animateIcon,
-      double? width,
-      double? height,
-      Duration? delay}) {
+      required bool isChecked}) {
     debugPrint('isChecked: $isChecked');
     return Card(
         margin: const EdgeInsets.symmetric(vertical: 8.0),
@@ -126,20 +111,7 @@ class DiaryView extends GetView<DiaryController> {
           title: Text(title),
           subtitle: Text(subtitle),
           onTap: onTap,
-          trailing: isChecked
-              ? AnimateIcon(
-                  key: UniqueKey(),
-                  onTap: () => {},
-                  delay: delay,
-                  iconType: IconType.toggleIcon,
-                  onHover: () {},
-                  height: height ?? 30,
-                  width: width ?? 30,
-                  color: Theme.of(context).colorScheme.tertiary,
-                  animateIcon: animateIcon,
-                  toggled: isChecked,
-                )
-              : null,
+          trailing: isChecked ? Icon(icon, color: iconColor) : null,
         ));
   }
 

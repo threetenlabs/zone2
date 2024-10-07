@@ -24,32 +24,17 @@ generate:
 mobile:
 	flutter run --target lib/main.dart
 
-
 build-android:
 	flutter build appbundle --release --target lib/main.dart      
 
 build-ios:
 	flutter build ipa --release --target lib/main.dart --export-options-plist=ios/AppStoreDistributionOptions.plist
 
-
 debug-keystore:
 	keytool -list -v -alias androiddebugkey -keystore ~/.android/debug.keystore
 
 zone2-keystore:
 	keytool -list -v -alias zone2 -keystore ./zone2.jks
-
-firebaseInit:
-	firebase login --reauth && 
-
-firebase-ios: 
-	npm install
-	npm run firebase:ios
-
-firebase-android:
-	npm install
-	npm run firebase:android
-
-firebase: firebase-android firebase-ios
 
 beta-android:
 	flutter build appbundle --release --target lib/main.dart

@@ -38,13 +38,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "6.7.0"
-  animated_icon:
-    dependency: "direct main"
-    description:
-      path: "packages/animated_icon"
-      relative: true
-    source: path
-    version: "0.0.9"
   ansicolor:
     dependency: transitive
     description:
@@ -1067,6 +1060,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.0.4"
+  ionicons:
+    dependency: "direct main"
+    description:
+      name: ionicons
+      sha256: "5496bc65a16115ecf05b15b78f494ee4a8869504357668f0a11d689e970523cf"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.2.2"
   js:
     dependency: transitive
     description:
@@ -1131,14 +1132,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.2.0"
-  lottie:
-    dependency: transitive
-    description:
-      name: lottie
-      sha256: "6a24ade5d3d918c306bb1c21a6b9a04aab0489d51a2582522eea820b4093b62b"
-      url: "https://pub.dev"
-    source: hosted
-    version: "3.1.2"
   macros:
     dependency: transitive
     description:

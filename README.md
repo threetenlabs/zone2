@@ -1,7 +1,22 @@
 <h1 align="center">Zone 2</h1>
+
 <a name="readme-top"></a>
+
 <div align="center">
-  <strong>Multi-player mobile gaming platform powered with <img src="https://img.shields.io/badge/Flutter-%2302569B.svg?style=for-the-badge&logo=Flutter&logoColor=white" /> and <img src="https://img.shields.io/badge/firebase-%23039BE5.svg?style=for-the-badge&logo=firebase" /></strong>
+  <strong>Democrotized weight loss tracking application</strong>
+  <br />
+  <div style="display: flex; justify-content: center; align-items: center;">
+    <span style="width: 120px; text-align: right;">Built with :</span>
+    <img src="https://img.shields.io/badge/Flutter-%2302569B.svg?style=for-the-badge&logo=Flutter&logoColor=white" style="margin-left: 5px;" />
+  </div>
+  <div style="display: flex; justify-content: center; align-items: center;">
+    <span style="width: 120px; text-align: right;">Powered by:</span>
+    <img width="30" src="https://lh3.googleusercontent.com/F_PEyEw8W6BPzpIj8MlmIZFgW5HqfdFqIxCB3_RDiamJA3hNg7GDJ6YZThPngXXz5nOXWlCcoUuAUaZF1ZbkX6TEUtGCZMWh0YQRcgX20rSf2E_04OMB=e30" style="margin-left: 5px;" />
+  </div>
+  <div style="display: flex; justify-content: center; align-items: center;">
+    <span style="width: 120px; text-align: right;">And :</span>
+    <img width="30" src="https://developer.apple.com/assets/elements/icons/healthkit/healthkit-96x96_2x.png" style="margin-left: 5px;" />
+  </div>
 </div>
 
 <br />
@@ -14,61 +29,42 @@
   </a>
 </div>
 
-<!-- PROJECT LOGO -->
-<br />
-<div align="center">
-  <a href="https://github.com/threetenlabs/zone2">
-    <img src="https://raw.githubusercontent.com/threetenlabs/bedlam-flutter/main/packages/common/lib/assets/images/bedlam.webp?token=GHSAT0AAAAAACQLLOFOQX3PQWMLTOD6DO4SZQZOJ3Q" alt="Logo" width="600" height="300">
-  </a>
-</div>
+<!-- vscode-markdown-toc -->
 
-## Table of Contents
+- [🚀 Getting Started with Zone 2](#GettingStartedwithZone2)
+  - [Prerequisites](#Prerequisites)
+    - [Test Mock Generator](#TestMockGenerator)
+  - [Development Setup](#DevelopmentSetup)
+    - [General Commands](#GeneralCommands)
+    - [Mobile Commands](#MobileCommands)
+    - [Mecca Commands](#MeccaCommands)
+    - [Add to .zsh](#Addto.zsh)
+    - [Additional Commands](#AdditionalCommands)
+  - [💫 Support](#Support)
+  - [Roadmap](#Roadmap)
+- [📌 License](#License)
 
-- [Table of Contents](#table-of-contents)
-- [Getting Started](#getting-started)
-  - [Prerequisites](#prerequisites)
-  - [Development Setup](#development-setup)
-    - [Android Setup](#android-setup)
-    - [Additional Commands](#additional-commands)
-- [Roadmap](#roadmap)
-- [Additional Links](#additional-links)
-- [Troubleshooting](#troubleshooting)
-
-[back to top](#readme-top)
+<!-- vscode-markdown-toc-config
+	numbering=false
+	autoSave=true
+	/vscode-markdown-toc-config -->
+<!-- /vscode-markdown-toc -->
 
 <!-- GETTING STARTED -->
 
-## Getting Started
+## <a name='GettingStartedwithZone2'></a>🚀 Getting Started with Zone 2
 
 Instructions to get developer environment set-up.
 
-### Prerequisites
+### <a name='Prerequisites'></a>Prerequisites
 
 The following is a list of things you need to develop zone2 and how to install them.
 
 - xcode [install](https://developer.apple.com/xcode/)
-
 - android studio [install](https://developer.android.com/studio)
 - flutter [install](https://docs.flutter.dev/get-started/install/macos)
-- nodejs [install](https://nodejs.org/en/download)
 
-- firebase cli
-
-  ```sh
-  curl -sL https://firebase.tools | bash
-  ```
-
-- melos
-
-  ```sh
-  dart pub global activate melos
-  ```
-
-- get_cli
-
-  ```sh
-  flutter pub global activate -s git https://github.com/knottx/get_cli.git
-  ```
+#### <a name='TestMockGenerator'></a>Test Mock Generator
 
 - flutter_gen
 
@@ -76,19 +72,7 @@ The following is a list of things you need to develop zone2 and how to install t
   dart pub global activate flutter_gen
   ```
 
-- ensure Pub executables are on your PATH
-
-  ```sh
-  export PATH="$PATH":"$HOME/.pub-cache/bin"
-  ```
-
-- fastlane
-
-  ```sh
-  brew install fastlane
-  ```
-
-### Development Setup
+### <a name='DevelopmentSetup'></a>Development Setup
 
 Below is an example of how you can instruct your audience on installing and setting up your app. This template doesn't rely on any external dependencies or services.\_
 
@@ -110,7 +94,7 @@ Below is an example of how you can instruct your audience on installing and sett
    make clean
    ```
 
-#### General Commands
+#### <a name='GeneralCommands'></a>General Commands
 
 1. Run Device Preview
 
@@ -136,7 +120,7 @@ Below is an example of how you can instruct your audience on installing and sett
    make asset
    ```
 
-#### Mobile Commands
+#### <a name='MobileCommands'></a>Mobile Commands
 
 1. Run mobile
 
@@ -168,7 +152,7 @@ Below is an example of how you can instruct your audience on installing and sett
    make mobile-clean
    ```
 
-#### Mecca Commands
+#### <a name='MeccaCommands'></a>Mecca Commands
 
 1. Run mecca in web browser
 
@@ -188,14 +172,14 @@ Below is an example of how you can instruct your audience on installing and sett
    make mecca-mac
    ```
 
-#### Add to .zsh
+#### <a name='Addto.zsh'></a>Add to .zsh
 
 - export KEY_PASSWORD='our password'
 - export STORE_PASSWORD='our password'
 - export FASTLANE_USERNAME='threetenlabs email address'
 - export FASTLANE_APPLE_APPLICATION_SPECIFIC_PASSWORD= App Specific Password from [here](https://appleid.apple.com/account/manage)
 
-#### Additional Commands
+#### <a name='AdditionalCommands'></a>Additional Commands
 
 > show android debug keystore
 
@@ -245,24 +229,24 @@ openssl base64 -in ./packages/mobile/bedlam.jks
 
 [back to top](#readme-top)
 
-<!-- ROADMAP -->
+### <a name='Support'></a>💫 Support
 
-## Roadmap
+<!-- SUPPORT -->
+
+### <a name='Roadmap'></a>Roadmap
+
+<!-- ROADMAP -->
 
 See the [open issues](https://github.com/orgs/threetenlabs/projects/2/views/1) for a full list of proposed features (and known issues).
 
 [back to top](#readme-top)
 
-## Additional Links
+Reach out to the maintainers at one of the following places:
 
-[Signing apk](https://danielllewellyn.medium.com/flutter-github-actions-for-a-signed-apk-fcdf9878f660)
+- [GitHub Discussions](https://github.com/boxyhq/jackson/discussions)
+- [GitHub Issues](https://github.com/boxyhq/jackson/issues)
+- [Discord](https://discord.gg/uyb7pYt4Pa)
 
-[Github Actions Flutter](https://blog.logrocket.com/flutter-ci-cd-using-github-actions/)
+## <a name='License'></a>📌 License
 
-[Create Service Credential](https://github.com/wzieba/Firebase-Distribution-Github-Action/wiki/FIREBASE_TOKEN-migration#guide-2---the-same-but-with-screenshots)
-
-<https://blog.stackademic.com/flutter-extensions-tricks-to-boost-your-productivity-88573b7efc0f>
-
-<https://medium.com/flutter-community/build-a-custom-bottom-navigation-bar-in-flutter-with-animated-icons-from-rive-13651bc80629>
-
-test commit
+[Apache 2.0 License](https://github.com/boxyhq/jackson/blob/main/LICENSE)
