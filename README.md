@@ -23,10 +23,7 @@
 
 <div align="center">
   <sub>Built with ❤︎ by
-  <a href="https://www.linkedin.com/in/ryansites/">Ryan Sites</a> and
-  <a href="https://www.linkedin.com/in/michael-helfer/">
-    Mike Helfer
-  </a>
+  <a href="https://github.com/threetenlabs">ThreeTen Labs</a>
 </div>
 
 <!-- vscode-markdown-toc -->
@@ -181,50 +178,12 @@ Below is an example of how you can instruct your audience on installing and sett
 
 #### <a name='AdditionalCommands'></a>Additional Commands
 
-> show android debug keystore
-
-```sh
-keytool -list -v -alias androiddebugkey -keystore ~/.android/debug.keystore
-```
-
-> show nonprod keystore
-
-nonprod mobile
-
-```sh
-keytool -list -v -alias zone2 -keystore ./packages/mobile/bedlam-nonprod.jks
-```
-
-nonprod mecca
-
-```sh
-keytool -list -v -alias mecca-nonprod -keystore ./packages/mecca/mecca-nonprod.jks
-```
-
-> show prod keystore mobile
-
-```sh
-keytool -list -v -alias bedlam -keystore ./packages/mobile/bedlam.jks
-```
-
-> show prod keystore mecca
-
-```sh
-keytool -list -v -alias mecca -keystore ./packages/mecca/mecca.jks
-```
-
 > get base64 string of jks
-
-nonprod
-
-```sh
-openssl base64 -in ./packages/mobile/bedlam-nonprod.jks
-```
 
 prod
 
 ```sh
-openssl base64 -in ./packages/mobile/bedlam.jks
+openssl base64 -in ./packages/mobile/zone2.jks
 ```
 
 [back to top](#readme-top)
@@ -237,7 +196,7 @@ openssl base64 -in ./packages/mobile/bedlam.jks
 
 <!-- ROADMAP -->
 
-See the [open issues](https://github.com/orgs/threetenlabs/projects/2/views/1) for a full list of proposed features (and known issues).
+See the [roadmap](https://github.com/orgs/threetenlabs/projects/3/views/1) for a full list of proposed features (and known issues).
 
 [back to top](#readme-top)
 
@@ -249,4 +208,4 @@ Reach out to the maintainers at one of the following places:
 
 ## <a name='License'></a>📌 License
 
-[Apache 2.0 License](https://github.com/boxyhq/jackson/blob/main/LICENSE)
+[GPLv3](https://github.com/threetenlabs/zone2/blob/main/LICENSE.txt)
