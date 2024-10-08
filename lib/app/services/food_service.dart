@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:get_storage/get_storage.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
@@ -243,8 +244,18 @@ class PlatformHealthMeal {
 class FoodService extends GetxService {
   final String apiKey = 'ygfyVKsHpawwcVqw8PISfTHFWGFEccnaRhgY0cNk';
   final String baseUrl = 'https://api.nal.usda.gov/fdc/v1';
-
   final logger = Get.find<Logger>();
+  final box = GetStorage('food_data');
+
+  final String usdaFoodInfoKey = 'usda_food_info_key';
+
+  bool getUserHasRemovedAds() {
+    return box.read(usdaFoodInfoKey) ?? false;
+  }
+
+  Future<void> saveUserHasRemovedAds(bool value) async {
+    await box.write(usdaFoodInfoKey, value);
+  }
 
   Future<FoodSearchResponse> searchFood(String searchTerm) async {
     // First call for Foundation

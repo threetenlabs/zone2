@@ -25,6 +25,7 @@ import 'package:timezone/data/latest.dart' as tz;
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await GetStorage.init();
+  await GetStorage.init('food_data');
 
   tz.initializeTimeZones();
 

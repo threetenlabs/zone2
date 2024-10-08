@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 
 import 'package:get/get.dart';
-import 'package:zone2/app/modules/diary/views/add_food.dart';
-import 'package:zone2/app/modules/diary/views/manage_water.dart';
-import 'package:zone2/app/modules/diary/views/manage_weight.dart';
+import 'package:zone2/app/modules/diary/views/food/manage_food.dart';
+import 'package:zone2/app/modules/diary/views/water/manage_water.dart';
+import 'package:zone2/app/modules/diary/views/weight/manage_weight.dart';
 import 'package:ionicons/ionicons.dart';
 
 import '../controllers/diary_controller.dart';
@@ -118,6 +118,9 @@ class DiaryView extends GetView<DiaryController> {
   void _showWeightBottomSheet(BuildContext context) {
     showModalBottomSheet(
       context: context,
+      enableDrag: false,
+      isScrollControlled: true, // Allow full screen
+      useSafeArea: true,
       builder: (context) => const ManageWeightBottomSheet(),
     );
   }
@@ -125,10 +128,11 @@ class DiaryView extends GetView<DiaryController> {
   void _showAddFoodBottomSheet(BuildContext context) {
     showModalBottomSheet(
       context: context,
+      enableDrag: false,
       isScrollControlled: true, // Allow full screen
       useSafeArea: true,
       builder: (context) {
-        return const AddFoodBottomSheet(
+        return const ManageFoodBottomSheet(
           calorieTarget: 2000, // Example target
           caloriesConsumed: 1200, // Example consumed
           caloriesBurned: 300, // Example burned
@@ -143,6 +147,9 @@ class DiaryView extends GetView<DiaryController> {
   void _showWaterBottomSheet(BuildContext context) {
     showModalBottomSheet(
       context: context,
+      enableDrag: false,
+      isScrollControlled: true, // Allow full screen
+      useSafeArea: true,
       builder: (context) => const WaterBottomSheet(),
     );
   }
@@ -150,6 +157,9 @@ class DiaryView extends GetView<DiaryController> {
   void _showBottomSheet(BuildContext context, String title) {
     showModalBottomSheet(
       context: context,
+      enableDrag: false,
+      isScrollControlled: true, // Allow full screen
+      useSafeArea: true,
       builder: (context) {
         return Padding(
           padding: const EdgeInsets.all(16.0),

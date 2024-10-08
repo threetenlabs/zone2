@@ -22,7 +22,6 @@ class HealthService extends GetxService {
   final logger = Get.find<Logger>();
   final isAuthorized = false.obs;
   final status = HealthConnectSdkStatus.sdkUnavailable.obs;
-  final health = Rxn<Health>();
 
   final List<HealthDataType> _writePermissionTypes = [
     HealthDataType.WEIGHT,
@@ -134,6 +133,21 @@ class HealthService extends GetxService {
     HealthDataType.MENSTRUATION_FLOW,
   ];
 
+  final List<HealthDataType> dataTypesZone2 = [
+    HealthDataType.ACTIVE_ENERGY_BURNED,
+    HealthDataType.BODY_FAT_PERCENTAGE,
+    HealthDataType.HEIGHT,
+    HealthDataType.WEIGHT,
+    HealthDataType.BODY_TEMPERATURE,
+    HealthDataType.HEART_RATE,
+    HealthDataType.RESTING_HEART_RATE,
+    HealthDataType.STEPS,
+    HealthDataType.WATER,
+    HealthDataType.WORKOUT,
+    HealthDataType.NUTRITION,
+    HealthDataType.TOTAL_CALORIES_BURNED,
+  ];
+
   double convertDataTypeToDouble(MealType type) {
     switch (type) {
       case MealType.BREAKFAST:
@@ -227,12 +241,11 @@ class HealthService extends GetxService {
     super.onInit();
     Health().configure();
     Health().getHealthConnectSdkStatus();
-    health.value = Health();
     isAuthorized.value = await authorize();
   }
 
   Future<bool> authorize() async {
-    List<HealthDataType> types = GetPlatform.isIOS ? dataTypesIOS : dataTypesAndroid;
+    List<HealthDataType> types = dataTypesZone2;
     List<HealthDataAccess> permissions = [];
 
     // Determine permissions based on requested data types
@@ -243,17 +256,17 @@ class HealthService extends GetxService {
     await Permission.activityRecognition.request();
     await Permission.location.request();
 
-    final status = await health.value!.getHealthConnectSdkStatus();
+    final status = await Health().getHealthConnectSdkStatus();
     logger.i('Health Connect SDK Status: $status');
     logger.i('Types count: ${types.length}');
     logger.i('Permissions count: ${permissions.length}');
 
-    final hasPermissions = await health.value!.hasPermissions(types, permissions: permissions);
+    final hasPermissions = await Health().hasPermissions(types, permissions: permissions);
 
     bool authorized = false;
     if (hasPermissions != null && !hasPermissions) {
       try {
-        authorized = await health.value!.requestAuthorization(types, permissions: permissions);
+        authorized = await Health().requestAuthorization(types, permissions: permissions);
       } catch (error) {
         logger.e("Exception in authorize: $error");
       }
@@ -269,10 +282,10 @@ class HealthService extends GetxService {
     DateTime startTime = await getStartTimeForTimeFrame(timeFrame: timeFrame, endTime: endTime);
 
     final nowPlus = endTime ?? DateTime.now().add(const Duration(hours: 1));
-    final healthData = await health.value!
-        .getHealthDataFromTypes(types: types, startTime: startTime, endTime: nowPlus);
+    final healthData =
+        await Health().getHealthDataFromTypes(types: types, startTime: startTime, endTime: nowPlus);
     logger.i('Water Health data: $healthData');
-    return health.value!.removeDuplicates(healthData);
+    return Health().removeDuplicates(healthData);
   }
 
   Future<List<HealthDataPoint>> getStepData(
@@ -280,9 +293,9 @@ class HealthService extends GetxService {
     final types = [HealthDataType.STEPS];
     DateTime startTime = await getStartTimeForTimeFrame(timeFrame: timeFrame, endTime: endTime);
     final nowPlus = endTime ?? DateTime.now().add(const Duration(hours: 1));
-    final healthData = await health.value!
-        .getHealthDataFromTypes(types: types, startTime: startTime, endTime: nowPlus);
-    return health.value!.removeDuplicates(healthData);
+    final healthData =
+        await Health().getHealthDataFromTypes(types: types, startTime: startTime, endTime: nowPlus);
+    return Health().removeDuplicates(healthData);
   }
 
   Future<List<HealthDataPoint>> getWeightData(
@@ -290,9 +303,9 @@ class HealthService extends GetxService {
     final types = [HealthDataType.WEIGHT];
     DateTime startTime = await getStartTimeForTimeFrame(timeFrame: timeFrame, endTime: endTime);
     final nowPlus = endTime ?? DateTime.now().add(const Duration(hours: 1));
-    final healthData = await health.value!
-        .getHealthDataFromTypes(types: types, startTime: startTime, endTime: nowPlus);
-    return health.value!.removeDuplicates(healthData);
+    final healthData =
+        await Health().getHealthDataFromTypes(types: types, startTime: startTime, endTime: nowPlus);
+    return Health().removeDuplicates(healthData);
   }
 
   Future<List<HealthDataPoint>> getMealData(
@@ -303,15 +316,15 @@ class HealthService extends GetxService {
 
     final nowPlus = endTime ?? DateTime.now().add(const Duration(hours: 1));
 
-    final healthData = await health.value!
+    final healthData = await Health()
         .getHealthDataFromTypes(types: types, startTime: calculatedStartTime, endTime: nowPlus);
     logger.i('Health Data: $healthData');
-    return health.value!.removeDuplicates(healthData);
+    return Health().removeDuplicates(healthData);
   }
 
   Future<HealthConnectSdkStatus> getHealthConnectSdkStatus() async {
     try {
-      final hcStatus = await health.value!.getHealthConnectSdkStatus();
+      final hcStatus = await Health().getHealthConnectSdkStatus();
       logger.i('Health Connect SDK Status: $hcStatus');
       status.value = hcStatus!; // Use null assertion operator to ensure non-null value
       return hcStatus; // Add this return statement
@@ -326,7 +339,7 @@ class HealthService extends GetxService {
       final now = DateTime.now();
       final earlier = now.subtract(const Duration(minutes: 1));
       // Save the weight data point to Health
-      await health.value!.writeHealthData(
+      await Health().writeHealthData(
           unit: HealthDataUnit.KILOGRAM,
           value: weight,
           type: HealthDataType.WEIGHT,
@@ -346,7 +359,7 @@ class HealthService extends GetxService {
       final now = DateTime.now();
       final earlier = now.subtract(const Duration(minutes: 1));
       // Save the weight data point to Health
-      await health.value!.writeHealthData(
+      await Health().writeHealthData(
           value: water,
           type: HealthDataType.WATER,
           recordingMethod: RecordingMethod.manual,
@@ -365,7 +378,7 @@ class HealthService extends GetxService {
     final earlier = now.subtract(const Duration(minutes: 1));
 
     try {
-      final result = await health.value!.writeMeal(
+      final result = await Health().writeMeal(
           mealType: MealType.BREAKFAST,
           startTime: earlier,
           endTime: now,
@@ -381,6 +394,7 @@ class HealthService extends GetxService {
           fatSaturated: meal.saturatedValue * qty,
           sugar: meal.sugarValue * qty,
           zinc: meal.mealTypeValue,
+          manganese: qty, // using this to store the serving quantity
           recordingMethod: RecordingMethod.manual);
       return result;
     } catch (e) {
@@ -390,7 +404,7 @@ class HealthService extends GetxService {
   }
 
   Future<void> deleteData(HealthDataType type, DateTime startTime, DateTime endTime) async {
-    final result = await health.value!.delete(
+    final result = await Health().delete(
       type: HealthDataType.NUTRITION,
       startTime: startTime,
       endTime: endTime,

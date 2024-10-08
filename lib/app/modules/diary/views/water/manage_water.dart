@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:numberpicker/numberpicker.dart';
-import '../controllers/diary_controller.dart';
+import '../../controllers/diary_controller.dart';
 
 class WaterBottomSheet extends GetView<DiaryController> {
   const WaterBottomSheet({super.key});
