@@ -1,5 +1,4 @@
 import 'package:zone2/app/style/palette.dart';
-import 'package:zone2/app/widgets/skinner/animated_sidebar_nav/sidebar.dart';
 import 'package:flutter/material.dart';
 
 import 'package:get/get.dart';
@@ -21,14 +20,14 @@ class HomeViewLandscapeSmall extends GetView<HomeController> {
             body: Row(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Expanded(
-                  flex: 1,
-                  child: AnimatedSideBar(
-                    items: controller.navBarItems,
-                    itemTapped: (index) => controller.changePage(index),
-                    currentIndex: controller.contentIndex.value,
-                  ),
-                ),
+                // Expanded(
+                //   flex: 1,
+                //   child: AnimatedSideBar(
+                //     items: controller.navBarItems,
+                //     itemTapped: (index) => controller.changePage(index),
+                //     currentIndex: controller.contentIndex.value,
+                //   ),
+                // ),
                 Expanded(
                   flex: 4,
                   child: Navigator(

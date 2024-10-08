@@ -15,14 +15,15 @@ class DiaryView extends GetView<DiaryController> {
   Widget build(BuildContext context) {
     controller.getHealthDataForSelectedDay();
     return Scaffold(
+      appBar: AppBar(backgroundColor: Colors.black26, toolbarHeight: 6.0),
       body: SafeArea(
+        maintainBottomViewPadding: true,
         child: Column(
-          // {{ edit_2 }}
           children: [
             Obx(() => _buildDateNavigation()), // Add date navigation component
             Expanded(
               child: ListView(
-                padding: const EdgeInsets.all(16.0),
+                padding: const EdgeInsets.all(8.0),
                 children: [
                   Obx(
                     () => _buildDiaryCard(

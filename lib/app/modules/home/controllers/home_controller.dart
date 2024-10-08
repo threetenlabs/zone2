@@ -1,6 +1,8 @@
 import 'dart:async';
 
+import 'package:animated_notch_bottom_bar/animated_notch_bottom_bar/animated_notch_bottom_bar.dart';
 import 'package:app_links/app_links.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:zone2/app/modules/diary/bindings/diary_binding.dart';
 import 'package:zone2/app/modules/diary/views/diary_view.dart';
 
@@ -12,11 +14,9 @@ import 'package:zone2/app/modules/track/bindings/track_binding.dart';
 import 'package:zone2/app/modules/track/views/track_view.dart';
 import 'package:zone2/app/services/firebase_service.dart';
 import 'package:zone2/app/style/palette.dart';
-import 'package:zone2/app/widgets/skinner/animated_nav_bar/navbar.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:logger/logger.dart';
-import 'package:outline_material_icons/outline_material_icons.dart';
 
 class HomeController extends GetxController {
   final contentIndex = 0.obs;
@@ -24,8 +24,9 @@ class HomeController extends GetxController {
   final palette = Get.find<Palette>();
   final logger = Get.find<Logger>();
   final firebaseService = Get.find<FirebaseService>();
+  final NotchBottomBarController notchController = NotchBottomBarController(index: 0);
 
-  RxList<NavBarItemData> navBarItems = RxList<NavBarItemData>();
+  RxList<BottomBarItem> navBarItems = RxList<BottomBarItem>();
   late AppLinks appLinks;
   StreamSubscription<Uri>? linkSubscription;
 
@@ -33,11 +34,55 @@ class HomeController extends GetxController {
   void onInit() {
     super.onInit();
 
+    // navBarItems.value = [
+    //   NavBarItemData("Diary", OMIcons.book, 110, palette.mainMenuGames),
+    //   NavBarItemData("Zone", OMIcons.trackChanges, 115, palette.mainMenuSettings),
+    //   NavBarItemData("Track", OMIcons.barChart, 100, palette.mainMenuStore),
+    //   NavBarItemData("Profile", OMIcons.accountCircle, 105, palette.mainMenuProfile),
+    // ];
+
     navBarItems.value = [
-      NavBarItemData("Diary", OMIcons.book, 110, palette.mainMenuGames),
-      NavBarItemData("Zone", OMIcons.trackChanges, 115, palette.mainMenuSettings),
-      NavBarItemData("Track", OMIcons.barChart, 100, palette.mainMenuStore),
-      NavBarItemData("Profile", OMIcons.accountCircle, 105, palette.mainMenuProfile),
+      const BottomBarItem(
+        inActiveItem: Icon(
+          FontAwesomeIcons.listCheck,
+          color: Colors.blueGrey,
+        ),
+        activeItem: Icon(
+          FontAwesomeIcons.listCheck,
+          color: Colors.blueAccent,
+        ),
+        itemLabel: 'Diary',
+      ),
+      const BottomBarItem(
+        inActiveItem: Icon(FontAwesomeIcons.bullseye, color: Colors.blueGrey),
+        activeItem: Icon(
+          FontAwesomeIcons.bullseye,
+          color: Colors.purpleAccent,
+        ),
+        itemLabel: 'Zone',
+      ),
+      const BottomBarItem(
+        inActiveItem: Icon(
+          FontAwesomeIcons.chartLine,
+          color: Colors.blueGrey,
+        ),
+        activeItem: Icon(
+          FontAwesomeIcons.chartLine,
+          color: Colors.pink,
+        ),
+        itemLabel: 'Track',
+      ),
+      const BottomBarItem(
+        inActiveItem: Icon(
+          FontAwesomeIcons.userGear,
+          color: Colors.blueGrey,
+        ),
+        activeItem: Icon(
+          FontAwesomeIcons.userGear,
+          color: Colors.orangeAccent,
+        ),
+        itemLabel: 'Profile',
+      ),
     ];
 
     ever(contentIndex, (_) {
@@ -49,7 +94,7 @@ class HomeController extends GetxController {
 
   void changePage(int index) {
     contentIndex.value = index;
-    Get.toNamed('/${navBarItems[index].title.toLowerCase()}', id: 1);
+    Get.toNamed('/${navBarItems[index].itemLabel!.toLowerCase()}', id: 1);
   }
 
   Route? onGenerateRoute(RouteSettings settings) {
