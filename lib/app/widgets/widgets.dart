@@ -6,4 +6,3 @@ export 'skinner/ui/ui.dart';
 export 'not_implemented.dart';
 export 'app_dialog.dart';
 export 'app_avatar.dart';
-export 'carousel_slider/widget.dart';

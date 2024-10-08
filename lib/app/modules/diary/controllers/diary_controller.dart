@@ -36,7 +36,6 @@ class DiaryController extends GetxController {
 
   @override
   void onInit() async {
-    logger.i('DiaryController onInit');
     super.onInit();
     final now = DateTime.now();
     diaryDate.value = DateTime(now.year, now.month, now.day, 11, 58, 0);
@@ -73,7 +72,7 @@ class DiaryController extends GetxController {
     weightData.sort((a, b) => b.dateTo.compareTo(a.dateTo));
 
     if (weightData.isNotEmpty) {
-      logger.i('Weight data: ${weightData.first}');
+      // logger.i('Weight data: ${weightData.first}');
       final weight = weightData.first.value as NumericHealthValue;
       final weightInKilograms = weight.numericValue.toDouble();
       final weightInPounds =
@@ -91,8 +90,6 @@ class DiaryController extends GetxController {
     // Retrieve water data
     final waterData =
         await healthService.getWaterData(timeFrame: TimeFrame.today, endTime: endTime);
-    logger.i('Water data length: ${waterData.length}');
-
     // Process water data as needed
     if (waterData.isNotEmpty) {
       // Example: Sum total water intake from the retrieved data
@@ -101,7 +98,7 @@ class DiaryController extends GetxController {
       double waterIntakeInOunces =
           await healthService.convertWaterUnit(waterIntakeInLiters, WaterUnit.ounce);
       waterIntake.value = waterIntakeInOunces; // Update the water intake observable
-      logger.i('Total water intake: $waterIntake oz');
+      // logger.i('Total water intake: $waterIntake oz');
       isWaterLogged.value = waterIntake.value > waterGoal.value;
       logger.i('Water logged: $isWaterLogged.value');
     } else {
@@ -109,25 +106,20 @@ class DiaryController extends GetxController {
       isWaterLogged.value = false;
     }
 
-    final allMeals =
-        await healthService.getMealData(timeFrame: TimeFrame.today, endTime: endTime);
-    breakfastData.value = allMeals
-        .where((meal) => (meal.value as NutritionHealthValue).zinc == 1.0)
-        .toList();
-    lunchData.value = allMeals
-        .where((meal) => (meal.value as NutritionHealthValue).zinc == 2.0)
-        .toList();
-    dinnerData.value = allMeals
-        .where((meal) => (meal.value as NutritionHealthValue).zinc == 3.0)
-        .toList();
-    snackData.value = allMeals
-        .where((meal) => (meal.value as NutritionHealthValue).zinc == 4.0)
-        .toList();
-    if (breakfastData.isNotEmpty) {
-      logger.i('Meal data: ${breakfastData.first}');
-    } else {
-      logger.w('No meal data found');
-    }
+    final allMeals = await healthService.getMealData(timeFrame: TimeFrame.today, endTime: endTime);
+    breakfastData.value =
+        allMeals.where((meal) => (meal.value as NutritionHealthValue).zinc == 1.0).toList();
+    lunchData.value =
+        allMeals.where((meal) => (meal.value as NutritionHealthValue).zinc == 2.0).toList();
+    dinnerData.value =
+        allMeals.where((meal) => (meal.value as NutritionHealthValue).zinc == 3.0).toList();
+    snackData.value =
+        allMeals.where((meal) => (meal.value as NutritionHealthValue).zinc == 4.0).toList();
+    // if (breakfastData.isNotEmpty) {
+    //   logger.i('Meal data: ${breakfastData.first}');
+    // } else {
+    //   logger.w('No meal data found');
+    // }
   }
 
   Future<void> saveWeightToHealth() async {

@@ -4,7 +4,6 @@ import 'package:zone2/app/widgets/responsive_layout.dart';
 import 'package:flutter/material.dart';
 
 import 'package:get/get.dart';
-import 'package:logger/logger.dart';
 
 import '../controllers/profile_controller.dart';
 
@@ -13,8 +12,6 @@ class ProfileView extends GetView<ProfileController> {
 
   @override
   Widget build(BuildContext context) {
-    final logger = Get.find<Logger>();
-    logger.i('ProfileView Built');
     return ResponsiveLayout(
       renderSmallPortrait: () => const ProfileViewPortraitSmall(),
       renderMediumPortrait: () => const ProfileViewPortraitSmall(),

@@ -53,11 +53,34 @@ class Palette {
   Color get mainMenuStore => const Color.fromARGB(255, 212, 109, 145);
   Color get mainMenuProfile => const Color.fromARGB(255, 213, 252, 159);
 
-  ThemeData get primaryTheme => ThemeData(
+  ThemeData get lightTheme => ThemeData(
+        useMaterial3: true,
+
+        // Define the default brightness and colors.
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: const Color.fromARGB(255, 109, 1, 106),
+          // contrastLevel: 0.5,
+        ),
+        textTheme: TextTheme(
+          displayLarge: const TextStyle(
+            fontSize: 72,
+            fontWeight: FontWeight.bold,
+          ),
+          // ···
+          titleLarge: GoogleFonts.oswald(
+            fontSize: 30,
+            fontStyle: FontStyle.italic,
+          ),
+          bodyMedium: GoogleFonts.merriweather(),
+          displaySmall: GoogleFonts.pacifico(),
+        ),
+      );
+
+  ThemeData get darkTheme => ThemeData(
         useMaterial3: true,
         // Define the default brightness and colors.
         colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color.fromARGB(255, 10, 119, 79),
+          seedColor: const Color.fromARGB(255, 109, 1, 106),
           // contrastLevel: 0.5,
         ),
         textTheme: TextTheme(

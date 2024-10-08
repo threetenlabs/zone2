@@ -2,6 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:logger/logger.dart';
@@ -11,8 +12,6 @@ class GetStoragePersistence {
   final logger = Get.find<Logger>();
 
   final String userHasRemovedAdsKey = 'userHasRemovedAdsKey';
-  final String firstScribologyVisitKey = 'firstScribologyVisitKey';
-  final String firstScribologyDrawKey = 'firstScribologyDrawKey';
   final String isIntroductionFinished = 'isIntroductionFinishedKey';
   final String soundOnKey = 'soundsOnKey';
   final String isAboveMinimumSupportedVersionKey = 'isAboveMinimumSupportedVersionKey';
@@ -34,14 +33,6 @@ class GetStoragePersistence {
     await box.write(soundOnKey, value);
   }
 
-  Future<void> saveIsFirstScribologyVisit(bool value) async {
-    await box.write(firstScribologyVisitKey, value);
-  }
-
-  Future<void> saveIsFirstScribologyDraw(bool value) async {
-    await box.write(firstScribologyDrawKey, value);
-  }
-
   Future<void> saveIsIntroductionFinished(bool value) async {
     await box.write(isIntroductionFinished, value);
   }
@@ -52,6 +43,11 @@ class GetStoragePersistence {
 
   Future<void> saveDarkMode(bool value) async {
     await box.write(darkModeKey, value);
+  }
+
+  bool getDarkMode() {
+    return box.read(darkModeKey) ??
+        PlatformDispatcher.instance.platformBrightness == Brightness.dark;
   }
 
   void erase() {

@@ -2,6 +2,9 @@
 
 import 'package:zone2/app/modules/global_bindings.dart';
 import 'package:zone2/app/services/forced_update_service.dart';
+import 'package:zone2/app/services/shared_preferences_service.dart';
+import 'package:zone2/app/services/theme_service.dart';
+import 'package:zone2/app/style/theme.dart';
 import 'package:zone2/app/style/palette.dart';
 import 'package:zone2/firebase_options.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -26,6 +29,7 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await GetStorage.init();
   await GetStorage.init('food_data');
+  await GetStorage.init('theme_data');
 
   tz.initializeTimeZones();
 
@@ -38,6 +42,8 @@ Future<void> main() async {
 
   Get.lazyPut<Logger>(() => logger, fenix: true);
 
+  Get.put(ThemeService(), permanent: true);
+
   final remoteConfig = FirebaseRemoteConfig.instance;
   await remoteConfig.setConfigSettings(RemoteConfigSettings(
     fetchTimeout: const Duration(minutes: 1),
@@ -46,7 +52,14 @@ Future<void> main() async {
   await remoteConfig.fetchAndActivate();
   Get.put<FirebaseRemoteConfig>(remoteConfig, permanent: true);
 
-  final GlobalBindings globalBindings = GlobalBindings(palette: palette, logger: logger);
+  // Persisted settings service
+  final sharedPreferencesService = SharedPreferencesService();
+  await sharedPreferencesService.loadStateFromPersistence();
+  logger.w('poop');
+  Get.lazyPut(() => sharedPreferencesService, fenix: true);
+
+  final GlobalBindings globalBindings = GlobalBindings(
+      palette: palette, logger: logger, sharedPreferencesService: sharedPreferencesService);
 
   final forcedUpdateService = ForcedUpdateService();
   await forcedUpdateService.setIsAboveMinimumSupportedVersion();
@@ -88,8 +101,9 @@ Future<void> main() async {
       title: "Zone 2",
       initialBinding: globalBindings,
       debugShowCheckedModeBanner: true,
-      themeMode: ThemeMode.light,
-      theme: palette.primaryTheme,
+      themeMode: Get.isDarkMode ? ThemeMode.dark : ThemeMode.light,
+      theme: MaterialTheme.light(),
+      darkTheme: MaterialTheme.dark(),
       initialRoute: Routes.introOrHome,
       getPages: AppPages.routes,
       builder: EasyLoading.init(),

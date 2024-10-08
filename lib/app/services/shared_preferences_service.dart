@@ -1,4 +1,5 @@
 import 'dart:async';
+
 import 'persistence/local_storage_settings_persistence.dart';
 import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'package:get/get.dart';
@@ -15,8 +16,6 @@ class SharedPreferencesService {
   final _userHasRemovedAds = false.obs;
   final _soundsOn = true.obs;
   final _darkMode = false.obs;
-  final _isFirstScribologyVisit = true.obs;
-  final _isFirstScribologyDraw = true.obs;
   final _isIntroductionFinished = true.obs;
 
   final GetStoragePersistence _persistence;
@@ -34,18 +33,21 @@ class SharedPreferencesService {
       _soundsOnStreamController.add(value ?? false);
     });
     _persistence.box.listenKey(_persistence.darkModeKey, (value) {
+      logger.i('Dark mode: $value');
       _darkModeStreamController.add(value ?? false);
     });
   }
 
   /// Loads the state from persistence.
-  void loadStateFromPersistence() {
+  Future<void> loadStateFromPersistence() async {
     // implementation goes here
 
     _userHasRemovedAds.value = _persistence.getUserHasRemovedAds() || _userHasRemovedAds.value;
     // On the web, sound can only start after user interaction, so
     // we need to prompt user.
     _soundsOn.value = _persistence.getSoundsOn() || _soundsOn.value;
+
+    _darkMode.value = _persistence.getDarkMode() || _darkMode.value;
   }
 
   void resetPersistedSettings() {
@@ -88,29 +90,6 @@ class SharedPreferencesService {
 
   Stream<bool> get soundsOnStream => _soundsOnStreamController.stream;
   Stream<bool> get darkModeStream => _darkModeStreamController.stream;
-  // First Scribology Visit
-  bool get isFirstScribologyVisit => _getIsFirstScribologyVisit();
-
-  bool _getIsFirstScribologyVisit() {
-    return _persistence.box.read(_persistence.firstScribologyVisitKey) ?? true;
-  }
-
-  Future<void> setIsFirstScribologyVisit(bool value) async {
-    _isFirstScribologyVisit.value = value;
-    await _persistence.saveIsFirstScribologyVisit(value);
-  }
-
-  // First Scribology Acknowledge
-  bool get isFirstScribologyDraw => _getIsFirstScribologyDraw();
-
-  bool _getIsFirstScribologyDraw() {
-    return _persistence.box.read(_persistence.firstScribologyDrawKey) ?? true;
-  }
-
-  Future<void> setIsFirstScribologyDraw(bool value) async {
-    _isFirstScribologyDraw.value = value;
-    await _persistence.saveIsFirstScribologyDraw(value);
-  }
 
   //On Logout delete all shared preferences
   Future<void> deleteAll() async {
@@ -126,7 +105,9 @@ class SharedPreferencesService {
   bool get isDarkMode => _getIsDarkMode();
 
   bool _getIsDarkMode() {
-    return _persistence.box.read(_persistence.darkModeKey) ?? false;
+    final dm = _persistence.box.read(_persistence.darkModeKey);
+    logger.i('Dark mode: $dm');
+    return dm ?? false;
   }
 
   Future<bool> setIsAboveMinimumSupportedVersion() async {

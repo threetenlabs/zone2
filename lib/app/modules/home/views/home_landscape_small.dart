@@ -1,4 +1,3 @@
-import 'package:zone2/app/style/palette.dart';
 import 'package:flutter/material.dart';
 
 import 'package:get/get.dart';
@@ -10,34 +9,21 @@ class HomeViewLandscapeSmall extends GetView<HomeController> {
 
   @override
   Widget build(BuildContext context) {
-    final palette = Get.find<Palette>();
-
     return LayoutBuilder(builder: (context, constraints) {
       return GetBuilder<HomeController>(
-        builder: (controller) => Theme(
-          data: palette.primaryTheme,
-          child: Scaffold(
-            body: Row(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                // Expanded(
-                //   flex: 1,
-                //   child: AnimatedSideBar(
-                //     items: controller.navBarItems,
-                //     itemTapped: (index) => controller.changePage(index),
-                //     currentIndex: controller.contentIndex.value,
-                //   ),
-                // ),
-                Expanded(
-                  flex: 4,
-                  child: Navigator(
-                    key: Get.nestedKey(1),
-                    initialRoute: '/diary',
-                    onGenerateRoute: controller.onGenerateRoute,
-                  ),
+        builder: (controller) => Scaffold(
+          body: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Expanded(
+                flex: 4,
+                child: Navigator(
+                  key: Get.nestedKey(1),
+                  initialRoute: '/diary',
+                  onGenerateRoute: controller.onGenerateRoute,
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       );

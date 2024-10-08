@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:zone2/app/services/shared_preferences_service.dart';
-import 'package:zone2/app/style/palette.dart';
+import 'package:zone2/app/services/theme_service.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -11,9 +11,8 @@ class ProfileViewPortraitSmall extends GetWidget<ProfileController> {
 
   @override
   Widget build(BuildContext context) {
-    final Palette palette = Palette();
+    final themeService = ThemeService.to;
     final settings = SharedPreferencesService.to;
-
     return PopScope(
       onPopInvokedWithResult: (bool value, Object? result) {
         return; // Updated to use onPopInvokedWithResult
@@ -21,16 +20,11 @@ class ProfileViewPortraitSmall extends GetWidget<ProfileController> {
       child: LayoutBuilder(
         builder: (BuildContext context, BoxConstraints constraints) {
           return GetBuilder<ProfileController>(
-            builder: (controller) => Theme(
-              data: palette.primaryTheme,
-              child: PopScope(
-                canPop: false,
-                child: Scaffold(
-                  appBar: AppBar(
-                    title: const Text('Zone 2 Profile'),
-                    centerTitle: true,
-                  ),
-                  body: Padding(
+            builder: (controller) => PopScope(
+              canPop: false,
+              child: Scaffold(
+                body: SafeArea(
+                  child: Padding(
                     padding: const EdgeInsets.all(16.0),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.start,
@@ -46,11 +40,11 @@ class ProfileViewPortraitSmall extends GetWidget<ProfileController> {
                         ),
                         const SizedBox(height: 8.0),
                         SettingsToggle(
-                          settings.isDarkMode ? 'Dark Mode' : 'Light Mode',
-                          Icon(settings.isDarkMode
+                          themeService.isDarkMode.value ? 'Dark Mode' : 'Light Mode',
+                          Icon(themeService.isDarkMode.value
                               ? Icons.dark_mode_outlined
                               : Icons.light_mode_outlined),
-                          onSelected: () => settings.toggleDarkMode(),
+                          onSelected: () => themeService.toggleTheme(),
                         ),
                         const SizedBox(height: 8.0),
                         Expanded(child: Container()),

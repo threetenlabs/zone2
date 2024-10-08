@@ -1,5 +1,4 @@
 import 'package:zone2/app/modules/zone/controllers/zone_controller.dart';
-import 'package:zone2/app/style/palette.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:package_info_plus/package_info_plus.dart';
@@ -9,7 +8,6 @@ class ZonePortraitSmall extends GetWidget<ZoneController> {
 
   @override
   Widget build(BuildContext context) {
-    final Palette palette = Palette();
     return PopScope(
       onPopInvokedWithResult: (bool value, Object? result) {
         return;
@@ -17,32 +15,29 @@ class ZonePortraitSmall extends GetWidget<ZoneController> {
       child: LayoutBuilder(
         builder: (BuildContext context, BoxConstraints constraints) {
           return GetBuilder<ZoneController>(
-            builder: (controller) => Theme(
-              data: palette.primaryTheme,
-              child: PopScope(
-                canPop: false,
-                child: Scaffold(
-                  body: SafeArea(
-                    child: Center(
-                      child: Column(
-                        children: <Widget>[
-                          const Spacer(),
-                          Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: FutureBuilder<PackageInfo>(
-                              future: PackageInfo.fromPlatform(),
-                              builder: (BuildContext context, AsyncSnapshot<PackageInfo> snapshot) {
-                                if (snapshot.hasData) {
-                                  return Text(
-                                      'Version: ${snapshot.data?.version}(${snapshot.data?.buildNumber})');
-                                } else {
-                                  return const CircularProgressIndicator();
-                                }
-                              },
-                            ),
+            builder: (controller) => PopScope(
+              canPop: false,
+              child: Scaffold(
+                body: SafeArea(
+                  child: Center(
+                    child: Column(
+                      children: <Widget>[
+                        const Spacer(),
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: FutureBuilder<PackageInfo>(
+                            future: PackageInfo.fromPlatform(),
+                            builder: (BuildContext context, AsyncSnapshot<PackageInfo> snapshot) {
+                              if (snapshot.hasData) {
+                                return Text(
+                                    'Version: ${snapshot.data?.version}(${snapshot.data?.buildNumber})');
+                              } else {
+                                return const CircularProgressIndicator();
+                              }
+                            },
                           ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
                   ),
                 ),

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:logger/logger.dart';
 import 'package:zone2/app/services/shared_preferences_service.dart';
+import 'package:zone2/app/services/theme_service.dart';
 
 class ProfileController extends GetxController {
   final logger = Get.find<Logger>();
@@ -19,6 +20,11 @@ class ProfileController extends GetxController {
     super.onInit();
 
     userNameController = TextEditingController(text: authService.appUser.value.name);
+
+    ever(ThemeService.to.isDarkMode, (value) {
+      logger.i('darkMode: $value');
+      update();
+    });
 
     settings.darkModeStream.listen((value) {
       logger.i('darkMode: $value');
@@ -38,14 +44,4 @@ class ProfileController extends GetxController {
   }
 
   void increment() => count.value++;
-
-  void updateUsername(String userName) {
-    logger.i('updating User Name: $userName');
-
-    authService.appUser.update((user) {
-      user?.name = userNameController.text;
-      logger.i('updating User Name: ${user?.name}');
-    });
-    authService.updateUserDetails(authService.appUser.value);
-  }
 }

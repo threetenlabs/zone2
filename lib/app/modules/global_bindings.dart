@@ -19,16 +19,14 @@ import 'package:super_tooltip/super_tooltip.dart';
 class GlobalBindings extends Bindings {
   final Palette palette;
   final Logger logger;
+  final SharedPreferencesService sharedPreferencesService;
 
-  GlobalBindings({required this.palette, required this.logger});
+  GlobalBindings({required this.palette, required this.logger, required this.sharedPreferencesService});
 
   @override
   dependencies() {
     //This should remain first as many things will log to Analytics
     FirebaseAnalytics.instance.setAnalyticsCollectionEnabled(!kDebugMode);
-
-    // Settings needed by audio controller to get audio settings from persistence
-    Get.lazyPut(() => SharedPreferencesService()..loadStateFromPersistence(), fenix: true);
 
     Get.put<FirebaseAnalytics>(FirebaseAnalytics.instance, permanent: true);
 

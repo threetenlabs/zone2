@@ -258,8 +258,6 @@ class HealthService extends GetxService {
 
     final status = await Health().getHealthConnectSdkStatus();
     logger.i('Health Connect SDK Status: $status');
-    logger.i('Types count: ${types.length}');
-    logger.i('Permissions count: ${permissions.length}');
 
     final hasPermissions = await Health().hasPermissions(types, permissions: permissions);
 
@@ -271,8 +269,6 @@ class HealthService extends GetxService {
         logger.e("Exception in authorize: $error");
       }
     }
-
-    logger.i('Authorized: $authorized');
     return authorized;
   }
 
@@ -284,7 +280,6 @@ class HealthService extends GetxService {
     final nowPlus = endTime ?? DateTime.now().add(const Duration(hours: 1));
     final healthData =
         await Health().getHealthDataFromTypes(types: types, startTime: startTime, endTime: nowPlus);
-    logger.i('Water Health data: $healthData');
     return Health().removeDuplicates(healthData);
   }
 
@@ -318,14 +313,12 @@ class HealthService extends GetxService {
 
     final healthData = await Health()
         .getHealthDataFromTypes(types: types, startTime: calculatedStartTime, endTime: nowPlus);
-    logger.i('Health Data: $healthData');
     return Health().removeDuplicates(healthData);
   }
 
   Future<HealthConnectSdkStatus> getHealthConnectSdkStatus() async {
     try {
       final hcStatus = await Health().getHealthConnectSdkStatus();
-      logger.i('Health Connect SDK Status: $hcStatus');
       status.value = hcStatus!; // Use null assertion operator to ensure non-null value
       return hcStatus; // Add this return statement
     } catch (e) {

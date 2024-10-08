@@ -1,3 +1,4 @@
+import 'package:get/get.dart';
 import 'package:zone2/app/extensions/extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:super_tooltip/super_tooltip.dart';
@@ -38,16 +39,17 @@ class SignInToolTip extends StatelessWidget {
               style: context.bodyMedium!,
               children: <TextSpan>[
                 TextSpan(
-                  text: 'Advantages of signing in:\n',
+                  text:
+                      'Zone 2 uses your platform account in order to securly access data in ${GetPlatform.isAndroid ? 'Google Health Connect' : 'Apple Health'}.\n',
                   style: context.boldStyle?.copyWith(
                     color: Colors.black,
                   ),
                 ),
-                const TextSpan(text: 'Chat with players\n'),
-                const TextSpan(text: 'Bedlamites\n'),
-                const TextSpan(text: 'Achievements\n'),
-                const TextSpan(text: 'Historical stats\n'),
-                const TextSpan(text: 'Purchasable Ad-Free experience\n'),
+                const TextSpan(text: 'Read & Write Exercise Data\n'),
+                const TextSpan(text: 'Read & Write Nutrition Data\n'),
+                const TextSpan(text: 'Read & Write Water Intake Data\n'),
+                const TextSpan(text: 'Read Heart Rate Data\n'),
+                const TextSpan(text: 'Read & Write Weight Data\n'),
                 TextSpan(
                   text: '\nWe respect your privacy and will not sell your data.',
                   style: context.italicStyle,
