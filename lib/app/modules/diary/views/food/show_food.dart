@@ -145,50 +145,26 @@ class ShowFoodBottomSheet extends GetView<DiaryController> {
     }
     return Obx(() {
       if (mealList.isNotEmpty) {
-        return ListView.builder(
-          shrinkWrap: true,
-          itemCount: mealList.length,
-          itemBuilder: (context, index) {
-            final item = mealList[index];
-            final nutritionHealthValue = item.value as NutritionHealthValue;
-            return GestureDetector(
-              // {{ edit_1 }}
-              onLongPress: () async {
-                // Show confirmation dialog
-                final confirm = await showDialog<bool>(
-                  context: context,
-                  builder: (BuildContext context) {
-                    return AlertDialog(
-                      title: const Text('Confirm Deletion'),
-                      content: const Text('Are you sure you want to delete this meal?'),
-                      actions: [
-                        TextButton(
-                          onPressed: () => Navigator.of(context).pop(false), // No
-                          child: const Text('No'),
-                        ),
-                        TextButton(
-                          onPressed: () => Navigator.of(context).pop(true), // Yes
-                          child: const Text('Yes'),
-                        ),
-                      ],
-                    );
-                  },
+        return Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxHeight: 200),
+            child: CarouselView(
+              itemExtent: 330,
+              shrinkExtent: 200,
+              children: List<Widget>.generate(mealList.length, (int index) {
+                final item = mealList[index];
+                final nutritionHealthValue = item.value as NutritionHealthValue;
+                return UncontainedLayoutCard(
+                  index: index,
+                  label: nutritionHealthValue.name ?? '',
+                  calories: nutritionHealthValue.calories ?? 0.0,
+                  protein: nutritionHealthValue.protein ?? 0.0,
+                  fat: nutritionHealthValue.fat ?? 0.0,
+                  carbs: nutritionHealthValue.carbs ?? 0.0,
                 );
-
-                // If confirmed, call deleteFood method
-                if (confirm == true) {
-                  controller.deleteFood(item.dateFrom, item.dateTo);
-                }
-              },
-              child: ListTile(
-                title: Text('Food: ${nutritionHealthValue.name}'),
-                subtitle: Text(
-                  'Calories: ${nutritionHealthValue.calories?.toStringAsFixed(1) ?? '0.0'} | Protein: ${nutritionHealthValue.protein?.toStringAsFixed(1) ?? '0.0'}g | '
-                  'Fat: ${nutritionHealthValue.fat?.toStringAsFixed(1) ?? '0.0'}g | Carbs: ${nutritionHealthValue.carbs?.toStringAsFixed(1) ?? '0.0'}g',
-                ),
-              ),
-            );
-          },
+              }),
+            ),
+          ),
         );
       } else {
         return const Text('No meals logged');
@@ -205,6 +181,70 @@ class ShowFoodBottomSheet extends GetView<DiaryController> {
       builder: (context) {
         return const AddFoodBottomSheet();
       },
+    );
+  }
+}
+
+class UncontainedLayoutCard extends StatelessWidget {
+  const UncontainedLayoutCard({
+    super.key,
+    required this.index,
+    required this.label,
+    required this.calories,
+    required this.protein,
+    required this.fat,
+    required this.carbs,
+  });
+
+  final int index;
+  final String label;
+  final double calories;
+  final double protein;
+  final double fat;
+  final double carbs;
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      elevation: 4,
+      margin: const EdgeInsets.all(8),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              label,
+              style: const TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+                color: Colors.black,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Calories: ${calories.toStringAsFixed(1)} kcal',
+              style: const TextStyle(fontSize: 16),
+            ),
+            Text(
+              'Protein: ${protein.toStringAsFixed(1)} g',
+              style: const TextStyle(fontSize: 16),
+            ),
+            Text(
+              'Fat: ${fat.toStringAsFixed(1)} g',
+              style: const TextStyle(fontSize: 16),
+            ),
+            Text(
+              'Carbs: ${carbs.toStringAsFixed(1)} g',
+              style: const TextStyle(fontSize: 16),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
