@@ -1,6 +1,7 @@
 import 'package:get/get.dart';
 import 'package:logger/logger.dart';
 import 'package:health/health.dart';
+import 'package:zone2/app/models/food.dart';
 import 'package:zone2/app/services/food_service.dart';
 import 'package:zone2/app/services/health_service.dart';
 import 'package:intl/intl.dart'; // Added for date formatting
@@ -29,6 +30,7 @@ class DiaryController extends GetxController {
   final selectedFood = Rxn<UsdaFood>();
   final foodServingQty = 0.0.obs;
   final selectedMeal = Rxn<PlatformHealthMeal>();
+  final selectedHealthMeal = Rxn<HealthDataPoint>();
   final breakfastData = RxList<HealthDataPoint>();
   final lunchData = RxList<HealthDataPoint>();
   final dinnerData = RxList<HealthDataPoint>();

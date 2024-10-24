@@ -71,7 +71,8 @@ class FoodSearchWidget extends GetWidget<DiaryController> {
       useSafeArea: true,
       context: context,
       builder: (context) {
-        return const FoodDetailBottomSheet(); // Pass the selected food
+        return const FoodDetailBottomSheet(
+            conversionType: ConversionType.usda); // Pass the selected food
       },
     );
   }

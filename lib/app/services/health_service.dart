@@ -2,7 +2,7 @@ import 'package:health/health.dart';
 import 'package:get/get.dart';
 import 'package:logger/logger.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:zone2/app/services/food_service.dart';
+import 'package:zone2/app/models/food.dart';
 import 'package:zone2/app/services/notification_service.dart';
 
 enum WeightUnit { kilogram, pound }

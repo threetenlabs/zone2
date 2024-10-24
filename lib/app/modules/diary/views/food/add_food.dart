@@ -10,69 +10,67 @@ class AddFoodBottomSheet extends GetView<DiaryController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => _showSearchBottomSheet(context), // Call search method
-        child: const Icon(Icons.add),
-      ),
-      body: Container(
-        height: MediaQuery.of(context).size.height, // Full screen height
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            // Close button
-            Align(
-              alignment: Alignment.topLeft,
-              child: IconButton(
-                icon: const Icon(Icons.close),
-                onPressed: () => Navigator.pop(context), // Close the bottom sheet
+      body: SafeArea(
+        child: Container(
+          height: MediaQuery.of(context).size.height, // Full screen height
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            children: [
+              // Close button
+              Align(
+                alignment: Alignment.topLeft,
+                child: IconButton(
+                  icon: const Icon(Icons.close),
+                  onPressed: () => Navigator.pop(context), // Close the bottom sheet
+                ),
               ),
-            ),
-            Text(
-              controller.selectedMealType.value.toString().split('.').last,
-              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                // Add Calories button
-                ElevatedButton(
-                  onPressed: () {
-                    // Add your add calories logic here
-                  },
-                  style: ElevatedButton.styleFrom(
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10), // Rounded corners
+              Text(
+                controller.selectedMealType.value.toString().split('.').last,
+                style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  // Add Calories button
+                  ElevatedButton(
+                    onPressed: () {
+                      // Add your add calories logic here
+                    },
+                    style: ElevatedButton.styleFrom(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10), // Rounded corners
+                      ),
                     ),
+                    child: const Text('Add Calories'),
                   ),
-                  child: const Text('Add Calories'),
-                ),
-                // Search button
-                ElevatedButton(
-                  onPressed: () => _showSearchBottomSheet(context), // Call search method
-                  style: ElevatedButton.styleFrom(
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10), // Rounded corners
+                  // Search button
+                  ElevatedButton(
+                    onPressed: () => _showSearchBottomSheet(context), // Call search method
+                    style: ElevatedButton.styleFrom(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10), // Rounded corners
+                      ),
                     ),
+                    child: const Text('Search'),
                   ),
-                  child: const Text('Search'),
-                ),
-                // Scan Barcode button
-                ElevatedButton(
-                  onPressed: () {
-                    // Add your scan barcode logic here
-                  },
-                  style: ElevatedButton.styleFrom(
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10), // Rounded corners
+                  // Scan Barcode button
+                  ElevatedButton(
+                    onPressed: () {
+                      // Add your scan barcode logic here
+                    },
+                    style: ElevatedButton.styleFrom(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10), // Rounded corners
+                      ),
                     ),
+                    child: const Text('Scan Barcode'),
                   ),
-                  child: const Text('Scan Barcode'),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            _buildMealList(), // Keep the meal list here
-          ],
+                ],
+              ),
+              const SizedBox(height: 16),
+              _buildMealList(), // Keep the meal list here
+            ],
+          ),
         ),
       ),
     );
