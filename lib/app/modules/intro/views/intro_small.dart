@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:introduction_screen/introduction_screen.dart';
 import 'package:zone2/app/modules/intro/views/widgets/birthdate_formatter.dart';
+import 'package:zone2/app/style/theme.dart';
 import 'package:zone2/gen/assets.gen.dart';
 
 class IntroSmall extends GetWidget<IntroController> {
@@ -12,13 +13,25 @@ class IntroSmall extends GetWidget<IntroController> {
 
   @override
   Widget build(BuildContext context) {
-    const bodyStyle = TextStyle(fontSize: 19.0);
+    final bodyStyle = Theme.of(context).textTheme.titleLarge?.copyWith(
+            fontWeight: FontWeight.w400,
+            fontSize: 19,
+            color: Theme.of(context).colorScheme.tertiary) ??
+        const TextStyle(fontWeight: FontWeight.w700, color: Colors.black);
+    final titleStyle = Theme.of(context).textTheme.titleLarge?.copyWith(
+            fontWeight: FontWeight.w700,
+            fontSize: 28,
+            color: Theme.of(context).colorScheme.primary) ??
+        const TextStyle(fontWeight: FontWeight.w700, color: Colors.black);
 
-    const pageDecoration = PageDecoration(
-      titleTextStyle: TextStyle(fontSize: 28.0, fontWeight: FontWeight.w700),
+    final buttonStyle = Theme.of(context).textTheme.titleLarge?.copyWith(
+            fontWeight: FontWeight.w700, fontSize: 16, color: MaterialTheme.coolBlue.value) ??
+        const TextStyle(fontWeight: FontWeight.w400, color: Colors.black);
+    final pageDecoration = PageDecoration(
+      titleTextStyle: titleStyle,
       bodyTextStyle: bodyStyle,
-      bodyPadding: EdgeInsets.fromLTRB(16.0, 0.0, 16.0, 16.0),
-      pageColor: Colors.white,
+      bodyPadding: const EdgeInsets.fromLTRB(16.0, 0.0, 16.0, 16.0),
+      pageColor: Theme.of(context).colorScheme.surface,
       imagePadding: EdgeInsets.zero,
     );
 
@@ -33,10 +46,179 @@ class IntroSmall extends GetWidget<IntroController> {
         pages: [
           PageViewModel(
             title: "Weight Loss Democratized",
-            body: "Losing weight is hard enough, we are here to make it easier",
+            body:
+                "Losing weight is not easy, but it should not cost a fortune in order to be successful",
             image: CommonAssets.images.undraw.undrawConnectedWorldWuay.svg(
-              width: 200,
-              height: 200,
+              width: 300,
+              height: 300,
+            ),
+            decoration: pageDecoration,
+          ),
+          PageViewModel(
+            titleWidget: Padding(
+              padding: EdgeInsets.only(top: 28.0),
+              child: Text(
+                "Demographic Profile",
+                style: titleStyle,
+              ),
+            ),
+            bodyWidget: Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                CommonAssets.images.undraw.undrawPersonalInfoReUr1n.svg(
+                  width: 200,
+                  height: 200,
+                ),
+                Text(
+                  "Let's gather some information about you so that we can provide you with a personalized experience",
+                  style: bodyStyle,
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 20),
+
+                const SizedBox(height: 20),
+                // TextField for Birthdate with formatting
+                TextField(
+                  decoration: const InputDecoration(
+                    labelText: 'Birthdate (MM-DD-YYYY)',
+                    border: OutlineInputBorder(),
+                  ),
+                  keyboardType: TextInputType.datetime,
+                  inputFormatters: [
+                    DateInputFormatter(), // Use the custom formatter
+                  ],
+                  onChanged: (value) {
+                    controller.setBirthdate(value);
+                  },
+                ),
+                const SizedBox(height: 20),
+                // DropdownButton for Gender
+                const SizedBox(height: 20),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text('Select Gender:'),
+                    ToggleButtons(
+                      isSelected: [
+                        controller.zone2Gender.value == 'Male',
+                        controller.zone2Gender.value == 'Female',
+                        controller.zone2Gender.value == 'Intersexual',
+                      ],
+                      onPressed: (int index) {
+                        controller.setGender(['Male', 'Female', 'Intersexual'][index]);
+                      },
+                      children: const <Widget>[
+                        Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 16.0),
+                          child: Text('Male'),
+                        ),
+                        Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 16.0),
+                          child: Text('Female'),
+                        ),
+                        Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 16.0),
+                          child: Text('Intersexual'),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+                // New Row for Height in Feet and Inches
+                const SizedBox(height: 20),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: Row(
+                        children: [
+                          const Text('Height:'),
+                          const SizedBox(width: 8),
+                          SizedBox(
+                            width: 50,
+                            height: 75,
+                            child: DropdownButton<int>(
+                              value: controller.heightFeet.value,
+                              iconSize: 24,
+                              elevation: 16,
+                              itemHeight: 75,
+                              isExpanded: true,
+                              style: TextStyle(
+                                  color: Theme.of(context).colorScheme.primary, fontSize: 20.0),
+                              items: List.generate(
+                                      7, (index) => index + 2) // Generates values from 3 to 8
+                                  .map<DropdownMenuItem<int>>((int value) {
+                                return DropdownMenuItem<int>(
+                                  value: value,
+                                  child: Text(value.toString()),
+                                );
+                              }).toList(),
+                              onChanged: (int? newValue) {
+                                controller.setHeightFeet(newValue ?? 2);
+                              },
+                            ),
+                          ),
+                          const Text('(ft)'),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 20), // Space between feet and inches
+                    Expanded(
+                      child: Row(
+                        children: [
+                          const Text('Height (in):'),
+                          const SizedBox(width: 8), // Space between label and dropdown
+                          SizedBox(
+                            width: 50,
+                            height: 75,
+                            child: DropdownButton<int>(
+                              value: controller.heightInches.value,
+                              iconSize: 24,
+                              elevation: 16,
+                              itemHeight: 75,
+                              isExpanded: true,
+                              style: TextStyle(
+                                  color: Theme.of(context).colorScheme.primary, fontSize: 20.0),
+                              items: List.generate(12, (index) => index)
+                                  .map<DropdownMenuItem<int>>((int value) {
+                                return DropdownMenuItem<int>(
+                                  value: value,
+                                  child: Text(value.toString()),
+                                );
+                              }).toList(),
+                              onChanged: (int? newValue) {
+                                controller.setHeightInches(newValue ?? 0);
+                              },
+                            ),
+                          ),
+                          const Text('(in)'),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                // New TextField for Weight
+                const SizedBox(height: 20),
+                TextField(
+                  controller: controller.weightController,
+                  decoration: const InputDecoration(
+                    labelText: 'Weight (lbs)',
+                    border: OutlineInputBorder(),
+                  ),
+                  keyboardType: TextInputType.number,
+                  onChanged: (value) {
+                    controller.setWeight(value);
+                  },
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Text(
+                    controller.invalidAge.value,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(color: Colors.red, fontSize: 19),
+                  ),
+                ),
+              ],
             ),
             decoration: pageDecoration,
           ),
@@ -55,9 +237,9 @@ class IntroSmall extends GetWidget<IntroController> {
                   width: 200,
                   height: 200,
                 ),
-                const Text(
+                Text(
                   "You're more likely to stick to your goals if you have a motivating force",
-                  style: bodyStyle,
+                  style: bodyStyle, // Removed const
                 ),
                 const SizedBox(height: 20),
                 // Column of OutlinedButtons with padding
@@ -93,52 +275,8 @@ class IntroSmall extends GetWidget<IntroController> {
           ),
           PageViewModel(
             title: "Let's gather some details",
-            bodyWidget: Column(
-              children: [
-                const Text(
-                  "Please enter your birthdate and select your gender",
-                  style: TextStyle(fontSize: 16.0),
-                ),
-                const SizedBox(height: 20),
-                // TextField for Birthdate with formatting
-                TextField(
-                  decoration: const InputDecoration(
-                    labelText: 'Birthdate (MM-DD-YYYY)',
-                    border: OutlineInputBorder(),
-                  ),
-                  keyboardType: TextInputType.datetime,
-                  inputFormatters: [
-                    DateInputFormatter(), // Use the custom formatter
-                  ],
-                  onChanged: (value) {
-                    controller.setBirthdate(value);
-                  },
-                ),
-                const SizedBox(height: 20),
-                // DropdownButton for Gender
-                DropdownButton<String>(
-                  hint: const Text('Select Gender'),
-                  items: <String>['Male', 'Female', 'Other']
-                      .map<DropdownMenuItem<String>>((String value) {
-                    return DropdownMenuItem<String>(
-                      value: value,
-                      child: Text(value),
-                    );
-                  }).toList(),
-                  onChanged: (String? newValue) {
-                    controller.setGender(newValue ?? '');
-                  },
-                  value: controller.zone2Gender.value,
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Text(
-                    controller.invalidAge.value,
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(color: Colors.red, fontSize: 19),
-                  ),
-                ),
-              ],
+            bodyWidget: const Column(
+              children: [],
             ),
             image: CommonAssets.images.undraw.undrawTextFieldHtlv.svg(
               width: 200,
@@ -184,28 +322,28 @@ class IntroSmall extends GetWidget<IntroController> {
         nextFlex: 0,
         showBackButton: controller.showBackButton.value,
         showDoneButton: controller.showDoneButton.value,
-        back: const Icon(Icons.arrow_back),
-        skip: const Text('Skip', style: TextStyle(fontWeight: FontWeight.w600)),
-        next: const Text('Next', style: TextStyle(fontWeight: FontWeight.w600)),
-        done: const Text('Done', style: TextStyle(fontWeight: FontWeight.w600)),
+        back: Text('Back', style: buttonStyle),
+        skip: Text('Skip', style: buttonStyle),
+        next: Text('Next', style: buttonStyle),
+        done: Text('Done', style: buttonStyle),
         curve: Curves.fastLinearToSlowEaseIn,
         controlsMargin: const EdgeInsets.all(16),
-        controlsPadding:
-            kIsWeb ? const EdgeInsets.all(12.0) : const EdgeInsets.fromLTRB(8.0, 4.0, 8.0, 4.0),
-        dotsDecorator: const DotsDecorator(
-          size: Size(10.0, 10.0),
-          color: Color(0xFFBDBDBD),
-          activeSize: Size(22.0, 10.0),
-          activeShape: RoundedRectangleBorder(
+        controlsPadding: const EdgeInsets.fromLTRB(8.0, 4.0, 8.0, 4.0),
+        dotsDecorator: DotsDecorator(
+          size: const Size(10.0, 10.0),
+          color: MaterialTheme.coolBlue.value.withOpacity(0.5),
+          activeColor: MaterialTheme.coolBlue.value,
+          activeSize: const Size(22.0, 10.0),
+          activeShape: const RoundedRectangleBorder(
             borderRadius: BorderRadius.all(Radius.circular(25.0)),
           ),
         ),
-        dotsContainerDecorator: const ShapeDecoration(
-          color: Colors.black87,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.all(Radius.circular(8.0)),
-          ),
-        ),
+        // dotsContainerDecorator: const ShapeDecoration(
+        //   color: Colors.black87,
+        //   shape: RoundedRectangleBorder(
+        //     borderRadius: BorderRadius.all(Radius.circular(8.0)),
+        //   ),
+        // ),
       ),
     );
   }

@@ -58,7 +58,6 @@ Future<void> main() async {
   // Persisted settings service
   final sharedPreferencesService = SharedPreferencesService();
   await sharedPreferencesService.loadStateFromPersistence();
-  logger.w('poop');
   Get.lazyPut(() => sharedPreferencesService, fenix: true);
 
   final GlobalBindings globalBindings = GlobalBindings(
@@ -105,8 +104,8 @@ Future<void> main() async {
       initialBinding: globalBindings,
       debugShowCheckedModeBanner: true,
       themeMode: Get.isDarkMode ? ThemeMode.dark : ThemeMode.light,
-      theme: MaterialTheme.lightHighContrast(),
-      darkTheme: MaterialTheme.darkHighContrast(),
+      theme: MaterialTheme.lightMediumContrast(),
+      darkTheme: MaterialTheme.darkMediumContrast(),
       initialRoute: Routes.introOrHome,
       getPages: AppPages.routes,
       builder: EasyLoading.init(),

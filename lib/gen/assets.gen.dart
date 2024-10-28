@@ -349,6 +349,10 @@ class $AssetsImagesUndrawGen {
   SvgGenImage get undrawPersonalGoalsReIow7 => const SvgGenImage(
       'assets/images/undraw/undraw_personal_goals_re_iow7.svg');
 
+  /// File path: assets/images/undraw/undraw_personal_info_re_ur1n.svg
+  SvgGenImage get undrawPersonalInfoReUr1n => const SvgGenImage(
+      'assets/images/undraw/undraw_personal_info_re_ur1n.svg');
+
   /// File path: assets/images/undraw/undraw_personal_trainer_re_cnua.svg
   SvgGenImage get undrawPersonalTrainerReCnua => const SvgGenImage(
       'assets/images/undraw/undraw_personal_trainer_re_cnua.svg');
@@ -404,6 +408,7 @@ class $AssetsImagesUndrawGen {
         undrawMindfulness8gqa,
         undrawOnlineGroceriesA02y,
         undrawPersonalGoalsReIow7,
+        undrawPersonalInfoReUr1n,
         undrawPersonalTrainerReCnua,
         undrawPersonalTraining0dqn,
         undrawPrivateDataRe4eab,

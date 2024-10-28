@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:zone2/app/routes/app_pages.dart';
 import 'package:zone2/app/services/health_service.dart';
@@ -15,6 +16,9 @@ class IntroController extends GetxController {
   final zone2Birthdate = ''.obs;
   final RxnString zone2Gender = RxnString(null);
   final invalidAge = ''.obs;
+  final RxInt heightFeet = 3.obs; // Default height in feet
+  final RxInt heightInches = 0.obs; // Default height in inches
+  final weightController = TextEditingController();
 
   @override
   void onInit() {
@@ -26,12 +30,6 @@ class IntroController extends GetxController {
         Get.offNamed(Routes.home);
       });
     }
-  }
-
-  Future<void> setReason(String reason) async {
-    introLogger.i('setReason: $reason');
-    zone2Reason.value = reason;
-    showNextButton.value = await canAdvanceToToDeatils();
   }
 
   Future<bool> isValidDate(String date) async {
@@ -70,17 +68,44 @@ class IntroController extends GetxController {
   Future<void> setBirthdate(String birthdate) async {
     introLogger.i('setBirthdate: $birthdate');
     zone2Birthdate.value = birthdate;
-    showNextButton.value = await canAdvanceToPreferences();
+    showNextButton.value = await haveAllDemographics();
   }
 
   Future<void> setGender(String gender) async {
     introLogger.i('setGender: $gender');
     zone2Gender.value = gender;
-    showNextButton.value = await canAdvanceToPreferences();
+    showNextButton.value = await haveAllDemographics();
   }
 
-  Future<bool> canAdvanceToPreferences() async {
-    return await isValidBirthdate() && zone2Gender.value != null;
+  // Method to set height in feet
+  Future<void> setHeightFeet(int feet) async {
+    heightFeet.value = feet;
+    showNextButton.value = await haveAllDemographics();
+  }
+
+  // Method to set height in inches
+  Future<void> setHeightInches(int inches) async {
+    heightInches.value = inches;
+    showNextButton.value = await haveAllDemographics();
+  }
+
+  Future<void> setWeight(String weight) async {
+    weightController.text = weight;
+    showNextButton.value = await haveAllDemographics();
+  }
+
+  Future<bool> haveAllDemographics() async {
+    return await isValidBirthdate() &&
+        zone2Gender.value != null &&
+        weightController.text.isNotEmpty &&
+        heightFeet.value != 0 &&
+        heightInches.value != 0;
+  }
+
+  Future<void> setReason(String reason) async {
+    introLogger.i('setReason: $reason');
+    zone2Reason.value = reason;
+    showNextButton.value = await canAdvanceToToDeatils();
   }
 
   Future<bool> canBeDone() async {
@@ -97,14 +122,14 @@ class IntroController extends GetxController {
     showBackButton.value = index >= 1;
 
     switch (index) {
-      case 0:
+      case 0: // Democratized Weight Loss
         showNextButton.value = true;
         break;
-      case 1:
-        showNextButton.value = await canAdvanceToToDeatils();
+      case 1: // Demographic Profile
+        showNextButton.value = await haveAllDemographics();
         break;
       case 2:
-        showNextButton.value = await canAdvanceToPreferences();
+        showNextButton.value = await canAdvanceToToDeatils();
         break;
       case 3:
         showNextButton.value = false;
@@ -112,8 +137,6 @@ class IntroController extends GetxController {
         break;
     }
   }
-
-
 
   //create a method called onFinish that saves a boolean called introFinished to sharedPreferences
   void onFinish() {
