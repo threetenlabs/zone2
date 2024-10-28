@@ -273,6 +273,10 @@ class $AssetsImagesUndrawGen {
   SvgGenImage get undrawActivityTrackerRe2lvv => const SvgGenImage(
       'assets/images/undraw/undraw_activity_tracker_re_2lvv.svg');
 
+  /// File path: assets/images/undraw/undraw_agree_re_hor9.svg
+  SvgGenImage get undrawAgreeReHor9 =>
+      const SvgGenImage('assets/images/undraw/undraw_agree_re_hor9.svg');
+
   /// File path: assets/images/undraw/undraw_bike_ride_7xit.svg
   SvgGenImage get undrawBikeRide7xit =>
       const SvgGenImage('assets/images/undraw/undraw_bike_ride_7xit.svg');
@@ -389,6 +393,7 @@ class $AssetsImagesUndrawGen {
   List<SvgGenImage> get values => [
         undrawAWholeYearVnfm,
         undrawActivityTrackerRe2lvv,
+        undrawAgreeReHor9,
         undrawBikeRide7xit,
         undrawBikingKc4F,
         undrawBreakfastPsiw,

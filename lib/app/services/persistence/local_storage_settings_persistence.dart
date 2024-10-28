@@ -16,6 +16,11 @@ class GetStoragePersistence {
   final String soundOnKey = 'soundsOnKey';
   final String isAboveMinimumSupportedVersionKey = 'isAboveMinimumSupportedVersionKey';
   final String darkModeKey = 'darkModeKey';
+  final String zone2StartingWeightKey = 'zone2StartingWeightKey';
+  final String zone2TargetWeightKey = 'zone2TargetWeightKey';
+  final String zone2MotivatingFactorKey = 'zone2MotivatingFactorKey';
+  final String zone2BirthdateKey = 'zone2BirthdateKey';
+  final String zone2GenderKey = 'zone2GenderKey';
 
   bool getUserHasRemovedAds() {
     return box.read(userHasRemovedAdsKey) ?? false;
@@ -43,6 +48,26 @@ class GetStoragePersistence {
 
   Future<void> saveDarkMode(bool value) async {
     await box.write(darkModeKey, value);
+  }
+
+  Future<void> saveZone2StartingWeight(double value) async {
+    await box.write(zone2StartingWeightKey, value);
+  }
+
+  Future<void> saveZone2TargetWeight(double value) async {
+    await box.write(zone2TargetWeightKey, value);
+  }
+
+  Future<void> saveZone2MotivatingFactor(String value) async {
+    await box.write(zone2MotivatingFactorKey, value);
+  }
+
+  Future<void> saveZone2Birthdate(String value) async {
+    await box.write(zone2BirthdateKey, value);
+  }
+
+  Future<void> saveZone2Gender(String value) async {
+    await box.write(zone2GenderKey, value);
   }
 
   bool getDarkMode() {

@@ -19,6 +19,15 @@ class IntroController extends GetxController {
   final RxInt heightFeet = 3.obs; // Default height in feet
   final RxInt heightInches = 0.obs; // Default height in inches
   final weightController = TextEditingController();
+  final targetWeightController = TextEditingController();
+  final suggestedWeightLossLowerBound = 0.0.obs;
+  final suggestedWeightLossUpperBound = 0.0.obs;
+  final suggestedWeightLossTarget = ''.obs;
+  final zone2TargetWeight = 0.0.obs;
+
+  final suggestedWeightLossMessage =
+      "We'll use your progress to predict when you'll hit your target as you follow your custom plan and adopting a healthy lifestyle. Your results cannot be guaranteed, but users typically lose 1-2 lb per week."
+          .obs;
 
   @override
   void onInit() {
@@ -61,7 +70,7 @@ class IntroController extends GetxController {
     return false; // Birthdate is invalid
   }
 
-  Future<bool> canAdvanceToToDeatils() async {
+  Future<bool> haveTheMotivatingFactor() async {
     return zone2Reason.value.isNotEmpty;
   }
 
@@ -94,6 +103,11 @@ class IntroController extends GetxController {
     showNextButton.value = await haveAllDemographics();
   }
 
+  Future<void> setTargetWeight(String targetWeight) async {
+    targetWeightController.text = targetWeight;
+    showNextButton.value = await haveAllDemographics();
+  }
+
   Future<bool> haveAllDemographics() async {
     return await isValidBirthdate() &&
         zone2Gender.value != null &&
@@ -102,10 +116,14 @@ class IntroController extends GetxController {
         heightInches.value != 0;
   }
 
+  Future<bool> haveGoals() async {
+    return targetWeightController.text.isNotEmpty;
+  }
+
   Future<void> setReason(String reason) async {
     introLogger.i('setReason: $reason');
     zone2Reason.value = reason;
-    showNextButton.value = await canAdvanceToToDeatils();
+    showNextButton.value = await haveTheMotivatingFactor();
   }
 
   Future<bool> canBeDone() async {
@@ -128,10 +146,14 @@ class IntroController extends GetxController {
       case 1: // Demographic Profile
         showNextButton.value = await haveAllDemographics();
         break;
-      case 2:
-        showNextButton.value = await canAdvanceToToDeatils();
+      case 2: // Suggest Weight Loss Target
+        suggestWeightLossTarget();
+        showNextButton.value = await haveGoals();
         break;
       case 3:
+        showNextButton.value = await haveTheMotivatingFactor();
+        break;
+      case 4:
         showNextButton.value = false;
         await requestHealthPermissions();
         break;
@@ -141,7 +163,68 @@ class IntroController extends GetxController {
   //create a method called onFinish that saves a boolean called introFinished to sharedPreferences
   void onFinish() {
     _sharedPreferencesService.setIsIntroductionFinished(true);
+    _sharedPreferencesService.setZone2Goals(double.parse(weightController.text), double.parse(targetWeightController.text), zone2Reason.value, zone2Birthdate.value, zone2Gender.value!);
     introLogger.i('Introduction Finished');
     Get.offNamed(Routes.home);
+  }
+
+  // Method to calculate BMI
+  double calculateBMI() {
+    double heightInMeters = (heightFeet.value * 0.3048) + (heightInches.value * 0.0254);
+    double weightInPounds = double.tryParse(weightController.text) ?? 0;
+    double weightInKg = lbsToKg(weightInPounds); // Convert pounds to kilograms
+    return weightInKg / (heightInMeters * heightInMeters);
+  }
+
+  // Method to convert kilograms to pounds
+  double kgToPounds(double kg) {
+    return kg * 2.20462; // 1 kg = 2.20462 pounds
+  }
+
+  double lbsToKg(double lbs) {
+    return lbs / 2.20462; // 1 pound = 2.20462 kilograms
+  }
+
+  // Method to suggest weight loss target based on BMI
+  void suggestWeightLossTarget() {
+    double currentWeight = double.tryParse(weightController.text) ?? 0;
+    double bmi = calculateBMI();
+
+    // Calculate target weight for BMI range of 18.5 - 25
+    double targetLowerBound = 0;
+    double targetUpperBound = 0;
+    const double heightInMeters = (5 * 0.3048) + (10 * 0.0254); // 5'10" in meters
+    const double bmiLowerBound = 18.5;
+    const double bmiUpperBound = 25;
+
+    if (bmi > bmiLowerBound) {
+      targetLowerBound =
+          bmiLowerBound * (heightInMeters * heightInMeters) * 2.20462; // Convert kg to lbs
+      targetUpperBound =
+          bmiUpperBound * (heightInMeters * heightInMeters) * 2.20462; // Convert kg to lbs
+    } else {
+      suggestedWeightLossLowerBound.value = currentWeight;
+      suggestedWeightLossUpperBound.value = currentWeight;
+      suggestedWeightLossMessage.value =
+          "We recommend working with your doctor to pursue weight loss when your BMI is below 18.5.";
+      return;
+    }
+
+    // Calculate maximum allowable weight loss
+    double maxWeightLoss = currentWeight * 0.30;
+    double suggestedWeightLoss = currentWeight - targetLowerBound;
+
+    // Adjust suggested weight loss if it exceeds 30%
+    if (suggestedWeightLoss > maxWeightLoss) {
+      targetLowerBound = currentWeight - (currentWeight * 0.29);
+      targetUpperBound = currentWeight - (currentWeight * 0.25);
+      suggestedWeightLossLowerBound.value = targetLowerBound;
+      suggestedWeightLossUpperBound.value = targetUpperBound;
+    } else {
+      suggestedWeightLossLowerBound.value = targetLowerBound;
+      suggestedWeightLossUpperBound.value = targetUpperBound;
+    }
+    suggestedWeightLossTarget.value =
+        "(Recommended: ${targetLowerBound.toStringAsFixed(0)} - ${targetUpperBound.toStringAsFixed(0)} lbs)";
   }
 }

@@ -56,7 +56,7 @@ class IntroSmall extends GetWidget<IntroController> {
           ),
           PageViewModel(
             titleWidget: Padding(
-              padding: EdgeInsets.only(top: 28.0),
+              padding: const EdgeInsets.only(top: 28.0),
               child: Text(
                 "Demographic Profile",
                 style: titleStyle,
@@ -223,6 +223,74 @@ class IntroSmall extends GetWidget<IntroController> {
             decoration: pageDecoration,
           ),
           PageViewModel(
+            titleWidget: Padding(
+              padding: const EdgeInsets.only(top: 28.0),
+              child: Text(
+                "Weight Loss Goals",
+                style: titleStyle,
+              ),
+            ),
+            bodyWidget: Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                CommonAssets.images.undraw.undrawAWholeYearVnfm.svg(
+                  width: 200,
+                  height: 200,
+                ),
+                Text(
+                  "The hardest part is taking the first step, and now that you've done that, let's set some goals",
+                  style: bodyStyle,
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 20),
+                TextField(
+                  controller: controller.targetWeightController,
+                  decoration: const InputDecoration(
+                    labelText: 'TargetWeight (lbs)',
+                    border: OutlineInputBorder(),
+                  ),
+                  keyboardType: TextInputType.number,
+                  onChanged: (value) {
+                    controller.setTargetWeight(value);
+                  },
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Text(
+                    controller.suggestedWeightLossTarget.value,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(color: Color.fromARGB(255, 167, 167, 167), fontSize: 16),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                // Wrap the Text widget with a Material Surface
+
+                Material(
+                  elevation: 4, // Adjust elevation as needed
+                  color: Theme.of(context).colorScheme.onErrorContainer,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(32.0), // Rounded corners
+                  ),
+                  child: Container(
+                    padding: const EdgeInsets.all(16.0), // Padding inside the container
+                    decoration: BoxDecoration(
+                      // Added decoration for rounded edges
+                      color: const Color.fromARGB(255, 238, 232, 179),
+                      borderRadius:
+                          BorderRadius.circular(32.0), // Match the Material's border radius
+                    ),
+                    child: Text(
+                      controller.suggestedWeightLossMessage.value,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(color: Color.fromARGB(255, 51, 51, 50), fontSize: 19),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            decoration: pageDecoration,
+          ),
+          PageViewModel(
             titleWidget: const Padding(
               padding: EdgeInsets.only(top: 16.0),
               child: Text(
@@ -238,12 +306,20 @@ class IntroSmall extends GetWidget<IntroController> {
                   height: 200,
                 ),
                 Text(
-                  "You're more likely to stick to your goals if you have a motivating force",
+                  "You're more likely to stick to your goals if you focus on a motivating force",
                   style: bodyStyle, // Removed const
                 ),
                 const SizedBox(height: 20),
                 // Column of OutlinedButtons with padding
-                ...['Health', 'Appearance', 'Fitness', 'Confidence', 'Other'].map((reason) {
+                ...[
+                  'Vacation',
+                  'Wedding',
+                  'Summer',
+                  'Overall Health',
+                  'Self Confidence',
+                  'Training',
+                  'Other'
+                ].map((reason) {
                   return Padding(
                     padding: const EdgeInsets.only(bottom: 8.0), // Add padding between buttons
                     child: OutlinedButton(
@@ -274,17 +350,6 @@ class IntroSmall extends GetWidget<IntroController> {
             decoration: pageDecoration,
           ),
           PageViewModel(
-            title: "Let's gather some details",
-            bodyWidget: const Column(
-              children: [],
-            ),
-            image: CommonAssets.images.undraw.undrawTextFieldHtlv.svg(
-              width: 200,
-              height: 200,
-            ),
-            decoration: pageDecoration,
-          ),
-          PageViewModel(
             title: controller.showDoneButton.value
                 ? "All set! Let's get started"
                 : "Allow Health Permissions",
@@ -305,7 +370,7 @@ class IntroSmall extends GetWidget<IntroController> {
               ],
             ),
             image: controller.showDoneButton.value
-                ? CommonAssets.images.undraw.undrawCompletedM9ci.svg(
+                ? CommonAssets.images.undraw.undrawAgreeReHor9.svg(
                     width: 200,
                     height: 200,
                   )
