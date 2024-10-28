@@ -1,5 +1,6 @@
 // ignore_for_file: dead_code
 
+import 'package:flutter/services.dart';
 import 'package:zone2/app/modules/global_bindings.dart';
 import 'package:zone2/app/services/forced_update_service.dart';
 import 'package:zone2/app/services/shared_preferences_service.dart';
@@ -27,6 +28,8 @@ import 'package:timezone/data/latest.dart' as tz;
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  SystemChrome.setPreferredOrientations(
+      [DeviceOrientation.portraitUp, DeviceOrientation.portraitDown]);
   await GetStorage.init();
   await GetStorage.init('food_data');
   await GetStorage.init('theme_data');
