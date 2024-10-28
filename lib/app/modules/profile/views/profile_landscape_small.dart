@@ -57,7 +57,9 @@ class ProfileViewLandscapeSmall extends GetWidget<ProfileController> {
                             if (authService.isAuthenticatedUser.value == true ||
                                 authService.firebaseUser.value != null)
                               OutlinedButton(
-                                onPressed: () => {authService.signOut()},
+                                onPressed: () => {
+                                  // authService.signOut()
+                                },
                                 child: Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [

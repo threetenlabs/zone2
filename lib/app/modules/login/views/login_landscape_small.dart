@@ -39,13 +39,13 @@ class LoginViewLandscapeSmall extends GetWidget<LoginController> {
                       if (defaultTargetPlatform == TargetPlatform.iOS)
                         AppleSignIn(
                             onPressed: () async {
-                              controller.handleAppleSignIn();
+                              // controller.handleAppleSignIn();
                             },
                             imageHeight: constraints.responsiveHeight(0.025)),
                       if (defaultTargetPlatform == TargetPlatform.android)
                         GoogleSignInButton(
                             onPressed: () async {
-                              controller.handleGoogleSignIn();
+                              // controller.handleGoogleSignIn();
                             },
                             imageHeight: constraints.responsiveHeight(0.03)),
                       const SizedBox(height: 24),

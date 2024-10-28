@@ -1,7 +1,7 @@
 import 'package:zone2/app/routes/app_pages.dart';
 import 'package:zone2/app/services/forced_update_service.dart';
 import 'package:zone2/app/services/shared_preferences_service.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+// import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -22,15 +22,15 @@ class RedirectMiddleware extends GetMiddleware {
     // if they are not logged in they should see the login screen
 
     if (forcedUpdateService.isAboveMinimumSupportedVersion) {
-      if (FirebaseAuth.instance.currentUser != null) {
-        if (sharedPrefs.isIntroductionFinished) {
-          return const RouteSettings(name: Routes.home);
-        } else {
-          return const RouteSettings(name: Routes.intro);
-        }
+      // if (FirebaseAuth.instance.currentUser != null) {
+      if (sharedPrefs.isIntroductionFinished) {
+        return const RouteSettings(name: Routes.home);
       } else {
-        return const RouteSettings(name: Routes.login);
+        return const RouteSettings(name: Routes.intro);
       }
+      // } else {
+      //   return const RouteSettings(name: Routes.login);
+      // }
     } else {
       return const RouteSettings(name: Routes.forcedUpdate);
     }
