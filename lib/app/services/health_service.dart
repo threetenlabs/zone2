@@ -266,6 +266,7 @@ class HealthService extends GetxService {
       try {
         authorized = await Health().requestAuthorization(types, permissions: permissions);
         isAuthorized.value = authorized;
+        hasPermissions.value = await Health().hasPermissions(types, permissions: permissions);
       } catch (error) {
         logger.e("Exception in authorize: $error");
       }

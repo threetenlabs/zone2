@@ -84,11 +84,11 @@ class IntroController extends GetxController {
   }
 
   Future<bool> canBeDone() async {
-    return Get.find<HealthService>().hasPermissions.value ?? false;
+    return HealthService.to.hasPermissions.value ?? false;
   }
 
   Future<void> requestHealthPermissions() async {
-    await Get.find<HealthService>().authorize();
+    await HealthService.to.authorize();
     showDoneButton.value = await canBeDone();
   }
 
@@ -108,14 +108,12 @@ class IntroController extends GetxController {
         break;
       case 3:
         showNextButton.value = false;
-        await onHealthSetup();
+        await requestHealthPermissions();
         break;
     }
   }
 
-  Future<void> onHealthSetup() async {
-    Get.put<HealthService>(HealthService(), permanent: true);
-  }
+
 
   //create a method called onFinish that saves a boolean called introFinished to sharedPreferences
   void onFinish() {

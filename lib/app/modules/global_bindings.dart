@@ -4,6 +4,7 @@ import 'package:zone2/app/services/auth_service.dart';
 import 'package:zone2/app/services/firebase_service.dart';
 import 'package:zone2/app/services/food_service.dart';
 import 'package:zone2/app/services/health_service.dart';
+// import 'package:zone2/app/services/health_service.dart';
 import 'package:zone2/app/services/notification_service.dart';
 import 'package:zone2/app/services/shared_preferences_service.dart';
 import 'package:zone2/app/style/palette.dart';
@@ -39,6 +40,7 @@ class GlobalBindings extends Bindings {
     Get.put<GoogleSignIn>(GoogleSignIn());
 
     Get.put<FoodService>(FoodService(), permanent: true);
+    Get.put<HealthService>(HealthService(), permanent: true);
     // Get.put<FcmService>(FcmService(), permanent: true);
     Get.put<AuthService>(AuthService(), permanent: true);
 

@@ -147,7 +147,9 @@ class IntroSmall extends GetWidget<IntroController> {
             decoration: pageDecoration,
           ),
           PageViewModel(
-            title: "Allow Health Permissions",
+            title: controller.showDoneButton.value
+                ? "All set! Let's get started"
+                : "Allow Health Permissions",
             bodyWidget: Column(
               children: [
                 Text(
