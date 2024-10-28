@@ -21,7 +21,8 @@ class GlobalBindings extends Bindings {
   final Logger logger;
   final SharedPreferencesService sharedPreferencesService;
 
-  GlobalBindings({required this.palette, required this.logger, required this.sharedPreferencesService});
+  GlobalBindings(
+      {required this.palette, required this.logger, required this.sharedPreferencesService});
 
   @override
   dependencies() {
@@ -36,7 +37,7 @@ class GlobalBindings extends Bindings {
     Get.put<FirebaseAuth>(FirebaseAuth.instance);
     Get.put<FirebaseFirestore>(FirebaseFirestore.instance);
     Get.put<GoogleSignIn>(GoogleSignIn());
-    Get.put<HealthService>(HealthService(), permanent: true);
+
     Get.put<FoodService>(FoodService(), permanent: true);
     // Get.put<FcmService>(FcmService(), permanent: true);
     Get.put<AuthService>(AuthService(), permanent: true);

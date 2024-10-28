@@ -8,6 +8,8 @@
 // ignore_for_file: directives_ordering,unnecessary_import,implicit_dynamic_list_literal,deprecated_member_use
 
 import 'package:flutter/widgets.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:flutter/services.dart';
 
 class $AssetsAudioGen {
   const $AssetsAudioGen();
@@ -20,9 +22,6 @@ class $AssetsImagesGen {
   const $AssetsImagesGen();
 
   $AssetsImagesAppGen get app => const $AssetsImagesAppGen();
-
-  /// File path: assets/images/bedlam.webp
-  AssetGenImage get bedlam => const AssetGenImage('assets/images/bedlam.webp');
 
   /// File path: assets/images/google-play-badge.png
   AssetGenImage get googlePlayBadge =>
@@ -52,14 +51,6 @@ class $AssetsImagesGen {
 
   $AssetsImagesPlatformGen get platform => const $AssetsImagesPlatformGen();
 
-  /// File path: assets/images/playstore3.png
-  AssetGenImage get playstore3 =>
-      const AssetGenImage('assets/images/playstore3.png');
-
-  /// File path: assets/images/playstore4.png
-  AssetGenImage get playstore4 =>
-      const AssetGenImage('assets/images/playstore4.png');
-
   /// File path: assets/images/splash.png
   AssetGenImage get splash => const AssetGenImage('assets/images/splash.png');
 
@@ -67,9 +58,10 @@ class $AssetsImagesGen {
   AssetGenImage get splashFull =>
       const AssetGenImage('assets/images/splashFull.png');
 
+  $AssetsImagesUndrawGen get undraw => const $AssetsImagesUndrawGen();
+
   /// List of all assets
   List<AssetGenImage> get values => [
-        bedlam,
         googlePlayBadge,
         icLauncher,
         icLauncherAdaptiveBack,
@@ -77,8 +69,6 @@ class $AssetsImagesGen {
         iconPng,
         iconWebp,
         iosAppStoreBadge,
-        playstore3,
-        playstore4,
         splash,
         splashFull
       ];
@@ -272,6 +262,159 @@ class $AssetsImagesPlatformGen {
       [apple512, googlePlayBadge, googleLogo, iosAppStoreBadge];
 }
 
+class $AssetsImagesUndrawGen {
+  const $AssetsImagesUndrawGen();
+
+  /// File path: assets/images/undraw/undraw_a_whole_year_vnfm.svg
+  SvgGenImage get undrawAWholeYearVnfm =>
+      const SvgGenImage('assets/images/undraw/undraw_a_whole_year_vnfm.svg');
+
+  /// File path: assets/images/undraw/undraw_activity_tracker_re_2lvv.svg
+  SvgGenImage get undrawActivityTrackerRe2lvv => const SvgGenImage(
+      'assets/images/undraw/undraw_activity_tracker_re_2lvv.svg');
+
+  /// File path: assets/images/undraw/undraw_bike_ride_7xit.svg
+  SvgGenImage get undrawBikeRide7xit =>
+      const SvgGenImage('assets/images/undraw/undraw_bike_ride_7xit.svg');
+
+  /// File path: assets/images/undraw/undraw_biking_kc-4-f.svg
+  SvgGenImage get undrawBikingKc4F =>
+      const SvgGenImage('assets/images/undraw/undraw_biking_kc-4-f.svg');
+
+  /// File path: assets/images/undraw/undraw_breakfast_psiw.svg
+  SvgGenImage get undrawBreakfastPsiw =>
+      const SvgGenImage('assets/images/undraw/undraw_breakfast_psiw.svg');
+
+  /// File path: assets/images/undraw/undraw_check_boxes_re_v40f.svg
+  SvgGenImage get undrawCheckBoxesReV40f =>
+      const SvgGenImage('assets/images/undraw/undraw_check_boxes_re_v40f.svg');
+
+  /// File path: assets/images/undraw/undraw_completed_m9ci.svg
+  SvgGenImage get undrawCompletedM9ci =>
+      const SvgGenImage('assets/images/undraw/undraw_completed_m9ci.svg');
+
+  /// File path: assets/images/undraw/undraw_connected_world_wuay.svg
+  SvgGenImage get undrawConnectedWorldWuay =>
+      const SvgGenImage('assets/images/undraw/undraw_connected_world_wuay.svg');
+
+  /// File path: assets/images/undraw/undraw_diet_ghvw.svg
+  SvgGenImage get undrawDietGhvw =>
+      const SvgGenImage('assets/images/undraw/undraw_diet_ghvw.svg');
+
+  /// File path: assets/images/undraw/undraw_energizer_re_vhjv.svg
+  SvgGenImage get undrawEnergizerReVhjv =>
+      const SvgGenImage('assets/images/undraw/undraw_energizer_re_vhjv.svg');
+
+  /// File path: assets/images/undraw/undraw_fitness_stats_sht6.svg
+  SvgGenImage get undrawFitnessStatsSht6 =>
+      const SvgGenImage('assets/images/undraw/undraw_fitness_stats_sht6.svg');
+
+  /// File path: assets/images/undraw/undraw_fitness_tracker_3033.svg
+  SvgGenImage get undrawFitnessTracker3033 =>
+      const SvgGenImage('assets/images/undraw/undraw_fitness_tracker_3033.svg');
+
+  /// File path: assets/images/undraw/undraw_healthy_habit_kwe6.svg
+  SvgGenImage get undrawHealthyHabitKwe6 =>
+      const SvgGenImage('assets/images/undraw/undraw_healthy_habit_kwe6.svg');
+
+  /// File path: assets/images/undraw/undraw_healthy_lifestyle_re_ifwg.svg
+  SvgGenImage get undrawHealthyLifestyleReIfwg => const SvgGenImage(
+      'assets/images/undraw/undraw_healthy_lifestyle_re_ifwg.svg');
+
+  /// File path: assets/images/undraw/undraw_ice_cream_s-2-rh.svg
+  SvgGenImage get undrawIceCreamS2Rh =>
+      const SvgGenImage('assets/images/undraw/undraw_ice_cream_s-2-rh.svg');
+
+  /// File path: assets/images/undraw/undraw_jogging_re_k28i.svg
+  SvgGenImage get undrawJoggingReK28i =>
+      const SvgGenImage('assets/images/undraw/undraw_jogging_re_k28i.svg');
+
+  /// File path: assets/images/undraw/undraw_medicine_b-1-ol.svg
+  SvgGenImage get undrawMedicineB1Ol =>
+      const SvgGenImage('assets/images/undraw/undraw_medicine_b-1-ol.svg');
+
+  /// File path: assets/images/undraw/undraw_meditating_re_aiqa.svg
+  SvgGenImage get undrawMeditatingReAiqa =>
+      const SvgGenImage('assets/images/undraw/undraw_meditating_re_aiqa.svg');
+
+  /// File path: assets/images/undraw/undraw_mindfulness_8gqa.svg
+  SvgGenImage get undrawMindfulness8gqa =>
+      const SvgGenImage('assets/images/undraw/undraw_mindfulness_8gqa.svg');
+
+  /// File path: assets/images/undraw/undraw_online_groceries_a02y.svg
+  SvgGenImage get undrawOnlineGroceriesA02y => const SvgGenImage(
+      'assets/images/undraw/undraw_online_groceries_a02y.svg');
+
+  /// File path: assets/images/undraw/undraw_personal_goals_re_iow7.svg
+  SvgGenImage get undrawPersonalGoalsReIow7 => const SvgGenImage(
+      'assets/images/undraw/undraw_personal_goals_re_iow7.svg');
+
+  /// File path: assets/images/undraw/undraw_personal_trainer_re_cnua.svg
+  SvgGenImage get undrawPersonalTrainerReCnua => const SvgGenImage(
+      'assets/images/undraw/undraw_personal_trainer_re_cnua.svg');
+
+  /// File path: assets/images/undraw/undraw_personal_training_0dqn.svg
+  SvgGenImage get undrawPersonalTraining0dqn => const SvgGenImage(
+      'assets/images/undraw/undraw_personal_training_0dqn.svg');
+
+  /// File path: assets/images/undraw/undraw_private_data_re_4eab.svg
+  SvgGenImage get undrawPrivateDataRe4eab =>
+      const SvgGenImage('assets/images/undraw/undraw_private_data_re_4eab.svg');
+
+  /// File path: assets/images/undraw/undraw_switches_1js3.svg
+  SvgGenImage get undrawSwitches1js3 =>
+      const SvgGenImage('assets/images/undraw/undraw_switches_1js3.svg');
+
+  /// File path: assets/images/undraw/undraw_text_field_htlv.svg
+  SvgGenImage get undrawTextFieldHtlv =>
+      const SvgGenImage('assets/images/undraw/undraw_text_field_htlv.svg');
+
+  /// File path: assets/images/undraw/undraw_travel_together_re_kjf2.svg
+  SvgGenImage get undrawTravelTogetherReKjf2 => const SvgGenImage(
+      'assets/images/undraw/undraw_travel_together_re_kjf2.svg');
+
+  /// File path: assets/images/undraw/undraw_working_out_re_nhkg.svg
+  SvgGenImage get undrawWorkingOutReNhkg =>
+      const SvgGenImage('assets/images/undraw/undraw_working_out_re_nhkg.svg');
+
+  /// File path: assets/images/undraw/undraw_workout_gcgu.svg
+  SvgGenImage get undrawWorkoutGcgu =>
+      const SvgGenImage('assets/images/undraw/undraw_workout_gcgu.svg');
+
+  /// List of all assets
+  List<SvgGenImage> get values => [
+        undrawAWholeYearVnfm,
+        undrawActivityTrackerRe2lvv,
+        undrawBikeRide7xit,
+        undrawBikingKc4F,
+        undrawBreakfastPsiw,
+        undrawCheckBoxesReV40f,
+        undrawCompletedM9ci,
+        undrawConnectedWorldWuay,
+        undrawDietGhvw,
+        undrawEnergizerReVhjv,
+        undrawFitnessStatsSht6,
+        undrawFitnessTracker3033,
+        undrawHealthyHabitKwe6,
+        undrawHealthyLifestyleReIfwg,
+        undrawIceCreamS2Rh,
+        undrawJoggingReK28i,
+        undrawMedicineB1Ol,
+        undrawMeditatingReAiqa,
+        undrawMindfulness8gqa,
+        undrawOnlineGroceriesA02y,
+        undrawPersonalGoalsReIow7,
+        undrawPersonalTrainerReCnua,
+        undrawPersonalTraining0dqn,
+        undrawPrivateDataRe4eab,
+        undrawSwitches1js3,
+        undrawTextFieldHtlv,
+        undrawTravelTogetherReKjf2,
+        undrawWorkingOutReNhkg,
+        undrawWorkoutGcgu
+      ];
+}
+
 class CommonAssets {
   CommonAssets._();
 
@@ -345,6 +488,59 @@ class AssetGenImage {
       _assetName,
       bundle: bundle,
       package: package,
+    );
+  }
+
+  String get path => _assetName;
+
+  String get keyName => _assetName;
+}
+
+class SvgGenImage {
+  const SvgGenImage(this._assetName);
+
+  final String _assetName;
+
+  SvgPicture svg({
+    Key? key,
+    bool matchTextDirection = false,
+    AssetBundle? bundle,
+    String? package,
+    double? width,
+    double? height,
+    BoxFit fit = BoxFit.contain,
+    AlignmentGeometry alignment = Alignment.center,
+    bool allowDrawingOutsideViewBox = false,
+    WidgetBuilder? placeholderBuilder,
+    String? semanticsLabel,
+    bool excludeFromSemantics = false,
+    SvgTheme theme = const SvgTheme(),
+    ColorFilter? colorFilter,
+    Clip clipBehavior = Clip.hardEdge,
+    @deprecated Color? color,
+    @deprecated BlendMode colorBlendMode = BlendMode.srcIn,
+    @deprecated bool cacheColorFilter = false,
+  }) {
+    return SvgPicture.asset(
+      _assetName,
+      key: key,
+      matchTextDirection: matchTextDirection,
+      bundle: bundle,
+      package: package,
+      width: width,
+      height: height,
+      fit: fit,
+      alignment: alignment,
+      allowDrawingOutsideViewBox: allowDrawingOutsideViewBox,
+      placeholderBuilder: placeholderBuilder,
+      semanticsLabel: semanticsLabel,
+      excludeFromSemantics: excludeFromSemantics,
+      theme: theme,
+      colorFilter: colorFilter,
+      color: color,
+      colorBlendMode: colorBlendMode,
+      clipBehavior: clipBehavior,
+      cacheColorFilter: cacheColorFilter,
     );
   }
 

@@ -89,9 +89,9 @@ flutter_gen:
   # Optional
   integrations:
     flutter_svg: true
-    flare_flutter: true
-    rive: true
-    lottie: true
+    # flare_flutter: true
+    # rive: true
+    # lottie: true
 
 flutter:
   uses-material-design: true
@@ -99,6 +99,7 @@ flutter:
     - assets/images/
     - assets/images/platform/
     - assets/images/app/
+    - assets/images/undraw/
     - assets/audio/music/
     - assets/audio/sfx/
 

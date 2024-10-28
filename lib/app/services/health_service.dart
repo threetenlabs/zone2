@@ -22,6 +22,7 @@ class HealthService extends GetxService {
   final logger = Get.find<Logger>();
   final isAuthorized = false.obs;
   final status = HealthConnectSdkStatus.sdkUnavailable.obs;
+  final hasPermissions = RxnBool(false);
 
   final List<HealthDataType> _writePermissionTypes = [
     HealthDataType.WEIGHT,
@@ -241,7 +242,6 @@ class HealthService extends GetxService {
     super.onInit();
     Health().configure();
     Health().getHealthConnectSdkStatus();
-    isAuthorized.value = await authorize();
   }
 
   Future<bool> authorize() async {
@@ -259,12 +259,13 @@ class HealthService extends GetxService {
     final status = await Health().getHealthConnectSdkStatus();
     logger.i('Health Connect SDK Status: $status');
 
-    final hasPermissions = await Health().hasPermissions(types, permissions: permissions);
+    hasPermissions.value = await Health().hasPermissions(types, permissions: permissions);
 
     bool authorized = false;
-    if (hasPermissions != null && !hasPermissions) {
+    if (hasPermissions.value != null && !hasPermissions.value!) {
       try {
         authorized = await Health().requestAuthorization(types, permissions: permissions);
+        isAuthorized.value = authorized;
       } catch (error) {
         logger.e("Exception in authorize: $error");
       }
