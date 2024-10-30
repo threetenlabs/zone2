@@ -129,7 +129,7 @@ class AddFoodBottomSheet extends GetView<DiaryController> {
 
                 // If confirmed, call deleteFood method
                 if (confirm == true) {
-                  controller.deleteFood(item.dateFrom, item.dateTo);
+                  // controller.deleteFood(item.dateFrom, item.dateTo);
                 }
               },
               child: ListTile(

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:health/health.dart';
+import 'package:zone2/app/models/food.dart';
 import 'package:zone2/app/modules/diary/controllers/diary_controller.dart';
 import 'package:zone2/app/modules/diary/views/food/add_food.dart';
 import 'package:zone2/app/modules/diary/views/food/food_detail.dart';
@@ -149,10 +150,12 @@ class ShowFoodBottomSheet extends GetView<DiaryController> {
             child: CarouselView(
               itemExtent: 330,
               shrinkExtent: 200,
-              onTap: (index) => {
-                debugPrint('onTap called'),
-                controller.selectedPlatformHealthFood.value = mealList[index],
-                _showFoodDetail(context)
+              onTap: (index) {
+                // controller.selectedPlatformHealthFood.value = mealList[index];
+                controller.selectedZone2Food.value = Zone2Food.fromHealthDataPoint(mealList[index]);
+                controller.foodServingController.text =
+                    controller.selectedZone2Food.value?.servingQuantity.toStringAsFixed(1) ?? '';
+                _showFoodDetail(context);
               },
               children: List<Widget>.generate(mealList.length, (int index) {
                 final item = mealList[index];
@@ -194,8 +197,7 @@ class ShowFoodBottomSheet extends GetView<DiaryController> {
       useSafeArea: true,
       context: context,
       builder: (context) {
-        return const FoodDetailBottomSheet(
-            conversionType: ConversionType.health); // Pass the selected food
+        return const FoodDetailBottomSheet();
       },
     );
   }

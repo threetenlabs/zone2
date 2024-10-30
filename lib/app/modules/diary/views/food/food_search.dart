@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:zone2/app/models/food.dart';
 import 'package:zone2/app/modules/diary/controllers/diary_controller.dart';
 import 'package:zone2/app/modules/diary/views/food/food_detail.dart';
 
@@ -46,9 +47,12 @@ class FoodSearchWidget extends GetWidget<DiaryController> {
                     return ListTile(
                       title: Text(food.description),
                       subtitle: Text('Brand: ${food.brand}'),
-                      onTap: () => {
-                        controller.selectedOpenFoodFactsFood.value = food,
-                        _showFoodDetail(context),
+                      onTap: () {
+                        controller.selectedOpenFoodFactsFood.value = food;
+                        controller.selectedZone2Food.value = Zone2Food.fromOpenFoodFactsFood(
+                            food, controller.selectedMealType.value);
+                        controller.foodServingController.text = '';
+                        _showFoodDetail(context);
                       }, // Show food details on tap
                     );
                   },
@@ -72,8 +76,7 @@ class FoodSearchWidget extends GetWidget<DiaryController> {
       useSafeArea: true,
       context: context,
       builder: (context) {
-        return const FoodDetailBottomSheet(
-            conversionType: ConversionType.openfoodfacts); // Pass the selected food
+        return const FoodDetailBottomSheet();
       },
     );
   }

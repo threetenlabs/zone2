@@ -171,6 +171,7 @@ class DiaryController extends GetxController {
         NotificationService.to
             .showError('Meal Not Saved', 'Your meal was not saved to health data.');
       }
+      foodServingController.text = '';
     } catch (e) {
       logger.e('Error saving meal to Health: $e');
     }
@@ -241,8 +242,9 @@ class DiaryController extends GetxController {
     foodSearchResults.value = await foodService.searchFood(query);
   }
 
-  Future<void> deleteFood(DateTime dateFrom, DateTime dateTo) async {
-    await healthService.deleteData(HealthDataType.NUTRITION, dateFrom, dateTo);
+  Future<void> deleteFood() async {
+    await healthService.deleteData(HealthDataType.NUTRITION, selectedZone2Food.value!.startTime!,
+        selectedZone2Food.value!.endTime!);
     await getHealthDataForSelectedDay();
   }
 }

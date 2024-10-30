@@ -383,7 +383,7 @@ class HealthService extends GetxService {
           protein: meal.proteinValue * qty,
           fatTotal: meal.totalFatValue * qty,
           name:
-              '${meal.name} | ${meal.brand} | ${meal.servingQuantity.toStringAsFixed(1)} | ${meal.servingLabel}',
+              '${meal.name} | ${meal.brand} | ${qty.toStringAsFixed(1)} | ${meal.servingLabel}',
           sodium: meal.sodiumValue * qty,
           cholesterol: meal.cholesterolValue * qty,
           fiber: meal.fiberValue * qty,

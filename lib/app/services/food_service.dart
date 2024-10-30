@@ -65,9 +65,9 @@ class FoodService extends GetxService {
       parametersList: <Parameter>[
         SearchTerms(terms: [searchTerm]),
         const SortBy(
-          option: SortOption.POPULARITY,
+          option: SortOption.NOTHING,
         ),
-        const PageSize(size: 20),
+        const PageSize(size: 50),
       ],
       version: ProductQueryVersion.v3,
       language: OpenFoodFactsLanguage.ENGLISH,
