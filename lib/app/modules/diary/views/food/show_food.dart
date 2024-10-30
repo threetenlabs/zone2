@@ -151,7 +151,7 @@ class ShowFoodBottomSheet extends GetView<DiaryController> {
               shrinkExtent: 200,
               onTap: (index) => {
                 debugPrint('onTap called'),
-                controller.selectedHealthMeal.value = mealList[index],
+                controller.selectedPlatformHealthFood.value = mealList[index],
                 _showFoodDetail(context)
               },
               children: List<Widget>.generate(mealList.length, (int index) {
@@ -159,7 +159,7 @@ class ShowFoodBottomSheet extends GetView<DiaryController> {
                 final nutritionHealthValue = item.value as NutritionHealthValue;
                 return FoodCarouselCard(
                     index: index,
-                    label: nutritionHealthValue.name ?? '',
+                    label: nutritionHealthValue.name?.split(' | ')[0] ?? '',
                     calories: nutritionHealthValue.calories ?? 0.0,
                     protein: nutritionHealthValue.protein ?? 0.0,
                     fat: nutritionHealthValue.fat ?? 0.0,
@@ -176,6 +176,7 @@ class ShowFoodBottomSheet extends GetView<DiaryController> {
 
   void _showAddFoodBottomSheet(BuildContext context) {
     showModalBottomSheet(
+      barrierColor: Colors.transparent,
       context: context,
       enableDrag: false,
       isScrollControlled: true, // Allow full screen
@@ -188,6 +189,7 @@ class ShowFoodBottomSheet extends GetView<DiaryController> {
 
   void _showFoodDetail(BuildContext context) {
     showModalBottomSheet(
+      barrierColor: Colors.transparent,
       isScrollControlled: true, // Allow full screen
       useSafeArea: true,
       context: context,

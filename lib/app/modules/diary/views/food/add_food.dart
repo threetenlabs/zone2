@@ -150,6 +150,7 @@ class AddFoodBottomSheet extends GetView<DiaryController> {
 
   void _showSearchBottomSheet(BuildContext context) {
     showModalBottomSheet(
+      barrierColor: Colors.transparent,
       context: context,
       enableDrag: false,
       isScrollControlled: true, // Allow full screen

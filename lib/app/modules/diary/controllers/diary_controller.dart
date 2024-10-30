@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:logger/logger.dart';
 import 'package:health/health.dart';
@@ -11,7 +12,6 @@ class DiaryController extends GetxController {
   final logger = Get.find<Logger>();
   final healthService = Get.find<HealthService>();
   final foodService = Get.find<FoodService>();
-  final count = 0.obs;
   final weightWhole = 70.obs;
   final weightDecimal = 0.obs;
   final healthData = RxList<HealthDataPoint>();
@@ -27,13 +27,23 @@ class DiaryController extends GetxController {
   final searchPerformed = false.obs;
 
   final selectedMealType = Rx<MealType>(MealType.BREAKFAST);
-  final selectedFood = Rxn<UsdaFood>();
-  final foodServingQty = 0.0.obs;
-  final selectedMeal = Rxn<PlatformHealthMeal>();
-  final selectedHealthMeal = Rxn<HealthDataPoint>();
+  // Holds the selected food from the open food facts search result list
+  final selectedOpenFoodFactsFood = Rxn<OpenFoodFactsFood>();
+  // Holds the current zone2 food
+  final selectedZone2Food = Rxn<Zone2Food>();
+  // Holds the selected food from the platform specific health data point
+  final selectedPlatformHealthFood = Rxn<HealthDataPoint>();
+  // Holds the serving quantity of the selected meal
+  final foodServingQty = Rxn<double>();
+  final foodServingController = TextEditingController(text: '');
+
+  // Filtered meals with zinc values of 1.0
   final breakfastData = RxList<HealthDataPoint>();
+  // Filtered meals with zinc values of 2.0
   final lunchData = RxList<HealthDataPoint>();
+  // Filtered meals with zinc values of 3.0
   final dinnerData = RxList<HealthDataPoint>();
+  // Filtered meals with zinc values of 4.0
   final snackData = RxList<HealthDataPoint>();
 
   @override
@@ -148,8 +158,10 @@ class DiaryController extends GetxController {
 
   Future<void> saveMealToHealth() async {
     try {
-      final success = await healthService.saveMealToHealth(
-          selectedMealType.value, selectedMeal.value!, foodServingQty.value);
+      final servingQty = double.tryParse(foodServingController.text) ?? 0.0;
+      selectedZone2Food.value!.servingQuantity = servingQty;
+      final success =
+          await healthService.saveMealToHealth(selectedMealType.value, selectedZone2Food.value!);
       if (success) {
         // Send success notification
         NotificationService.to

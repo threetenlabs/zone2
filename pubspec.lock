@@ -1252,6 +1252,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.1.2"
+  openfoodfacts:
+    dependency: "direct main"
+    description:
+      name: openfoodfacts
+      sha256: d35a213d6354246e3b27e0b18fe3def658e00c337346cf11c4f8ba082f92dfaa
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.16.0"
   outline_material_icons:
     dependency: "direct main"
     description:

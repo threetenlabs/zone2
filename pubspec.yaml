@@ -47,6 +47,7 @@ dependencies:
   logger: ^2.2.0
   network_info_plus: ^5.0.3
   numberpicker: ^2.1.2
+  openfoodfacts: ^3.16.0
   outline_material_icons: ^1.0.0
   package_info_plus: ^8.0.0
   path: ^1.9.0

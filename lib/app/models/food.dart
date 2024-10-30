@@ -1,129 +1,145 @@
 import 'package:health/health.dart';
 import 'package:zone2/app/services/health_service.dart';
+import 'package:openfoodfacts/openfoodfacts.dart' as openfoodfacts;
 
 class FoodSearchResponse {
-  final FoodSearchCriteria foodSearchCriteria;
   final int totalHits;
-  final int currentPage;
-  final int totalPages;
-  final List<UsdaFood> foods;
+
+  final List<OpenFoodFactsFood> foods;
 
   FoodSearchResponse({
-    required this.foodSearchCriteria,
     required this.totalHits,
-    required this.currentPage,
-    required this.totalPages,
     required this.foods,
   });
 
-  factory FoodSearchResponse.fromJson(Map<String, dynamic> json) {
+  factory FoodSearchResponse.fromResult(List<openfoodfacts.Product> foods) {
     return FoodSearchResponse(
-      foodSearchCriteria:
-          FoodSearchCriteria.fromJson(json['foodSearchCriteria'] ?? {}), // Handle null
-      totalHits: json['totalHits'] ?? 0, // Default to 0 if null
-      currentPage: json['currentPage'] ?? 1, // Default to 1 if null
-      totalPages: json['totalPages'] ?? 1, // Default to 1 if null
-      foods: List<UsdaFood>.from(
-          json['foods']?.map((food) => UsdaFood.fromJson(food)) ?? []), // Handle null
+      totalHits: foods.length,
+      foods: List<OpenFoodFactsFood>.from(
+          foods.map((food) => OpenFoodFactsFood.fromOpenFoodFacts(food))),
     );
   }
 }
 
-class FoodSearchCriteria {
-  final String query;
-  final List<String> dataType;
-  final int pageSize;
-  final int pageNumber;
-  final String sortBy;
-  final String sortOrder;
-  final String brandOwner;
-  final List<String> tradeChannel;
-  final String startDate;
-  final String endDate;
-
-  FoodSearchCriteria({
-    required this.query,
-    required this.dataType,
-    required this.pageSize,
-    required this.pageNumber,
-    required this.sortBy,
-    required this.sortOrder,
-    required this.brandOwner,
-    required this.tradeChannel,
-    required this.startDate,
-    required this.endDate,
-  });
-
-  factory FoodSearchCriteria.fromJson(Map<String, dynamic> json) {
-    return FoodSearchCriteria(
-      query: json['query'] ?? '', // Default to empty string if null
-      dataType: List<String>.from(json['dataType'] ?? []), // Handle null
-      pageSize: json['pageSize'] ?? 10, // Default to 10 if null
-      pageNumber: json['pageNumber'] ?? 1, // Default to 1 if null
-      sortBy: json['sortBy'] ?? 'dataType.keyword', // Default to a specific value if null
-      sortOrder: json['sortOrder'] ?? 'asc', // Default to 'asc' if null
-      brandOwner: json['brandOwner'] ?? '', // Default to empty string if null
-      tradeChannel: List<String>.from(json['tradeChannel'] ?? []), // Handle null
-      startDate: json['startDate'] ?? '', // Default to empty string if null
-      endDate: json['endDate'] ?? '', // Default to empty string if null
-    );
-  }
-}
-
-class UsdaFood {
-  final int fdcId;
-  final String dataType;
+class OpenFoodFactsFood {
+  final String barcode;
   final String description;
-  final List<UsdaFoodNutrient> foodNutrients;
-  final String publicationDate;
-  final String brandOwner;
+  final List<OpenFoodFactsNutriment> nutriments;
+  final String brand;
   final String servingSizeUnit;
   final double servingSize;
   final String householdServingFullText;
 
-  UsdaFood({
-    required this.fdcId,
-    required this.dataType,
+  OpenFoodFactsFood({
+    required this.barcode,
     required this.description,
-    required this.foodNutrients,
-    required this.publicationDate,
-    required this.brandOwner,
+    required this.nutriments,
+    required this.brand,
     required this.servingSizeUnit,
     required this.servingSize,
     required this.householdServingFullText,
   });
 
-  factory UsdaFood.fromJson(Map<String, dynamic> json) {
-    return UsdaFood(
-      fdcId: json['fdcId'] ?? 0, // Default to 0 if null
-      dataType: json['dataType'] ?? '', // Default to empty string if null
-      description: json['description'] ?? '', // Default to empty string if null
-      foodNutrients: List<UsdaFoodNutrient>.from(
-          json['foodNutrients']?.map((nutrient) => UsdaFoodNutrient.fromJson(nutrient)) ??
-              []), // Handle null
-      publicationDate: json['publicationDate'] ?? '', // Default to empty string if null
-      brandOwner: json['brandOwner'] ?? '', // Default to empty string if null
-      servingSizeUnit: json['servingSizeUnit'] ?? '', // Default to empty string if null
-      servingSize: json['servingSize'] ?? 0.0, // Default to 0.0 if null
-      householdServingFullText:
-          json['householdServingFullText'] ?? '', // Default to empty string if null
+  factory OpenFoodFactsFood.fromOpenFoodFacts(openfoodfacts.Product product) {
+    final barcode = product.barcode;
+    final description = product.productName;
+    final brand = product.brands;
+    final nutriments = product.nutriments;
+
+    List<OpenFoodFactsNutriment> nutrients = [
+      OpenFoodFactsNutriment(
+          name: openfoodfacts.Nutrient.energyKCal.name,
+          amount: nutriments?.getValue(
+                  openfoodfacts.Nutrient.energyKCal, openfoodfacts.PerSize.serving) ??
+              0.0,
+          unitName: 'kcal'),
+      OpenFoodFactsNutriment(
+          name: openfoodfacts.Nutrient.proteins.name,
+          amount: nutriments?.getValue(
+                  openfoodfacts.Nutrient.proteins, openfoodfacts.PerSize.serving) ??
+              0.0,
+          unitName: 'g'),
+      OpenFoodFactsNutriment(
+          name: openfoodfacts.Nutrient.fat.name,
+          amount: nutriments?.getValue(openfoodfacts.Nutrient.fat, openfoodfacts.PerSize.serving) ??
+              0.0,
+          unitName: 'g'),
+      OpenFoodFactsNutriment(
+          name: openfoodfacts.Nutrient.carbohydrates.name,
+          amount: nutriments?.getValue(
+                  openfoodfacts.Nutrient.carbohydrates, openfoodfacts.PerSize.serving) ??
+              0.0,
+          unitName: 'g'),
+      OpenFoodFactsNutriment(
+          name: openfoodfacts.Nutrient.sugars.name,
+          amount:
+              nutriments?.getValue(openfoodfacts.Nutrient.sugars, openfoodfacts.PerSize.serving) ??
+                  0.0,
+          unitName: 'g'),
+      OpenFoodFactsNutriment(
+          name: openfoodfacts.Nutrient.saturatedFat.name,
+          amount: nutriments?.getValue(
+                  openfoodfacts.Nutrient.saturatedFat, openfoodfacts.PerSize.serving) ??
+              0.0,
+          unitName: 'g'),
+      OpenFoodFactsNutriment(
+          name: openfoodfacts.Nutrient.sodium.name,
+          amount:
+              nutriments?.getValue(openfoodfacts.Nutrient.sodium, openfoodfacts.PerSize.serving) ??
+                  0.0,
+          unitName: 'g'),
+      OpenFoodFactsNutriment(
+          name: openfoodfacts.Nutrient.cholesterol.name,
+          amount: nutriments?.getValue(
+                  openfoodfacts.Nutrient.cholesterol, openfoodfacts.PerSize.serving) ??
+              0.0,
+          unitName: 'mg'),
+      OpenFoodFactsNutriment(
+          name: openfoodfacts.Nutrient.potassium.name,
+          amount: nutriments?.getValue(
+                  openfoodfacts.Nutrient.potassium, openfoodfacts.PerSize.serving) ??
+              0.0,
+          unitName: 'g'),
+    ];
+
+    // Parse serving size
+    String servingSizeStr = product.servingSize ?? '';
+    double servingSize = product.servingQuantity ?? 0.0;
+    String servingSizeUnit = 'g';
+
+    if (servingSizeStr.isNotEmpty) {
+      // Extract unit from serving size string if available
+      final unitMatch = RegExp(r'\((.*?)\)').firstMatch(servingSizeStr);
+      if (unitMatch != null) {
+        servingSizeUnit = unitMatch.group(1) ?? 'g';
+      }
+    }
+
+    return OpenFoodFactsFood(
+      barcode: barcode ?? '',
+      description: description ?? '',
+      nutriments: nutrients,
+      brand: brand ?? '',
+      servingSizeUnit: servingSizeUnit,
+      servingSize: servingSize,
+      householdServingFullText: servingSizeStr,
     );
   }
 }
 
-class UsdaFoodNutrient {
+class OpenFoodFactsNutriment {
   final String name;
   final double amount;
   final String unitName;
 
-  UsdaFoodNutrient({
+  OpenFoodFactsNutriment({
     required this.name,
     required this.amount,
     required this.unitName,
   });
 
-  factory UsdaFoodNutrient.fromJson(Map<String, dynamic> json) {
-    return UsdaFoodNutrient(
+  factory OpenFoodFactsNutriment.fromJson(Map<String, dynamic> json) {
+    return OpenFoodFactsNutriment(
       name: json['nutrientName'],
       amount: json['value'] != null
           ? (json['value'] is int)
@@ -135,10 +151,19 @@ class UsdaFoodNutrient {
   }
 }
 
-/// This class represents a meal in the platform health system.
-class PlatformHealthMeal {
+/// This class represents a meal the application, a bridge between OpenFoodFactsFood and HealthDataPoint.
+class Zone2Food {
   /// The name of the meal.
   final String name;
+
+  /// The quantity of the serving.
+  double servingQuantity;
+
+  /// The brand of the meal.
+  final String brand;
+
+  /// The label for the serving size of the meal.
+  final String servingLabel;
 
   /// The label for the total calories of the meal.
   final String totalCaloriesLabel;
@@ -206,9 +231,18 @@ class PlatformHealthMeal {
   /// The value of the zinc content of the meal.
   final double mealTypeValue;
 
-  /// Constructor for the PlatformHealthMeal class.
-  PlatformHealthMeal({
+  final HealthDataType? type;
+
+  final DateTime? startTime;
+
+  final DateTime? endTime;
+
+  /// Constructor for the Zone2Meal class.
+  Zone2Food({
     required this.name,
+    required this.brand,
+    required this.servingQuantity,
+    required this.servingLabel,
     required this.totalCaloriesLabel,
     required this.totalCaloriesValue,
     required this.proteinLabel,
@@ -231,12 +265,15 @@ class PlatformHealthMeal {
     required this.potassiumValue,
     required this.mealTypeLabel,
     required this.mealTypeValue,
+    this.type,
+    this.startTime,
+    this.endTime,
   });
 
-  static List<dynamic> _getNutrientInfo(UsdaFood food, String nutrientName) {
-    final nutrient = food.foodNutrients.firstWhere(
+  static List<dynamic> _getNutrientInfo(OpenFoodFactsFood food, String nutrientName) {
+    final nutrient = food.nutriments.firstWhere(
       (n) => n.name == nutrientName,
-      orElse: () => UsdaFoodNutrient(name: nutrientName, amount: 0, unitName: ''),
+      orElse: () => OpenFoodFactsNutriment(name: nutrientName, amount: 0, unitName: ''),
     );
 
     var unit = nutrient.unitName.toLowerCase();
@@ -246,10 +283,8 @@ class PlatformHealthMeal {
     // Convert mg to g (grams) if unitName is 'mg'
     if (unit == 'mg') {
       value = (value / 1000).roundToDouble();
-      if (value > 1000) {
-        displayValue = (displayValue / 1000).roundToDouble();
-        unit = 'g';
-      }
+      displayValue = (displayValue / 1000).roundToDouble();
+      unit = 'g';
     }
 
     // Convert kj to kcal
@@ -262,20 +297,23 @@ class PlatformHealthMeal {
     return ['${displayValue.toString()} $unit', value];
   }
 
-  factory PlatformHealthMeal.fromUsdaFood(UsdaFood food, MealType mealType) {
-    final energyInfo = _getNutrientInfo(food, 'Energy');
-    final proteinInfo = _getNutrientInfo(food, 'Protein');
-    final carbsInfo = _getNutrientInfo(food, 'Carbohydrate, by difference');
-    final fiberInfo = _getNutrientInfo(food, 'Fiber, total dietary');
-    final sugarInfo = _getNutrientInfo(food, 'Sugars, Total');
-    final fatInfo = _getNutrientInfo(food, 'Total lipid (fat)');
-    final saturatedInfo = _getNutrientInfo(food, 'Fatty acids, total saturated');
-    final sodiumInfo = _getNutrientInfo(food, 'Sodium, Na');
-    final cholesterolInfo = _getNutrientInfo(food, 'Cholesterol');
-    final potassiumInfo = _getNutrientInfo(food, 'Potassium, K');
+  factory Zone2Food.fromOpenFoodFactsFood(OpenFoodFactsFood food, MealType mealType) {
+    final energyInfo = _getNutrientInfo(food, openfoodfacts.Nutrient.energyKCal.name);
+    final proteinInfo = _getNutrientInfo(food, openfoodfacts.Nutrient.proteins.name);
+    final carbsInfo = _getNutrientInfo(food, openfoodfacts.Nutrient.carbohydrates.name);
+    final fiberInfo = _getNutrientInfo(food, openfoodfacts.Nutrient.fiber.name);
+    final sugarInfo = _getNutrientInfo(food, openfoodfacts.Nutrient.sugars.name);
+    final fatInfo = _getNutrientInfo(food, openfoodfacts.Nutrient.fat.name);
+    final saturatedInfo = _getNutrientInfo(food, openfoodfacts.Nutrient.saturatedFat.name);
+    final sodiumInfo = _getNutrientInfo(food, openfoodfacts.Nutrient.sodium.name);
+    final cholesterolInfo = _getNutrientInfo(food, openfoodfacts.Nutrient.cholesterol.name);
+    final potassiumInfo = _getNutrientInfo(food, openfoodfacts.Nutrient.potassium.name);
 
-    PlatformHealthMeal meal = PlatformHealthMeal(
-        name: '',
+    Zone2Food meal = Zone2Food(
+        name: food.description,
+        brand: food.brand,
+        servingLabel: food.householdServingFullText,
+        servingQuantity: 0.0,
         totalCaloriesLabel: energyInfo[0],
         totalCaloriesValue: energyInfo[1],
         proteinLabel: proteinInfo[0],
@@ -302,178 +340,47 @@ class PlatformHealthMeal {
     return meal;
   }
 
-  factory PlatformHealthMeal.fromHealthDataPoint(HealthDataPoint dataPoint) {
+  factory Zone2Food.fromHealthDataPoint(HealthDataPoint dataPoint) {
     final healthInfo = dataPoint.value as NutritionHealthValue;
-    return PlatformHealthMeal(
-      name: healthInfo.name ?? '',
-      totalCaloriesLabel: healthInfo.calories.toString(),
+
+    // This is a hack: the name is formatted as "name | brand | serving quantity | serving label" in the health app
+    final nameParts = healthInfo.name?.split(' | ');
+    final name = nameParts != null && nameParts.isNotEmpty ? nameParts[0] : '';
+    final brand = nameParts != null && nameParts.length > 1 ? nameParts[1] : '';
+    final servingQuantity =
+        nameParts != null && nameParts.length > 2 ? double.parse(nameParts[2]) : 0.0;
+    final servingLabel = nameParts != null && nameParts.length > 3 ? nameParts[3] : '';
+
+    return Zone2Food(
+      name: name,
+      brand: brand,
+      servingQuantity: servingQuantity,
+      servingLabel: servingLabel,
+      totalCaloriesLabel: '${healthInfo.calories ?? 0.0} kcal',
       totalCaloriesValue: healthInfo.calories ?? 0.0,
-      proteinLabel: healthInfo.protein.toString(),
+      proteinLabel: '${healthInfo.protein ?? 0.0} g',
       proteinValue: healthInfo.protein ?? 0.0,
-      totalCarbsLabel: healthInfo.carbs.toString(),
+      totalCarbsLabel: '${healthInfo.carbs ?? 0.0} g',
       totalCarbsValue: healthInfo.carbs ?? 0.0,
-      fiberLabel: healthInfo.fiber.toString(),
+      fiberLabel: '${healthInfo.fiber ?? 0.0} g',
       fiberValue: healthInfo.fiber ?? 0.0,
-      sugarLabel: healthInfo.sugar.toString(),
+      sugarLabel: '${healthInfo.sugar ?? 0.0} g',
       sugarValue: healthInfo.sugar ?? 0.0,
-      totalFatLabel: healthInfo.fat.toString(),
+      totalFatLabel: '${healthInfo.fat ?? 0.0} g',
       totalFatValue: healthInfo.fat ?? 0.0,
-      saturatedLabel: healthInfo.fatSaturated.toString(),
+      saturatedLabel: '${healthInfo.fatSaturated ?? 0.0} g',
       saturatedValue: healthInfo.fatSaturated ?? 0.0,
-      sodiumLabel: healthInfo.sodium.toString(),
+      sodiumLabel: '${healthInfo.sodium ?? 0.0} g',
       sodiumValue: healthInfo.sodium ?? 0.0,
-      cholesterolLabel: healthInfo.cholesterol.toString(),
+      cholesterolLabel: '${healthInfo.cholesterol ?? 0.0} g',
       cholesterolValue: healthInfo.cholesterol ?? 0.0,
-      potassiumLabel: healthInfo.potassium.toString(),
+      potassiumLabel: '${healthInfo.potassium ?? 0.0} g',
       potassiumValue: healthInfo.potassium ?? 0.0,
-      mealTypeLabel: healthInfo.mealType.toString(),
+      mealTypeLabel: '',
       mealTypeValue: healthInfo.zinc ?? 0.0,
+      type: dataPoint.type,
+      startTime: dataPoint.dateFrom,
+      endTime: dataPoint.dateTo,
     );
   }
 }
-
-// class Zone2NutritionalInfo {
-//   final double energy;
-//   final double protein;
-//   final double carbohydrates;
-//   final double sugars;
-//   final double totalFat;
-//   final double saturatedFat;
-//   final double sodium;
-//   final double cholesterol;
-//   final double potassium;
-//   final int mealTypeInteger;
-
-//   Zone2NutritionalInfo({
-//     required this.energy,
-//     required this.protein,
-//     required this.carbohydrates,
-//     required this.sugars,
-//     required this.totalFat,
-//     required this.saturatedFat,
-//     required this.sodium,
-//     required this.cholesterol,
-//     required this.potassium,
-//     required this.mealTypeInteger,
-//   });
-
-//   // Method to create Zone2NutritionalInfo from UsdaFood
-//   factory Zone2NutritionalInfo.fromUsdaFood(UsdaFood food) {
-//     double energy = 0.0;
-//     double protein = 0.0;
-//     double carbohydrates = 0.0;
-//     double sugars = 0.0;
-//     double totalFat = 0.0;
-//     double saturatedFat = 0.0;
-//     double sodium = 0.0;
-//     double cholesterol = 0.0;
-//     double potassium = 0.0;
-
-//     for (var nutrient in food.foodNutrients) {
-//       switch (nutrient.name) {
-//         case 'Energy':
-//           energy = nutrient.amount;
-//           break;
-//         case 'Protein':
-//           protein = nutrient.amount;
-//           break;
-//         case 'Total lipid (fat)':
-//           totalFat = nutrient.amount;
-//           break;
-//         case 'Carbohydrate, by difference':
-//           carbohydrates = nutrient.amount;
-//           break;
-//         case 'Sugars, Total':
-//           sugars = nutrient.amount;
-//           break;
-//         case 'Fatty acids, total saturated':
-//           saturatedFat = nutrient.amount;
-//           break;
-//         case 'Sodium, Na':
-//           sodium = nutrient.amount;
-//           break;
-//         case 'Cholesterol':
-//           cholesterol = nutrient.amount;
-//           break;
-//         case 'Potassium, K':
-//           potassium = nutrient.amount;
-//           break;
-//         // Add more cases as needed
-//       }
-//     }
-
-//     return Zone2NutritionalInfo(
-//       energy: energy,
-//       protein: protein,
-//       carbohydrates: carbohydrates,
-//       sugars: sugars,
-//       totalFat: totalFat,
-//       saturatedFat: saturatedFat,
-//       sodium: sodium,
-//       cholesterol: cholesterol,
-//       potassium: potassium,
-//       mealTypeInteger: 1, // Default or map accordingly
-//     );
-//   }
-
-//   // Method to create Zone2NutritionalInfo from HealthDataPoint
-//   factory Zone2NutritionalInfo.fromHealthDataPoint(HealthDataPoint dataPoint) {
-//     final healthInfo = dataPoint.value as NutritionHealthValue;
-//     return Zone2NutritionalInfo(
-//       energy: healthInfo.calories ?? 0.0,
-//       protein: healthInfo.protein ?? 0.0,
-//       carbohydrates: healthInfo.carbs ?? 0.0,
-//       sugars: healthInfo.sugar ?? 0.0,
-//       totalFat: healthInfo.fat ?? 0.0,
-//       saturatedFat: healthInfo.fatSaturated ?? 0.0,
-//       sodium: healthInfo.sodium ?? 0.0,
-//       cholesterol: healthInfo.cholesterol ?? 0.0,
-//       potassium: healthInfo.potassium ?? 0.0,
-//       mealTypeInteger: 1, // Default or map accordingly
-//     );
-//   }
-
-//   // Method to convert Zone2NutritionalInfo to UsdaFood
-//   UsdaFood toUsdaFood() {
-//     // Create a UsdaFood object based on the nutritional info
-//     return UsdaFood(
-//       fdcId: 0, // Set appropriate ID or logic
-//       dataType: 'Branded', // Set appropriate type
-//       description: 'Custom Food', // Set appropriate description
-//       foodNutrients: [
-//         UsdaFoodNutrient(name: 'Energy', amount: energy, unitName: 'kcal'),
-//         UsdaFoodNutrient(name: 'Protein', amount: protein, unitName: 'g'),
-//         UsdaFoodNutrient(name: 'Total lipid (fat)', amount: totalFat, unitName: 'g'),
-//         UsdaFoodNutrient(name: 'Carbohydrate, by difference', amount: carbohydrates, unitName: 'g'),
-//         UsdaFoodNutrient(name: 'Sugars, Total', amount: sugars, unitName: 'g'),
-//         UsdaFoodNutrient(name: 'Fatty acids, total saturated', amount: saturatedFat, unitName: 'g'),
-//         UsdaFoodNutrient(name: 'Sodium, Na', amount: sodium, unitName: 'mg'),
-//         UsdaFoodNutrient(name: 'Cholesterol', amount: cholesterol, unitName: 'mg'),
-//         UsdaFoodNutrient(name: 'Potassium, K', amount: potassium, unitName: 'mg'),
-//       ],
-//       publicationDate: DateTime.now().toString(), // Set appropriate date
-//       brandOwner: '', // Set appropriate brand owner
-//       servingSizeUnit: 'g', // Set appropriate serving size unit
-//       servingSize: 100.0, // Set appropriate serving size
-//       householdServingFullText: '1 serving', // Set appropriate serving text
-//     );
-//   }
-
-//   // Method to convert Zone2NutritionalInfo to HealthDataPoint
-//   NutritionHealthValue toHealthDataPoint() {
-//     return NutritionHealthValue(
-//       name: 'Custom Food',
-//       calories: energy,
-//       protein: protein,
-//       fat: totalFat,
-//       carbs: carbohydrates,
-//       sugar: sugars,
-//       fatSaturated: saturatedFat,
-//       sodium: sodium,
-//       cholesterol: cholesterol,
-//       potassium: potassium,
-//       zinc: zinc,
-//       // Add other fields as necessary
-//     );
-//   }
-// }

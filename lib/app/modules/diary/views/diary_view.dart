@@ -5,6 +5,7 @@ import 'package:zone2/app/modules/diary/views/food/manage_food.dart';
 import 'package:zone2/app/modules/diary/views/water/manage_water.dart';
 import 'package:zone2/app/modules/diary/views/weight/manage_weight.dart';
 import 'package:ionicons/ionicons.dart';
+import 'package:zone2/app/style/theme.dart';
 
 import '../controllers/diary_controller.dart';
 
@@ -15,7 +16,6 @@ class DiaryView extends GetView<DiaryController> {
   Widget build(BuildContext context) {
     controller.getHealthDataForSelectedDay();
     return Scaffold(
-      appBar: AppBar(backgroundColor: Colors.black26, toolbarHeight: 6.0),
       body: SafeArea(
         maintainBottomViewPadding: true,
         child: Column(
@@ -112,7 +112,7 @@ class DiaryView extends GetView<DiaryController> {
           title: Text(title),
           subtitle: Text(subtitle),
           onTap: onTap,
-          trailing: isChecked ? Icon(icon, color: iconColor) : null,
+          trailing: isChecked ? Icon(Icons.check, color: MaterialTheme.coolBlue.value) : null,
         ));
   }
 
@@ -128,6 +128,7 @@ class DiaryView extends GetView<DiaryController> {
 
   void _showAddFoodBottomSheet(BuildContext context) {
     showModalBottomSheet(
+      barrierColor: Colors.transparent,
       context: context,
       enableDrag: false,
       isScrollControlled: true, // Allow full screen
@@ -147,6 +148,7 @@ class DiaryView extends GetView<DiaryController> {
 
   void _showWaterBottomSheet(BuildContext context) {
     showModalBottomSheet(
+      barrierColor: Colors.transparent,
       context: context,
       enableDrag: false,
       isScrollControlled: true, // Allow full screen
@@ -157,6 +159,7 @@ class DiaryView extends GetView<DiaryController> {
 
   void _showBottomSheet(BuildContext context, String title) {
     showModalBottomSheet(
+      barrierColor: Colors.transparent,
       context: context,
       enableDrag: false,
       isScrollControlled: true, // Allow full screen

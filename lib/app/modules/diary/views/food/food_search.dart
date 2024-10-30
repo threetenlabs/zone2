@@ -45,9 +45,9 @@ class FoodSearchWidget extends GetWidget<DiaryController> {
                     final food = foodSearchResponse.foods[index];
                     return ListTile(
                       title: Text(food.description),
-                      subtitle: Text('Brand: ${food.brandOwner}'),
+                      subtitle: Text('Brand: ${food.brand}'),
                       onTap: () => {
-                        controller.selectedFood.value = food,
+                        controller.selectedOpenFoodFactsFood.value = food,
                         _showFoodDetail(context),
                       }, // Show food details on tap
                     );
@@ -67,12 +67,13 @@ class FoodSearchWidget extends GetWidget<DiaryController> {
 
   void _showFoodDetail(BuildContext context) {
     showModalBottomSheet(
+      barrierColor: Colors.transparent,
       isScrollControlled: true, // Allow full screen
       useSafeArea: true,
       context: context,
       builder: (context) {
         return const FoodDetailBottomSheet(
-            conversionType: ConversionType.usda); // Pass the selected food
+            conversionType: ConversionType.openfoodfacts); // Pass the selected food
       },
     );
   }

@@ -368,9 +368,10 @@ class HealthService extends GetxService {
     }
   }
 
-  Future<bool> saveMealToHealth(MealType mealtype, PlatformHealthMeal meal, double qty) async {
+  Future<bool> saveMealToHealth(MealType mealtype, Zone2Food meal) async {
     final now = DateTime.now();
     final earlier = now.subtract(const Duration(minutes: 1));
+    final qty = meal.servingQuantity;
 
     try {
       final result = await Health().writeMeal(
@@ -381,7 +382,8 @@ class HealthService extends GetxService {
           carbohydrates: meal.totalCarbsValue * qty,
           protein: meal.proteinValue * qty,
           fatTotal: meal.totalFatValue * qty,
-          name: meal.name,
+          name:
+              '${meal.name} | ${meal.brand} | ${meal.servingQuantity.toStringAsFixed(1)} | ${meal.servingLabel}',
           sodium: meal.sodiumValue * qty,
           cholesterol: meal.cholesterolValue * qty,
           fiber: meal.fiberValue * qty,
@@ -391,6 +393,7 @@ class HealthService extends GetxService {
           zinc: meal.mealTypeValue,
           manganese: qty, // using this to store the serving quantity
           recordingMethod: RecordingMethod.manual);
+
       return result;
     } catch (e) {
       logger.e('Error saving meal to Health: $e');
