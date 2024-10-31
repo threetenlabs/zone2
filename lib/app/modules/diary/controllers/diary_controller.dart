@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:logger/logger.dart';
@@ -7,6 +9,7 @@ import 'package:zone2/app/services/food_service.dart';
 import 'package:zone2/app/services/health_service.dart';
 import 'package:intl/intl.dart'; // Added for date formatting
 import 'package:zone2/app/services/notification_service.dart';
+import 'package:zone2/app/utils/helper.dart';
 
 class DiaryController extends GetxController {
   final logger = Get.find<Logger>();
@@ -132,6 +135,14 @@ class DiaryController extends GetxController {
     // } else {
     //   logger.w('No meal data found');
     // }
+
+    final exerciseData =
+        await healthService.getActivityData(timeFrame: TimeFrame.today, endTime: endTime);
+
+    final heartRateData =
+        jsonEncode(exerciseData.firstWhere((data) => data.type == HealthDataType.STEPS).toJson());
+    printWrapped(heartRateData);
+    logger.i('Heart rate data: $heartRateData');
   }
 
   Future<void> saveWeightToHealth() async {

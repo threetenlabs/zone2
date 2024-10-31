@@ -1,7 +1,5 @@
 import 'package:zone2/app/modules/intro/controllers/intro_controller.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-
 import 'package:get/get.dart';
 import 'package:introduction_screen/introduction_screen.dart';
 import 'package:zone2/app/modules/intro/views/widgets/birthdate_formatter.dart';

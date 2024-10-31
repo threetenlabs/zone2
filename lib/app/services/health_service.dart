@@ -318,6 +318,26 @@ class HealthService extends GetxService {
     return Health().removeDuplicates(healthData);
   }
 
+  Future<List<HealthDataPoint>> getActivityData(
+      {required TimeFrame timeFrame, DateTime? endTime}) async {
+    final types = [
+      HealthDataType.TOTAL_CALORIES_BURNED,
+      HealthDataType.HEART_RATE,
+      HealthDataType.WORKOUT,
+      HealthDataType.STEPS
+    ];
+
+    DateTime calculatedStartTime =
+        await getStartTimeForTimeFrame(timeFrame: timeFrame, endTime: endTime);
+
+    final nowPlus = endTime ?? DateTime.now().add(const Duration(hours: 1));
+
+    final healthData = await Health()
+        .getHealthDataFromTypes(types: types, startTime: calculatedStartTime, endTime: nowPlus);
+
+    return Health().removeDuplicates(healthData);
+  }
+
   Future<HealthConnectSdkStatus> getHealthConnectSdkStatus() async {
     try {
       final hcStatus = await Health().getHealthConnectSdkStatus();
@@ -382,8 +402,7 @@ class HealthService extends GetxService {
           carbohydrates: meal.totalCarbsValue * qty,
           protein: meal.proteinValue * qty,
           fatTotal: meal.totalFatValue * qty,
-          name:
-              '${meal.name} | ${meal.brand} | ${qty.toStringAsFixed(1)} | ${meal.servingLabel}',
+          name: '${meal.name} | ${meal.brand} | ${qty.toStringAsFixed(1)} | ${meal.servingLabel}',
           sodium: meal.sodiumValue * qty,
           cholesterol: meal.cholesterolValue * qty,
           fiber: meal.fiberValue * qty,
