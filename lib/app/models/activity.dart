@@ -2,6 +2,8 @@
 
 import 'dart:convert';
 
+import 'package:health/health.dart';
+
 /// Class representing a heart rate record.
 class HeartRateRecord {
   final String uuid;
@@ -309,14 +311,14 @@ String getCardioZone(double heartRate, int age) {
 }
 
 /// Class representing a combined data point of health metrics.
-class HealthDataPoint {
+class Zone2HealthDataPoint {
   final DateTime time;
   final double heartRate;
   final String cardioZone;
   final double caloriesBurned;
   final int steps;
 
-  HealthDataPoint({
+  Zone2HealthDataPoint({
     required this.time,
     required this.heartRate,
     required this.cardioZone,
@@ -326,9 +328,9 @@ class HealthDataPoint {
 }
 
 /// Generates health data points by combining all health metrics.
-List<HealthDataPoint> generateHealthDataPoints(Map<DateTime, double> heartRateTimeSeries,
+List<Zone2HealthDataPoint> generateHealthDataPoints(Map<DateTime, double> heartRateTimeSeries,
     Map<DateTime, double> calorieTimeSeries, Map<DateTime, int> stepTimeSeries, int userAge) {
-  List<HealthDataPoint> dataPoints = [];
+  List<Zone2HealthDataPoint> dataPoints = [];
 
   Set<DateTime> allTimes = {};
   allTimes.addAll(heartRateTimeSeries.keys);
@@ -343,7 +345,7 @@ List<HealthDataPoint> generateHealthDataPoints(Map<DateTime, double> heartRateTi
     int steps = stepTimeSeries[time] ?? 0;
     String cardioZone = getCardioZone(heartRate, userAge);
 
-    dataPoints.add(HealthDataPoint(
+    dataPoints.add(Zone2HealthDataPoint(
       time: time,
       heartRate: heartRate,
       cardioZone: cardioZone,
@@ -375,7 +377,8 @@ class HealthDataBucket {
 }
 
 /// Buckets health data points into specified time frames.
-List<HealthDataBucket> bucketHealthData(List<HealthDataPoint> dataPoints, int bucketSizeInMinutes) {
+List<HealthDataBucket> bucketHealthData(
+    List<Zone2HealthDataPoint> dataPoints, int bucketSizeInMinutes) {
   if (dataPoints.isEmpty) {
     return [];
   }
@@ -398,7 +401,7 @@ List<HealthDataBucket> bucketHealthData(List<HealthDataPoint> dataPoints, int bu
 
   while (currentBucketStart.isBefore(endTime.add(const Duration(minutes: 1)))) {
     // Collect data points in this bucket
-    List<HealthDataPoint> bucketDataPoints = dataPoints
+    List<Zone2HealthDataPoint> bucketDataPoints = dataPoints
         .where((dp) =>
             (dp.time.isAtSameMomentAs(currentBucketStart) || dp.time.isAfter(currentBucketStart)) &&
             dp.time.isBefore(currentBucketEnd))
@@ -441,14 +444,17 @@ List<HealthDataBucket> bucketHealthData(List<HealthDataPoint> dataPoints, int bu
 }
 
 /// Processes the data and generates bucketed health data.
-List<HealthDataBucket> processData(
-    List<dynamic> heartRateJsonData,
-    List<dynamic> calorieJsonData,
-    List<dynamic> stepJsonData,
-    List<dynamic> workoutJsonData,
-    int bucketSizeInMinutes,
-    int userAge) {
+List<HealthDataBucket> processActivityData({required List<HealthDataPoint> activityData,
+    required int userAge, int bucketSizeInMinutes = 15}) {
   // Parse JSON data
+  final heartRateJsonData =
+      activityData.where((data) => data.type == HealthDataType.HEART_RATE).toList();
+  final calorieJsonData =
+      activityData.where((data) => data.type == HealthDataType.TOTAL_CALORIES_BURNED).toList();
+  final stepJsonData = activityData.where((data) => data.type == HealthDataType.STEPS).toList();
+  final workoutJsonData =
+      activityData.where((data) => data.type == HealthDataType.WORKOUT).toList();
+
   List<HeartRateRecord> heartRateRecords = parseHeartRateData(heartRateJsonData);
   List<CalorieBurnedRecord> calorieRecords = parseCalorieData(calorieJsonData);
   List<StepRecord> stepRecords = parseStepData(stepJsonData);
@@ -460,7 +466,7 @@ List<HealthDataBucket> processData(
   Map<DateTime, int> stepTimeSeries = createStepTimeSeries(stepRecords, workoutRecords);
 
   // Generate health data points
-  List<HealthDataPoint> dataPoints =
+  List<Zone2HealthDataPoint> dataPoints =
       generateHealthDataPoints(heartRateTimeSeries, calorieTimeSeries, stepTimeSeries, userAge);
 
   // Bucket data
@@ -474,40 +480,25 @@ List<HealthDataBucket> processData(
 /// Example usage of the data processing functions.
 void main() {
   // Example JSON data (replace with your actual data)
-  List<dynamic> heartRateJsonData = [
+
+  List<HealthDataPoint> activityData = [
     jsonDecode(
         '{"uuid":"3bab9eb6-9d8f-4751-b3c9-643c73dd1fd2","value":{"__type":"NumericHealthValue","numericValue":100},"type":"HEART_RATE","unit":"BEATS_PER_MINUTE","dateFrom":"2024-10-31T05:57:00.000","dateTo":"2024-10-31T05:57:00.000","sourcePlatform":"googleHealthConnect","sourceDeviceId":"unknown","sourceId":"","sourceName":"com.fitbit.FitbitMobile","recordingMethod":"unknown"}'),
-    // Add more heart rate records here
-  ];
-
-  List<dynamic> calorieJsonData = [
     jsonDecode(
         '{"uuid":"1cf209d5-d393-4c39-9f43-e8c846fd48be","value":{"__type":"NumericHealthValue","numericValue":21.08977},"type":"TOTAL_CALORIES_BURNED","unit":"KILOCALORIE","dateFrom":"2024-10-31T00:15:00.000","dateTo":"2024-10-31T00:30:00.000","sourcePlatform":"googleHealthConnect","sourceDeviceId":"AP3A.241005.015","sourceId":"","sourceName":"com.fitbit.FitbitMobile","recordingMethod":"unknown"}'),
-    // Add more calorie records here
-  ];
-
-  List<dynamic> stepJsonData = [
     jsonDecode(
         '{"uuid":"3a57ac69-1d40-4095-b947-fbc8046df15e","value":{"__type":"NumericHealthValue","numericValue":9},"type":"STEPS","unit":"COUNT","dateFrom":"2024-10-31T04:41:00.000","dateTo":"2024-10-31T04:42:00.000","sourcePlatform":"googleHealthConnect","sourceDeviceId":"AP3A.241005.015","sourceId":"","sourceName":"com.fitbit.FitbitMobile","recordingMethod":"unknown"}'),
-    // Add more step records here
-  ];
-
-  List<dynamic> workoutJsonData = [
     jsonDecode(
         '{"uuid":"b7dd800b-a958-3958-b187-248c4c7a507d","value":{"__type":"WorkoutHealthValue","workoutActivityType":"OTHER","totalEnergyBurned":909,"totalEnergyBurnedUnit":"KILOCALORIE","totalDistance":3838,"totalDistanceUnit":"METER","totalSteps":5154,"totalStepsUnit":"COUNT"},"type":"WORKOUT","unit":"NO_UNIT","dateFrom":"2024-10-31T04:54:56.000","dateTo":"2024-10-31T06:08:16.000","sourcePlatform":"googleHealthConnect","sourceDeviceId":"AP3A.241005.015","sourceId":"","sourceName":"com.fitbit.FitbitMobile","recordingMethod":"unknown"}'),
-    // Add more workout records here
   ];
 
   int bucketSizeInMinutes = 15; // You can change this to 15, 30, 60, etc.
   int userAge = 30; // Replace with the actual user's age
 
-  List<HealthDataBucket> buckets = processData(
-    heartRateJsonData,
-    calorieJsonData,
-    stepJsonData,
-    workoutJsonData,
-    bucketSizeInMinutes,
-    userAge,
+  List<HealthDataBucket> buckets = processActivityData(
+    activityData: activityData,
+    userAge: userAge,
+    bucketSizeInMinutes: bucketSizeInMinutes,
   );
 
   // Example: Print the buckets
