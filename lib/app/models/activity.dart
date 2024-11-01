@@ -126,10 +126,10 @@ class WorkoutRecord {
 class Zone2HealthDataPoint {
   final DateTime time;
   final double heartRate;
-  final String cardioZone;
+  final int cardioZone;
   final double caloriesBurned;
   final int steps;
-  final int activeZoneMinutes;
+  final int zonePoints;
 
   Zone2HealthDataPoint({
     required this.time,
@@ -137,7 +137,7 @@ class Zone2HealthDataPoint {
     required this.cardioZone,
     required this.caloriesBurned,
     required this.steps,
-    required this.activeZoneMinutes,
+    required this.zonePoints,
   });
 }
 
@@ -146,20 +146,20 @@ class HealthDataBucket {
   final DateTime startTime;
   final DateTime endTime;
   final double averageHeartRate;
-  final String predominantCardioZone;
+  final int predominantCardioZone;
   final double totalCaloriesBurned;
   final int totalSteps;
-  final int totalActiveZoneMinutes;
-  final Map<String, int> cardioZoneMinutes;
+  final int totalZonePoints;
+  final Map<int, int> cardioZoneMinutes;
 
-  HealthDataBucket({
+    HealthDataBucket({
     required this.startTime,
     required this.endTime,
     required this.averageHeartRate,
     required this.predominantCardioZone,
     required this.totalCaloriesBurned,
     required this.totalSteps,
-    required this.totalActiveZoneMinutes,
+    required this.totalZonePoints,
     required this.cardioZoneMinutes,
   });
 }

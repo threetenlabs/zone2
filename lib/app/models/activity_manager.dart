@@ -13,30 +13,47 @@ class HealthActivityManager {
   // Summary statistics
   static int _totalSteps = 0;
   static double _totalCaloriesBurned = 0.0;
+  static int _totalZonePoints = 0;
 
-  static final Map<String, int> _zoneMinutes = {
-    'Zone 1 (Very Light)': 0,
-    'Zone 2 (Light)': 0,
-    'Zone 3 (Moderate)': 0,
-    'Zone 4 (Hard)': 0,
-    'Zone 5 (Maximum)': 0,
+  static final Map<int, int> _zoneMinutes = {
+    1: 0, // Very Light
+    2: 0, // Light
+    3: 0, // Moderate
+    4: 0, // Hard
+    5: 0, // Maximum
   };
 
-  static final Map<String, Color> _cardioZoneColors = {
-    'Zone 1 (Very Light)': Colors.green,
-    'Zone 2 (Light)': Colors.lightGreen,
-    'Zone 3 (Moderate)': Colors.yellow,
-    'Zone 4 (Hard)': Colors.orange,
-    'Zone 5 (Maximum)': Colors.red,
-  };
-
-  // Map cardio zones to numeric values
-  static final Map<String, int> _zoneValues = {
-    'Zone 1 (Very Light)': 1,
-    'Zone 2 (Light)': 2,
-    'Zone 3 (Moderate)': 3,
-    'Zone 4 (Hard)': 4,
-    'Zone 5 (Maximum)': 5,
+  static final Map<int, ZoneConfig> _zoneConfigs = {
+    1: const ZoneConfig(
+      name: 'Zone 1 (Very Light)',
+      color: Colors.green,
+      minPercentage: 0,
+      maxPercentage: 60,
+    ),
+    2: const ZoneConfig(
+      name: 'Zone 2 (Light)',
+      color: Colors.lightGreen,
+      minPercentage: 60,
+      maxPercentage: 70,
+    ),
+    3: const ZoneConfig(
+      name: 'Zone 3 (Moderate)',
+      color: Colors.yellow,
+      minPercentage: 70,
+      maxPercentage: 80,
+    ),
+    4: const ZoneConfig(
+      name: 'Zone 4 (Hard)',
+      color: Colors.orange,
+      minPercentage: 80,
+      maxPercentage: 90,
+    ),
+    5: const ZoneConfig(
+      name: 'Zone 5 (Maximum)',
+      color: Colors.red,
+      minPercentage: 90,
+      maxPercentage: 100,
+    ),
   };
 
   /// Process activity data and store results
@@ -70,7 +87,7 @@ class HealthActivityManager {
     _buckets = _bucketHealthData(dataPoints, bucketSizeInMinutes);
 
     // Calculate summary statistics
-    _calculateSummaryStatistics();
+    _calculateSummaryStatistics(bucketSizeInMinutes);
 
     return _buckets;
   }
@@ -253,21 +270,16 @@ class HealthActivityManager {
   }
 
   /// Calculates the cardio zone based on heart rate and user age.
-  static String _getCardioZone(double heartRate, int age) {
+  static int _getCardioZone(double heartRate, int age) {
     double maxHeartRate = 220.0 - age.toDouble();
     double percentage = (heartRate / maxHeartRate) * 100;
 
-    if (percentage < 60) {
-      return 'Zone 1 (Very Light)';
-    } else if (percentage < 70) {
-      return 'Zone 2 (Light)';
-    } else if (percentage < 80) {
-      return 'Zone 3 (Moderate)';
-    } else if (percentage < 90) {
-      return 'Zone 4 (Hard)';
-    } else {
-      return 'Zone 5 (Maximum)';
+    for (var entry in _zoneConfigs.entries) {
+      if (percentage >= entry.value.minPercentage && percentage < entry.value.maxPercentage) {
+        return entry.key;
+      }
     }
+    return 5; // Maximum zone if percentage is >= 90
   }
 
   /// Buckets health data points into specified time frames.
@@ -293,7 +305,7 @@ class HealthActivityManager {
 
     List<HealthDataBucket> buckets = [];
 
-    while (currentBucketStart.isBefore(endTime.add(Duration(minutes: 1)))) {
+    while (currentBucketStart.isBefore(endTime.add(const Duration(minutes: 1)))) {
       // Collect data points in this bucket
       List<Zone2HealthDataPoint> bucketDataPoints = dataPoints
           .where((dp) =>
@@ -303,11 +315,11 @@ class HealthActivityManager {
           .toList();
 
       double averageHeartRate = 0.0;
-      String predominantCardioZone = '';
+      int predominantCardioZone = 0;
       double totalCaloriesBurned = 0.0;
       int totalSteps = 0;
-      int totalActiveZoneMinutes = 0;
-      Map<String, int> cardioZoneMinutes = {};
+      int totalZonePoints = 0;
+      Map<int, int> cardioZoneMinutes = {};
 
       if (bucketDataPoints.isNotEmpty) {
         averageHeartRate = bucketDataPoints.map((dp) => dp.heartRate).reduce((a, b) => a + b) /
@@ -315,11 +327,10 @@ class HealthActivityManager {
         totalCaloriesBurned =
             bucketDataPoints.map((dp) => dp.caloriesBurned).reduce((a, b) => a + b);
         totalSteps = bucketDataPoints.map((dp) => dp.steps).reduce((a, b) => a + b);
-        totalActiveZoneMinutes =
-            bucketDataPoints.map((dp) => dp.activeZoneMinutes).reduce((a, b) => a + b);
+        totalZonePoints = bucketDataPoints.map((dp) => dp.zonePoints).reduce((a, b) => a + b);
 
         // Count minutes in each cardio zone
-        Map<String, int> zoneCounts = {};
+        Map<int, int> zoneCounts = {};
         for (var dp in bucketDataPoints) {
           // Count the number of data points (minutes) in each zone
           zoneCounts.update(dp.cardioZone, (count) => count + 1, ifAbsent: () => 1);
@@ -339,7 +350,7 @@ class HealthActivityManager {
         predominantCardioZone: predominantCardioZone,
         totalCaloriesBurned: totalCaloriesBurned,
         totalSteps: totalSteps,
-        totalActiveZoneMinutes: totalActiveZoneMinutes,
+        totalZonePoints: totalZonePoints,
         cardioZoneMinutes: cardioZoneMinutes,
       ));
 
@@ -348,18 +359,19 @@ class HealthActivityManager {
       currentBucketEnd = currentBucketEnd.add(Duration(minutes: bucketSizeInMinutes));
     }
 
+    _totalZonePoints = buckets.map((bucket) => bucket.totalZonePoints).reduce((a, b) => a + b);
+
     return buckets;
   }
 
-  /// Calculates Active Zone Minutes based on cardio zone.
-  static int _getActiveZoneMinutes(String cardioZone) {
-    if (cardioZone == 'Zone 3 (Moderate)') {
+  /// Calculates Zone Points based on time spent in a cardio zone.
+  static int _getZonePoints(int cardioZone) {
+    if (cardioZone >= 2 && cardioZone <= 3) {
       return 1;
-    } else if (cardioZone == 'Zone 4 (Hard)' || cardioZone == 'Zone 5 (Maximum)') {
+    } else if (cardioZone >= 4) {
       return 2;
-    } else {
-      return 0;
     }
+    return 0;
   }
 
   /// Generates health data points by combining all health metrics.
@@ -381,8 +393,8 @@ class HealthActivityManager {
       double heartRate = heartRateTimeSeries[time] ?? 0.0;
       double caloriesBurned = calorieTimeSeries[time] ?? 0.0;
       int steps = stepTimeSeries[time] ?? 0;
-      String cardioZone = _getCardioZone(heartRate, userAge);
-      int activeZoneMinutes = _getActiveZoneMinutes(cardioZone);
+      int cardioZone = _getCardioZone(heartRate, userAge);
+      int zonePoints = _getZonePoints(cardioZone);
 
       dataPoints.add(Zone2HealthDataPoint(
         time: time,
@@ -390,7 +402,7 @@ class HealthActivityManager {
         cardioZone: cardioZone,
         caloriesBurned: caloriesBurned,
         steps: steps,
-        activeZoneMinutes: activeZoneMinutes,
+        zonePoints: zonePoints,
       ));
     }
 
@@ -398,7 +410,7 @@ class HealthActivityManager {
   }
 
   /// Calculate summary statistics from bucket data
-  static void _calculateSummaryStatistics() {
+  static void _calculateSummaryStatistics(int bucketSizeInMinutes) {
     _totalSteps = 0;
     _totalCaloriesBurned = 0.0;
     _zoneMinutes.updateAll((key, value) => 0);
@@ -407,11 +419,9 @@ class HealthActivityManager {
       _totalSteps += bucket.totalSteps;
       _totalCaloriesBurned += bucket.totalCaloriesBurned;
 
-      // Add minutes to zone counters (each bucket represents bucketSizeInMinutes)
-      if (bucket.predominantCardioZone.isNotEmpty) {
-        _zoneMinutes[bucket.predominantCardioZone] =
-            (_zoneMinutes[bucket.predominantCardioZone] ?? 0) + 15; // Assuming 15-minute buckets
-      }
+      bucket.cardioZoneMinutes.forEach((zone, minutes) {
+        _zoneMinutes[zone] = (_zoneMinutes[zone] ?? 0) + minutes;
+      });
     }
   }
 
@@ -423,7 +433,22 @@ class HealthActivityManager {
   static List<HealthDataBucket> get buckets => _buckets;
   static int get steps => _totalSteps;
   static double get caloriesBurned => _totalCaloriesBurned;
-  static Map<String, int> get zoneDurationMinutes => Map.from(_zoneMinutes);
-  static Map<String, Color> get cardioZoneColors => _cardioZoneColors;
-  static Map<String, int> get zoneValues => _zoneValues;
+  static Map<int, int> get zoneDurationMinutes => _zoneMinutes;
+  static Map<int, ZoneConfig> get zoneConfigs => _zoneConfigs;
+  static int get totalZonePoints => _totalZonePoints;
+}
+
+/// New class to hold zone configuration
+class ZoneConfig {
+  final String name;
+  final Color color;
+  final double minPercentage;
+  final double maxPercentage;
+
+  const ZoneConfig({
+    required this.name,
+    required this.color,
+    required this.minPercentage,
+    required this.maxPercentage,
+  });
 }

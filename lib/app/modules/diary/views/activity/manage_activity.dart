@@ -66,18 +66,18 @@ class ManageActivityBottomSheet extends GetView<DiaryController> {
     );
   }
 
-  Widget _buildProgressBar(String label, double consumed, double target) {
-    return Column(
-      children: [
-        Text('$label: $consumed g', style: const TextStyle(fontSize: 16)),
-        LinearProgressIndicator(
-          value: consumed / target,
-          minHeight: 10,
-        ),
-        const SizedBox(height: 8),
-      ],
-    );
-  }
+  // Widget _buildProgressBar(String label, double consumed, double target) {
+  //   return Column(
+  //     children: [
+  //       Text('$label: $consumed g', style: const TextStyle(fontSize: 16)),
+  //       LinearProgressIndicator(
+  //         value: consumed / target,
+  //         minHeight: 10,
+  //       ),
+  //       const SizedBox(height: 8),
+  //     ],
+  //   );
+  // }
 
   // void _showFoodBottomSheet(BuildContext context) {
   //   showModalBottomSheet(
