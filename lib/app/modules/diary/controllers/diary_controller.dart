@@ -4,12 +4,13 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:logger/logger.dart';
 import 'package:health/health.dart';
+import 'package:zone2/app/models/activity.dart';
+import 'package:zone2/app/models/activity_manager.dart';
 import 'package:zone2/app/models/food.dart';
 import 'package:zone2/app/services/food_service.dart';
 import 'package:zone2/app/services/health_service.dart';
 import 'package:intl/intl.dart'; // Added for date formatting
 import 'package:zone2/app/services/notification_service.dart';
-import 'package:zone2/app/utils/helper.dart';
 
 class DiaryController extends GetxController {
   final logger = Get.find<Logger>();
@@ -28,6 +29,7 @@ class DiaryController extends GetxController {
   final customWaterDecimal = 0.obs;
   final foodSearchResults = Rxn<FoodSearchResponse>();
   final searchPerformed = false.obs;
+  final buckets = RxList<HealthDataBucket>();
 
   final selectedMealType = Rx<MealType>(MealType.BREAKFAST);
   // Holds the selected food from the open food facts search result list
@@ -136,13 +138,12 @@ class DiaryController extends GetxController {
     //   logger.w('No meal data found');
     // }
 
-    final exerciseData =
+    final allActivityData =
         await healthService.getActivityData(timeFrame: TimeFrame.today, endTime: endTime);
 
-    final heartRateData =
-        jsonEncode(exerciseData.firstWhere((data) => data.type == HealthDataType.STEPS).toJson());
-    printWrapped(heartRateData);
-    logger.i('Heart rate data: $heartRateData');
+    HealthActivityManager.processActivityData(activityData: allActivityData, userAge: 48);
+
+    buckets.value = HealthActivityManager.buckets;
   }
 
   Future<void> saveWeightToHealth() async {

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:get/get.dart';
+import 'package:zone2/app/modules/diary/views/activity/manage_activity.dart';
 import 'package:zone2/app/modules/diary/views/food/manage_food.dart';
 import 'package:zone2/app/modules/diary/views/water/manage_water.dart';
 import 'package:zone2/app/modules/diary/views/weight/manage_weight.dart';
@@ -29,7 +30,7 @@ class DiaryView extends GetView<DiaryController> {
                     () => _buildDiaryCard(
                       context,
                       icon: Ionicons.scale,
-                      title: 'Log Weight',
+                      title: 'Record Weight',
                       subtitle: 'Track your weight progress',
                       iconColor: Theme.of(context).colorScheme.primary,
                       isChecked: controller.isWeightLogged.value,
@@ -39,27 +40,27 @@ class DiaryView extends GetView<DiaryController> {
                   _buildDiaryCard(
                     context,
                     icon: Icons.fastfood,
-                    title: 'Add Food', // New card for adding food
+                    title: 'Track Meals',
                     subtitle: 'Log your meals and snacks',
                     iconColor: Theme.of(context).colorScheme.secondary,
-                    onTap: () => _showAddFoodBottomSheet(context), // Show the new bottom sheet
+                    onTap: () => _showAddFoodBottomSheet(context),
                     isChecked: controller.isWeightLogged.value,
                   ),
                   _buildDiaryCard(
                     context,
                     icon: Icons.run_circle,
-                    title: 'Zone 2',
-                    subtitle: 'Monitor your Zone 2 training',
-                    iconColor: Theme.of(context).colorScheme.tertiary, // {{ edit_5 }}
-                    onTap: () => _showBottomSheet(context, 'Zone 2'),
+                    title: 'Monitor Activity',
+                    subtitle: 'Monitor your Zone Minutes',
+                    iconColor: Theme.of(context).colorScheme.tertiary,
+                    onTap: () => _showManageActivityBottomSheet(context),
                     isChecked: controller.isWeightLogged.value,
                   ),
                   Obx(
                     () => _buildDiaryCard(context,
                         icon: Icons.local_drink,
-                        title: 'Hydration',
+                        title: 'Track Hydration',
                         subtitle: 'Keep track of your water intake',
-                        iconColor: Theme.of(context).colorScheme.tertiary, // {{ edit_6 }}
+                        iconColor: Theme.of(context).colorScheme.tertiary,
                         onTap: () => _showWaterBottomSheet(context),
                         isChecked: controller.isWaterLogged.value),
                   ),
@@ -146,6 +147,19 @@ class DiaryView extends GetView<DiaryController> {
     );
   }
 
+  void _showManageActivityBottomSheet(BuildContext context) {
+    showModalBottomSheet(
+      barrierColor: Colors.transparent,
+      context: context,
+      enableDrag: false,
+      isScrollControlled: true, // Allow full screen
+      useSafeArea: true,
+      builder: (context) {
+        return const ManageActivityBottomSheet();
+      },
+    );
+  }
+
   void _showWaterBottomSheet(BuildContext context) {
     showModalBottomSheet(
       barrierColor: Colors.transparent,
@@ -154,22 +168,6 @@ class DiaryView extends GetView<DiaryController> {
       isScrollControlled: true, // Allow full screen
       useSafeArea: true,
       builder: (context) => const WaterBottomSheet(),
-    );
-  }
-
-  void _showBottomSheet(BuildContext context, String title) {
-    showModalBottomSheet(
-      barrierColor: Colors.transparent,
-      context: context,
-      enableDrag: false,
-      isScrollControlled: true, // Allow full screen
-      useSafeArea: true,
-      builder: (context) {
-        return Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Text('Bottom sheet for $title'),
-        );
-      },
     );
   }
 }

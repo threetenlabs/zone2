@@ -1,9 +1,3 @@
-// health_data_processor.dart
-
-import 'dart:convert';
-
-import 'package:health/health.dart';
-
 /// Class representing a heart rate record.
 class HeartRateRecord {
   final String uuid;
@@ -128,188 +122,6 @@ class WorkoutRecord {
   }
 }
 
-/// Parses a list of JSON objects into HeartRateRecord instances.
-List<HeartRateRecord> parseHeartRateData(List<dynamic> jsonData) {
-  return jsonData.map((json) => HeartRateRecord.fromJson(json)).toList();
-}
-
-/// Parses a list of JSON objects into CalorieBurnedRecord instances.
-List<CalorieBurnedRecord> parseCalorieData(List<dynamic> jsonData) {
-  return jsonData.map((json) => CalorieBurnedRecord.fromJson(json)).toList();
-}
-
-/// Parses a list of JSON objects into StepRecord instances.
-List<StepRecord> parseStepData(List<dynamic> jsonData) {
-  return jsonData.map((json) => StepRecord.fromJson(json)).toList();
-}
-
-/// Parses a list of JSON objects into WorkoutRecord instances.
-List<WorkoutRecord> parseWorkoutData(List<dynamic> jsonData) {
-  return jsonData.map((json) => WorkoutRecord.fromJson(json)).toList();
-}
-
-/// Creates a time series map from heart rate records.
-Map<DateTime, double> createHeartRateTimeSeries(List<HeartRateRecord> records) {
-  Map<DateTime, double> heartRateTimeSeries = {};
-
-  records.sort((a, b) => a.dateFrom.compareTo(b.dateFrom));
-
-  for (var record in records) {
-    DateTime time = DateTime(
-      record.dateFrom.year,
-      record.dateFrom.month,
-      record.dateFrom.day,
-      record.dateFrom.hour,
-      record.dateFrom.minute,
-    );
-
-    heartRateTimeSeries[time] = record.numericValue;
-  }
-
-  return heartRateTimeSeries;
-}
-
-/// Creates a time series map from calorie burned records.
-Map<DateTime, double> createCalorieTimeSeries(
-    List<CalorieBurnedRecord> records, List<WorkoutRecord> workouts) {
-  Map<DateTime, double> calorieTimeSeries = {};
-
-  // Process individual calorie records
-  for (var record in records) {
-    DateTime start = record.dateFrom;
-    DateTime end = record.dateTo;
-
-    int minutes = end.difference(start).inMinutes;
-    if (minutes == 0) minutes = 1; // Ensure at least one minute
-
-    double caloriesPerMinute = record.numericValue / minutes;
-
-    for (int i = 0; i < minutes; i++) {
-      DateTime minuteTime = DateTime(
-        start.year,
-        start.month,
-        start.day,
-        start.hour,
-        start.minute + i,
-      );
-
-      calorieTimeSeries.update(
-        minuteTime,
-        (existing) => existing + caloriesPerMinute,
-        ifAbsent: () => caloriesPerMinute,
-      );
-    }
-  }
-
-  // Process workouts
-  for (var workout in workouts) {
-    DateTime start = workout.dateFrom;
-    DateTime end = workout.dateTo;
-
-    int minutes = end.difference(start).inMinutes;
-    if (minutes == 0) minutes = 1; // Ensure at least one minute
-
-    double caloriesPerMinute = workout.totalEnergyBurned / minutes;
-
-    for (int i = 0; i < minutes; i++) {
-      DateTime minuteTime = DateTime(
-        start.year,
-        start.month,
-        start.day,
-        start.hour,
-        start.minute + i,
-      );
-
-      calorieTimeSeries.update(
-        minuteTime,
-        (existing) => existing + caloriesPerMinute,
-        ifAbsent: () => caloriesPerMinute,
-      );
-    }
-  }
-
-  return calorieTimeSeries;
-}
-
-/// Creates a time series map from step records.
-Map<DateTime, int> createStepTimeSeries(List<StepRecord> records, List<WorkoutRecord> workouts) {
-  Map<DateTime, int> stepTimeSeries = {};
-
-  // Process individual step records
-  for (var record in records) {
-    DateTime start = record.dateFrom;
-    DateTime end = record.dateTo;
-
-    int minutes = end.difference(start).inMinutes;
-    if (minutes == 0) minutes = 1; // Ensure at least one minute
-
-    int stepsPerMinute = (record.numericValue / minutes).ceil();
-
-    for (int i = 0; i < minutes; i++) {
-      DateTime minuteTime = DateTime(
-        start.year,
-        start.month,
-        start.day,
-        start.hour,
-        start.minute + i,
-      );
-
-      stepTimeSeries.update(
-        minuteTime,
-        (existing) => existing + stepsPerMinute,
-        ifAbsent: () => stepsPerMinute,
-      );
-    }
-  }
-
-  // Process workouts
-  for (var workout in workouts) {
-    DateTime start = workout.dateFrom;
-    DateTime end = workout.dateTo;
-
-    int minutes = end.difference(start).inMinutes;
-    if (minutes == 0) minutes = 1; // Ensure at least one minute
-
-    int stepsPerMinute = (workout.totalSteps / minutes).ceil();
-
-    for (int i = 0; i < minutes; i++) {
-      DateTime minuteTime = DateTime(
-        start.year,
-        start.month,
-        start.day,
-        start.hour,
-        start.minute + i,
-      );
-
-      stepTimeSeries.update(
-        minuteTime,
-        (existing) => existing + stepsPerMinute,
-        ifAbsent: () => stepsPerMinute,
-      );
-    }
-  }
-
-  return stepTimeSeries;
-}
-
-/// Calculates the cardio zone based on heart rate and user age.
-String getCardioZone(double heartRate, int age) {
-  double maxHeartRate = (220 - age) as double;
-  double percentage = (heartRate / maxHeartRate) * 100;
-
-  if (percentage < 60) {
-    return 'Zone 1 (Very Light)';
-  } else if (percentage < 70) {
-    return 'Zone 2 (Light)';
-  } else if (percentage < 80) {
-    return 'Zone 3 (Moderate)';
-  } else if (percentage < 90) {
-    return 'Zone 4 (Hard)';
-  } else {
-    return 'Zone 5 (Maximum)';
-  }
-}
-
 /// Class representing a combined data point of health metrics.
 class Zone2HealthDataPoint {
   final DateTime time;
@@ -317,6 +129,7 @@ class Zone2HealthDataPoint {
   final String cardioZone;
   final double caloriesBurned;
   final int steps;
+  final int activeZoneMinutes;
 
   Zone2HealthDataPoint({
     required this.time,
@@ -324,37 +137,8 @@ class Zone2HealthDataPoint {
     required this.cardioZone,
     required this.caloriesBurned,
     required this.steps,
+    required this.activeZoneMinutes,
   });
-}
-
-/// Generates health data points by combining all health metrics.
-List<Zone2HealthDataPoint> generateHealthDataPoints(Map<DateTime, double> heartRateTimeSeries,
-    Map<DateTime, double> calorieTimeSeries, Map<DateTime, int> stepTimeSeries, int userAge) {
-  List<Zone2HealthDataPoint> dataPoints = [];
-
-  Set<DateTime> allTimes = {};
-  allTimes.addAll(heartRateTimeSeries.keys);
-  allTimes.addAll(calorieTimeSeries.keys);
-  allTimes.addAll(stepTimeSeries.keys);
-
-  List<DateTime> sortedTimes = allTimes.toList()..sort();
-
-  for (var time in sortedTimes) {
-    double heartRate = heartRateTimeSeries[time] ?? 0.0;
-    double caloriesBurned = calorieTimeSeries[time] ?? 0.0;
-    int steps = stepTimeSeries[time] ?? 0;
-    String cardioZone = getCardioZone(heartRate, userAge);
-
-    dataPoints.add(Zone2HealthDataPoint(
-      time: time,
-      heartRate: heartRate,
-      cardioZone: cardioZone,
-      caloriesBurned: caloriesBurned,
-      steps: steps,
-    ));
-  }
-
-  return dataPoints;
 }
 
 /// Class representing a bucketed summary of health data.
@@ -365,6 +149,8 @@ class HealthDataBucket {
   final String predominantCardioZone;
   final double totalCaloriesBurned;
   final int totalSteps;
+  final int totalActiveZoneMinutes;
+  final Map<String, int> cardioZoneMinutes;
 
   HealthDataBucket({
     required this.startTime,
@@ -373,139 +159,7 @@ class HealthDataBucket {
     required this.predominantCardioZone,
     required this.totalCaloriesBurned,
     required this.totalSteps,
+    required this.totalActiveZoneMinutes,
+    required this.cardioZoneMinutes,
   });
-}
-
-/// Buckets health data points into specified time frames.
-List<HealthDataBucket> bucketHealthData(
-    List<Zone2HealthDataPoint> dataPoints, int bucketSizeInMinutes) {
-  if (dataPoints.isEmpty) {
-    return [];
-  }
-
-  dataPoints.sort((a, b) => a.time.compareTo(b.time));
-
-  DateTime startTime = dataPoints.first.time;
-  DateTime endTime = dataPoints.last.time;
-
-  DateTime currentBucketStart = DateTime(
-    startTime.year,
-    startTime.month,
-    startTime.day,
-    startTime.hour,
-    startTime.minute - (startTime.minute % bucketSizeInMinutes),
-  );
-  DateTime currentBucketEnd = currentBucketStart.add(Duration(minutes: bucketSizeInMinutes));
-
-  List<HealthDataBucket> buckets = [];
-
-  while (currentBucketStart.isBefore(endTime.add(const Duration(minutes: 1)))) {
-    // Collect data points in this bucket
-    List<Zone2HealthDataPoint> bucketDataPoints = dataPoints
-        .where((dp) =>
-            (dp.time.isAtSameMomentAs(currentBucketStart) || dp.time.isAfter(currentBucketStart)) &&
-            dp.time.isBefore(currentBucketEnd))
-        .toList();
-
-    double averageHeartRate = 0.0;
-    String predominantCardioZone = '';
-    double totalCaloriesBurned = 0.0;
-    int totalSteps = 0;
-
-    if (bucketDataPoints.isNotEmpty) {
-      averageHeartRate = bucketDataPoints.map((dp) => dp.heartRate).reduce((a, b) => a + b) /
-          bucketDataPoints.length;
-      totalCaloriesBurned = bucketDataPoints.map((dp) => dp.caloriesBurned).reduce((a, b) => a + b);
-      totalSteps = bucketDataPoints.map((dp) => dp.steps).reduce((a, b) => a + b);
-
-      // Determine predominant cardio zone
-      Map<String, int> zoneCounts = {};
-      for (var dp in bucketDataPoints) {
-        zoneCounts.update(dp.cardioZone, (count) => count + 1, ifAbsent: () => 1);
-      }
-      predominantCardioZone = zoneCounts.entries.reduce((a, b) => a.value > b.value ? a : b).key;
-    }
-
-    buckets.add(HealthDataBucket(
-      startTime: currentBucketStart,
-      endTime: currentBucketEnd,
-      averageHeartRate: averageHeartRate,
-      predominantCardioZone: predominantCardioZone,
-      totalCaloriesBurned: totalCaloriesBurned,
-      totalSteps: totalSteps,
-    ));
-
-    // Move to next bucket
-    currentBucketStart = currentBucketEnd;
-    currentBucketEnd = currentBucketEnd.add(Duration(minutes: bucketSizeInMinutes));
-  }
-
-  return buckets;
-}
-
-/// Processes the data and generates bucketed health data.
-List<HealthDataBucket> processActivityData({required List<HealthDataPoint> activityData,
-    required int userAge, int bucketSizeInMinutes = 15}) {
-  // Parse JSON data
-  final heartRateJsonData =
-      activityData.where((data) => data.type == HealthDataType.HEART_RATE).toList();
-  final calorieJsonData =
-      activityData.where((data) => data.type == HealthDataType.TOTAL_CALORIES_BURNED).toList();
-  final stepJsonData = activityData.where((data) => data.type == HealthDataType.STEPS).toList();
-  final workoutJsonData =
-      activityData.where((data) => data.type == HealthDataType.WORKOUT).toList();
-
-  List<HeartRateRecord> heartRateRecords = parseHeartRateData(heartRateJsonData);
-  List<CalorieBurnedRecord> calorieRecords = parseCalorieData(calorieJsonData);
-  List<StepRecord> stepRecords = parseStepData(stepJsonData);
-  List<WorkoutRecord> workoutRecords = parseWorkoutData(workoutJsonData);
-
-  // Create time series data
-  Map<DateTime, double> heartRateTimeSeries = createHeartRateTimeSeries(heartRateRecords);
-  Map<DateTime, double> calorieTimeSeries = createCalorieTimeSeries(calorieRecords, workoutRecords);
-  Map<DateTime, int> stepTimeSeries = createStepTimeSeries(stepRecords, workoutRecords);
-
-  // Generate health data points
-  List<Zone2HealthDataPoint> dataPoints =
-      generateHealthDataPoints(heartRateTimeSeries, calorieTimeSeries, stepTimeSeries, userAge);
-
-  // Bucket data
-  List<HealthDataBucket> buckets = bucketHealthData(dataPoints, bucketSizeInMinutes);
-
-  // The 'buckets' list now contains the processed data
-  // You can now pass 'buckets' to your visualization logic
-  return buckets;
-}
-
-/// Example usage of the data processing functions.
-void main() {
-  // Example JSON data (replace with your actual data)
-
-  List<HealthDataPoint> activityData = [
-    jsonDecode(
-        '{"uuid":"3bab9eb6-9d8f-4751-b3c9-643c73dd1fd2","value":{"__type":"NumericHealthValue","numericValue":100},"type":"HEART_RATE","unit":"BEATS_PER_MINUTE","dateFrom":"2024-10-31T05:57:00.000","dateTo":"2024-10-31T05:57:00.000","sourcePlatform":"googleHealthConnect","sourceDeviceId":"unknown","sourceId":"","sourceName":"com.fitbit.FitbitMobile","recordingMethod":"unknown"}'),
-    jsonDecode(
-        '{"uuid":"1cf209d5-d393-4c39-9f43-e8c846fd48be","value":{"__type":"NumericHealthValue","numericValue":21.08977},"type":"TOTAL_CALORIES_BURNED","unit":"KILOCALORIE","dateFrom":"2024-10-31T00:15:00.000","dateTo":"2024-10-31T00:30:00.000","sourcePlatform":"googleHealthConnect","sourceDeviceId":"AP3A.241005.015","sourceId":"","sourceName":"com.fitbit.FitbitMobile","recordingMethod":"unknown"}'),
-    jsonDecode(
-        '{"uuid":"3a57ac69-1d40-4095-b947-fbc8046df15e","value":{"__type":"NumericHealthValue","numericValue":9},"type":"STEPS","unit":"COUNT","dateFrom":"2024-10-31T04:41:00.000","dateTo":"2024-10-31T04:42:00.000","sourcePlatform":"googleHealthConnect","sourceDeviceId":"AP3A.241005.015","sourceId":"","sourceName":"com.fitbit.FitbitMobile","recordingMethod":"unknown"}'),
-    jsonDecode(
-        '{"uuid":"b7dd800b-a958-3958-b187-248c4c7a507d","value":{"__type":"WorkoutHealthValue","workoutActivityType":"OTHER","totalEnergyBurned":909,"totalEnergyBurnedUnit":"KILOCALORIE","totalDistance":3838,"totalDistanceUnit":"METER","totalSteps":5154,"totalStepsUnit":"COUNT"},"type":"WORKOUT","unit":"NO_UNIT","dateFrom":"2024-10-31T04:54:56.000","dateTo":"2024-10-31T06:08:16.000","sourcePlatform":"googleHealthConnect","sourceDeviceId":"AP3A.241005.015","sourceId":"","sourceName":"com.fitbit.FitbitMobile","recordingMethod":"unknown"}'),
-  ];
-
-  int bucketSizeInMinutes = 15; // You can change this to 15, 30, 60, etc.
-  int userAge = 30; // Replace with the actual user's age
-
-  List<HealthDataBucket> buckets = processActivityData(
-    activityData: activityData,
-    userAge: userAge,
-    bucketSizeInMinutes: bucketSizeInMinutes,
-  );
-
-  // Example: Print the buckets
-  for (var bucket in buckets) {
-    print(
-        'Time: ${bucket.startTime} - ${bucket.endTime}, Avg HR: ${bucket.averageHeartRate.toStringAsFixed(1)}, '
-        'Zone: ${bucket.predominantCardioZone}, Calories: ${bucket.totalCaloriesBurned.toStringAsFixed(2)}, '
-        'Steps: ${bucket.totalSteps}');
-  }
 }
