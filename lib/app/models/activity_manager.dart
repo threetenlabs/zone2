@@ -26,36 +26,36 @@ class HealthActivityManager {
   static final Map<int, ZoneConfig> _zoneConfigs = {
     1: const ZoneConfig(
       name: 'Zone 1 (Very Light)',
-      color: Color(0xFF7FB5FF),  // Light blue
+      color: Color(0xFF7FB5FF), // Light blue
       minPercentage: 0,
-      maxPercentage: 60,
+      maxPercentage: 56,
       icon: Icons.directions_walk,
     ),
     2: const ZoneConfig(
       name: 'Zone 2 (Light)',
-      color: Color(0xFF98E169),  // Light green
-      minPercentage: 60,
-      maxPercentage: 70,
+      color: Color(0xFF98E169), // Light green
+      minPercentage: 57,
+      maxPercentage: 63,
       icon: Icons.directions_walk,
     ),
     3: const ZoneConfig(
       name: 'Zone 3 (Moderate)',
-      color: Color(0xFFFFD93D),  // Bright yellow
-      minPercentage: 70,
-      maxPercentage: 80,
+      color: Color(0xFFFFD93D), // Bright yellow
+      minPercentage: 64,
+      maxPercentage: 76,
       icon: Icons.directions_walk,
     ),
     4: const ZoneConfig(
       name: 'Zone 4 (Hard)',
-      color: Color(0xFFFF8B3D),  // Bright orange
-      minPercentage: 80,
-      maxPercentage: 90,
+      color: Color(0xFFFF8B3D), // Bright orange
+      minPercentage: 77,
+      maxPercentage: 95,
       icon: Icons.directions_run,
     ),
     5: const ZoneConfig(
       name: 'Zone 5 (Maximum)',
-      color: Color(0xFFFF5757),  // Bright red
-      minPercentage: 90,
+      color: Color(0xFFFF5757), // Bright red
+      minPercentage: 96,
       maxPercentage: 100,
       icon: Icons.directions_bike,
     ),
@@ -296,6 +296,55 @@ class HealthActivityManager {
 
     dataPoints.sort((a, b) => a.time.compareTo(b.time));
 
+    // Track consecutive minutes for each zone
+    Map<int, List<DateTime>> consecutiveZoneTimes = {};
+    int currentZone = dataPoints.first.cardioZone;
+    List<DateTime> currentStreak = [dataPoints.first.time];
+
+    // Process consecutive minutes
+    for (int i = 1; i < dataPoints.length; i++) {
+      var point = dataPoints[i];
+      var previousPoint = dataPoints[i - 1];
+
+      // Check if points are consecutive minutes
+      if (point.time.difference(previousPoint.time) == const Duration(minutes: 1)) {
+        if (point.cardioZone == currentZone) {
+          currentStreak.add(point.time);
+        } else {
+          // Zone changed, check if previous streak was valid
+          if (currentStreak.length >= 5) {
+            consecutiveZoneTimes.update(
+              currentZone,
+              (list) => list..addAll(currentStreak),
+              ifAbsent: () => List.from(currentStreak),
+            );
+          }
+          currentZone = point.cardioZone;
+          currentStreak = [point.time];
+        }
+      } else {
+        // Gap in data, check if previous streak was valid
+        if (currentStreak.length >= 10) {
+          consecutiveZoneTimes.update(
+            currentZone,
+            (list) => list..addAll(currentStreak),
+            ifAbsent: () => List.from(currentStreak),
+          );
+        }
+        currentZone = point.cardioZone;
+        currentStreak = [point.time];
+      }
+    }
+
+    // Check final streak
+    if (currentStreak.length >= 10) {
+      consecutiveZoneTimes.update(
+        currentZone,
+        (list) => list..addAll(currentStreak),
+        ifAbsent: () => List.from(currentStreak),
+      );
+    }
+
     DateTime startTime = dataPoints.first.time;
     DateTime endTime = dataPoints.last.time;
 
@@ -332,20 +381,28 @@ class HealthActivityManager {
         totalCaloriesBurned =
             bucketDataPoints.map((dp) => dp.caloriesBurned).reduce((a, b) => a + b);
         totalSteps = bucketDataPoints.map((dp) => dp.steps).reduce((a, b) => a + b);
-        totalZonePoints = bucketDataPoints.map((dp) => dp.zonePoints).reduce((a, b) => a + b);
 
-        // Count minutes in each cardio zone
-        Map<int, int> zoneCounts = {};
+        // Reset cardioZoneMinutes for this bucket
+        cardioZoneMinutes = {};
+        totalZonePoints = 0; // Reset zone points
+
+        // Create a Set to track minutes we've already counted
+        Set<DateTime> countedMinutes = {};
+
         for (var dp in bucketDataPoints) {
-          // Count the number of data points (minutes) in each zone
-          zoneCounts.update(dp.cardioZone, (count) => count + 1, ifAbsent: () => 1);
+          // Only count if it's part of a valid streak and hasn't been counted yet
+          if ((consecutiveZoneTimes[dp.cardioZone]?.contains(dp.time) ?? false) &&
+              !countedMinutes.contains(dp.time)) {
+            cardioZoneMinutes.update(
+              dp.cardioZone,
+              (count) => count + 1,
+              ifAbsent: () => 1,
+            );
+            // Add zone points only for consecutive minutes
+            totalZonePoints += _getZonePoints(dp.cardioZone);
+            countedMinutes.add(dp.time);
+          }
         }
-
-        // Store the counts in cardioZoneMinutes
-        cardioZoneMinutes = zoneCounts;
-
-        // Determine predominant cardio zone
-        predominantCardioZone = zoneCounts.entries.reduce((a, b) => a.value > b.value ? a : b).key;
       }
 
       buckets.add(HealthDataBucket(
@@ -399,7 +456,9 @@ class HealthActivityManager {
       double caloriesBurned = calorieTimeSeries[time] ?? 0.0;
       int steps = stepTimeSeries[time] ?? 0;
       int cardioZone = _getCardioZone(heartRate, userAge);
-      int zonePoints = _getZonePoints(cardioZone);
+
+      // Set initial zone points to 0 - they'll be calculated in _bucketHealthData
+      int zonePoints = 0;
 
       dataPoints.add(Zone2HealthDataPoint(
         time: time,
