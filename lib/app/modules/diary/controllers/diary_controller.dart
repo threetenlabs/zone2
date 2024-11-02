@@ -139,8 +139,7 @@ class DiaryController extends GetxController {
     final allActivityData =
         await healthService.getActivityData(timeFrame: TimeFrame.today, endTime: endTime);
 
-    HealthActivityManager.processActivityData(
-        activityData: allActivityData, userAge: 48, bucketSizeInMinutes: 15);
+    HealthActivityManager.processActivityData(activityData: allActivityData, userAge: 48);
 
     buckets.value = HealthActivityManager.buckets;
   }
