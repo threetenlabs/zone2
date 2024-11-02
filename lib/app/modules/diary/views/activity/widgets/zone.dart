@@ -24,68 +24,44 @@ class ActiveZoneMinutesRadialChart extends StatelessWidget {
     // Set the total minutes for percentage calculation
     _ChartData.setTotalMinutes(totalActiveZoneMinutes);
 
-    // Convert the filtered map to a list of data points
+    // Convert the filtered map to a list of data points and sort by zone number in reverse
     List<_ChartData> chartData = filteredZones.entries.map((entry) {
       return _ChartData(
           HealthActivityManager.zoneConfigs[entry.key]?.name ?? '', entry.key, entry.value);
-    }).toList();
-
-    // List of colors corresponding to each zone
-    List<Color> colors = [
-      Colors.lightGreen, // Zone 2 (Light)
-      Colors.yellow, // Zone 3 (Moderate)
-      Colors.orange, // Zone 4 (Hard)
-      Colors.red, // Zone 5 (Maximum)
-    ];
+    }).toList()
+      ..sort((a, b) => b.zoneNumber.compareTo(a.zoneNumber)); // Sort in descending order
 
     // List of icons for the legend
     List<Widget> legendIcons = [
-      const Icon(Icons.directions_walk, color: Colors.lightGreen, size: 20), // Zone 2
-      const Icon(Icons.directions_walk, color: Colors.yellow, size: 20), // Zone 3
-      const Icon(Icons.directions_run, color: Colors.orange, size: 20), // Zone 4
-      const Icon(Icons.directions_bike, color: Colors.red, size: 20), // Zone 5
+      Icon(HealthActivityManager.zoneConfigs[5]!.icon,
+          color: HealthActivityManager.zoneConfigs[5]!.color, size: 20), // Zone 5
+      Icon(HealthActivityManager.zoneConfigs[4]!.icon,
+          color: HealthActivityManager.zoneConfigs[4]!.color, size: 20), // Zone 4
+      Icon(HealthActivityManager.zoneConfigs[3]!.icon,
+          color: HealthActivityManager.zoneConfigs[3]!.color, size: 20), // Zone 3
+      Icon(HealthActivityManager.zoneConfigs[2]!.icon,
+          color: HealthActivityManager.zoneConfigs[2]!.color, size: 20), // Zone 2
     ];
 
     return SfCircularChart(
-      title: const ChartTitle(text: 'Active Zone Minutes'),
+      title: const ChartTitle(text: 'Zone Points'),
       legend: Legend(
         isVisible: true,
-        overflowMode: LegendItemOverflowMode.wrap,
+        overflowMode: LegendItemOverflowMode.scroll,
+        position: LegendPosition.right,
         legendItemBuilder: (String name, dynamic series, dynamic point, int index) {
           return SizedBox(
-            height: 60,
-            width: 150,
+            height: 40,
+            width: 50,
             child: Row(
               children: <Widget>[
-                SizedBox(
-                  height: 60,
-                  width: 60,
-                  child: SfCircularChart(
-                    annotations: <CircularChartAnnotation>[
-                      CircularChartAnnotation(
-                        widget: legendIcons[index],
-                      ),
-                    ],
-                    series: <RadialBarSeries<_ChartData, String>>[
-                      RadialBarSeries<_ChartData, String>(
-                        dataSource: [chartData[index]],
-                        maximumValue: 100,
-                        radius: '100%',
-                        cornerStyle: CornerStyle.bothCurve,
-                        xValueMapper: (_ChartData data, _) => data.zone,
-                        yValueMapper: (_ChartData data, _) => data.percentage.toDouble(),
-                        pointColorMapper: (_ChartData data, _) => colors[index],
-                        innerRadius: '70%',
-                      ),
-                    ],
-                  ),
-                ),
-                SizedBox(
-                  width: 72,
+                legendIcons[index],
+                const SizedBox(width: 8),
+                Expanded(
                   child: Text(
-                    point.x,
+                    "Z ${chartData[index].zoneNumber}",
                     style: TextStyle(
-                      color: colors[index],
+                      color: HealthActivityManager.zoneConfigs[chartData[index].zoneNumber]?.color,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -98,26 +74,38 @@ class ActiveZoneMinutesRadialChart extends StatelessWidget {
       series: <RadialBarSeries<_ChartData, String>>[
         RadialBarSeries<_ChartData, String>(
           dataSource: chartData,
-          maximumValue: chartData.map((data) => data.minutes).reduce((a, b) => a > b ? a : b) * 1.2,
-          gap: '10%',
-          radius: '100%',
+          maximumValue: 100,
+          radius: '90%',
+          gap: '2%',
+          innerRadius: '32%',
           cornerStyle: CornerStyle.bothCurve,
           xValueMapper: (_ChartData data, _) => data.zone,
-          yValueMapper: (_ChartData data, _) => data.minutes,
+          yValueMapper: (_ChartData data, _) => data.minutes.toDouble(),
           pointColorMapper: (_ChartData data, _) =>
               HealthActivityManager.zoneConfigs[data.zoneNumber]?.color ?? Colors.grey,
-          legendIconType: LegendIconType.circle,
+          dataLabelSettings: const DataLabelSettings(isVisible: true),
         ),
       ],
-      tooltipBehavior: TooltipBehavior(enable: true),
       annotations: <CircularChartAnnotation>[
         CircularChartAnnotation(
-          widget: Text(
-            '${totalActiveZoneMinutes.toInt()} min',
-            style: const TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
+          widget: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              Text(
+                '${HealthActivityManager.totalZonePoints.toInt()}',
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const Text(
+                'Zone Points',
+                style: TextStyle(
+                  fontSize: 10,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
           ),
         ),
       ],

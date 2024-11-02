@@ -26,33 +26,38 @@ class HealthActivityManager {
   static final Map<int, ZoneConfig> _zoneConfigs = {
     1: const ZoneConfig(
       name: 'Zone 1 (Very Light)',
-      color: Colors.green,
+      color: Color(0xFF7FB5FF),  // Light blue
       minPercentage: 0,
       maxPercentage: 60,
+      icon: Icons.directions_walk,
     ),
     2: const ZoneConfig(
       name: 'Zone 2 (Light)',
-      color: Colors.lightGreen,
+      color: Color(0xFF98E169),  // Light green
       minPercentage: 60,
       maxPercentage: 70,
+      icon: Icons.directions_walk,
     ),
     3: const ZoneConfig(
       name: 'Zone 3 (Moderate)',
-      color: Colors.yellow,
+      color: Color(0xFFFFD93D),  // Bright yellow
       minPercentage: 70,
       maxPercentage: 80,
+      icon: Icons.directions_walk,
     ),
     4: const ZoneConfig(
       name: 'Zone 4 (Hard)',
-      color: Colors.orange,
+      color: Color(0xFFFF8B3D),  // Bright orange
       minPercentage: 80,
       maxPercentage: 90,
+      icon: Icons.directions_run,
     ),
     5: const ZoneConfig(
       name: 'Zone 5 (Maximum)',
-      color: Colors.red,
+      color: Color(0xFFFF5757),  // Bright red
       minPercentage: 90,
       maxPercentage: 100,
+      icon: Icons.directions_bike,
     ),
   };
 
@@ -444,11 +449,13 @@ class ZoneConfig {
   final Color color;
   final double minPercentage;
   final double maxPercentage;
+  final IconData icon;
 
   const ZoneConfig({
     required this.name,
     required this.color,
     required this.minPercentage,
     required this.maxPercentage,
+    required this.icon,
   });
 }
