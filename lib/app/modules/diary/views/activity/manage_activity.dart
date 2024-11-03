@@ -16,7 +16,7 @@ class ManageActivityBottomSheet extends GetView<DiaryController> {
       body: SafeArea(
         child: Container(
           height: MediaQuery.of(context).size.height,
-          padding: const EdgeInsets.all(16.0),
+          padding: const EdgeInsets.all(2.0),
           child: Column(
             mainAxisSize: MainAxisSize.max,
             children: [
@@ -33,25 +33,25 @@ class ManageActivityBottomSheet extends GetView<DiaryController> {
                 child: SingleChildScrollView(
                   child: Column(
                     children: [
-                      Card(
+                      const Card(
                         elevation: 8,
                         child: Padding(
-                          padding: const EdgeInsets.all(16.0),
-                          child: ActiveZoneMinutesRadialChart(buckets: controller.buckets),
+                          padding: EdgeInsets.all(2.0),
+                          child: ActiveZoneMinutesRadialChart(),
                         ),
                       ),
                       const SizedBox(height: 16),
-                      Card(
+                      const Card(
                         elevation: 8,
                         child: Padding(
-                          padding: const EdgeInsets.all(16.0),
-                          child: CaloriesBurnedChart(buckets: controller.buckets),
+                          padding: EdgeInsets.all(2.0),
+                          child: CaloriesBurnedChart(),
                         ),
                       ),
                       Card(
                         elevation: 8,
                         child: Padding(
-                          padding: const EdgeInsets.all(16.0),
+                          padding: const EdgeInsets.all(2.0),
                           child: StepsChart(buckets: controller.buckets),
                         ),
                       ),

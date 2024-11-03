@@ -6,6 +6,7 @@ import 'package:zone2/app/models/activity.dart';
 class HealthActivityManager {
   static List<HeartRateRecord> _heartRateRecords = [];
   static List<CalorieBurnedRecord> _calorieRecords = [];
+  static List<CalorieBurnedRecord> _hourlyCalorieRecords = [];
   static List<StepRecord> _stepRecords = [];
   static List<WorkoutRecord> _workoutRecords = [];
   static List<HealthDataBucket> _buckets = [];
@@ -14,6 +15,7 @@ class HealthActivityManager {
   static int _totalSteps = 0;
   static double _totalCaloriesBurned = 0.0;
   static int _totalZonePoints = 0;
+  static bool _multipleCalorieSources = false;
 
   static final Map<int, int> _zoneMinutes = {
     1: 0, // Very Light
@@ -79,63 +81,17 @@ class HealthActivityManager {
     _workoutRecords = _parseWorkoutData(
         activityData.where((data) => data.type == HealthDataType.WORKOUT).toList());
 
+    _multipleCalorieSources = _calorieRecords.map((record) => record.sourceName).toSet().length > 1;
+
     // Process heart rate zones
     _processHeartRateZones(userAge);
+
+    // Process calories by hour
+    _processCaloriesByHour();
 
     // Calculate totals
     _calculateTotals();
   }
-
-  // static void _processHeartRateZones(int userAge) {
-  //   if (_heartRateRecords.isEmpty) return;
-
-  //   // Reset zone minutes and points
-  //   _zoneMinutes.updateAll((key, value) => 0);
-  //   _totalZonePoints = 0;
-
-  //   // Sort records by time
-  //   _heartRateRecords.sort((a, b) => a.dateFrom.compareTo(b.dateFrom));
-
-  //   List<DateTime> streak = [];
-  //   Map<DateTime, int> timeToZone = {}; // Track zone for each minute
-
-  //   // Process consecutive minutes
-  //   for (int i = 0; i < _heartRateRecords.length; i++) {
-  //     var record = _heartRateRecords[i];
-  //     int zone = _getCardioZone(record.numericValue, userAge);
-
-  //     if (zone >= 2) {
-  //       // Check if this is consecutive with previous minute
-  //       if (streak.isNotEmpty &&
-  //           record.dateFrom.difference(streak.last) == const Duration(minutes: 1)) {
-  //         streak.add(record.dateFrom);
-  //         timeToZone[record.dateFrom] = zone;
-  //       } else {
-  //         // Start new streak
-  //         streak = [record.dateFrom];
-  //         timeToZone = {record.dateFrom: zone};
-  //       }
-
-  //       // Always count zones 3-5
-  //       if (zone >= 3) {
-  //         _zoneMinutes[zone] = (_zoneMinutes[zone] ?? 0) + 1;
-  //       }
-  //       // For Zone 2, only count if part of a 5+ minute streak
-  //       else if (zone == 2 && streak.length >= 5) {
-  //         _zoneMinutes[2] = (_zoneMinutes[2] ?? 0) + 1;
-  //       }
-  //     } else {
-  //       // Reset streak if dropping below zone 2
-  //       streak = [];
-  //       timeToZone = {};
-  //     }
-  //   }
-
-  //   // Calculate total zone points based on minutes in each zone
-  //   _totalZonePoints = _zoneMinutes.entries.fold(0, (sum, entry) {
-  //     return sum + (_getZonePoints(entry.key) * entry.value);
-  //   });
-  // }
 
   /// Process heart rate data to identify zones
   static void _processHeartRateZones(int userAge) {
@@ -158,6 +114,58 @@ class HealthActivityManager {
     });
   }
 
+  // Add this new method to bucket calories by hour
+  static void _processCaloriesByHour() {
+    if (_calorieRecords.isEmpty) return;
+
+    // Create a map to store hourly totals
+    Map<DateTime, double> hourlyTotals = {};
+
+    // Get the date from the first record to use as reference
+    DateTime firstDate = DateTime(
+      _calorieRecords.first.dateFrom.year,
+      _calorieRecords.first.dateFrom.month,
+      _calorieRecords.first.dateFrom.day,
+    );
+
+    // Initialize all hours with 0 calories
+    for (int hour = 0; hour < 24; hour++) {
+      DateTime hourKey = firstDate.add(Duration(hours: hour));
+      hourlyTotals[hourKey] = 0;
+    }
+
+    // Track processed time ranges to avoid double counting
+    Set<String> processedRanges = {};
+
+    // Sum up calories for each hour, avoiding duplicates
+    for (var record in _calorieRecords) {
+      String timeRange = '${record.dateFrom}-${record.dateTo}';
+      if (processedRanges.contains(timeRange)) continue;
+
+      DateTime hourKey = DateTime(
+        record.dateFrom.year,
+        record.dateFrom.month,
+        record.dateFrom.day,
+        record.dateFrom.hour,
+      );
+      hourlyTotals[hourKey] = (hourlyTotals[hourKey] ?? 0) + record.numericValue;
+      processedRanges.add(timeRange);
+    }
+
+    // Convert back to CalorieBurnedRecord list
+    _hourlyCalorieRecords = hourlyTotals.entries.map((entry) {
+      return CalorieBurnedRecord(
+        numericValue: entry.value,
+        dateFrom: entry.key,
+        dateTo: entry.key.add(const Duration(hours: 1)),
+        sourceName: 'hourly',
+        uuid: 'hourly_${entry.key.toString()}',
+        unit: 'KILOCALORIE',
+      );
+    }).toList()
+      ..sort((a, b) => a.dateFrom.compareTo(b.dateFrom));
+  }
+
   /// Calculate total steps and calories
   static void _calculateTotals() {
     // Sum up steps from regular records
@@ -166,12 +174,17 @@ class HealthActivityManager {
     // Add steps from workouts
     _totalSteps += _workoutRecords.fold(0, (sum, record) => sum + record.totalSteps);
 
-    // Sum up calories from regular records
-    _totalCaloriesBurned = _calorieRecords.fold(0.0, (sum, record) => sum + record.numericValue);
+    // Track processed time ranges to avoid double counting
+    Set<String> processedRanges = {};
 
-    // Add calories from workouts
-    _totalCaloriesBurned +=
-        _workoutRecords.fold(0.0, (sum, record) => sum + record.totalEnergyBurned);
+    // Only use calories from regular records, with deduplication
+    _totalCaloriesBurned = _calorieRecords.fold(0.0, (sum, record) {
+      String timeRange = '${record.dateFrom}-${record.dateTo}';
+      if (processedRanges.contains(timeRange)) return sum;
+
+      processedRanges.add(timeRange);
+      return sum + record.numericValue;
+    });
   }
 
   /// Reset all stored values to their defaults
@@ -193,7 +206,9 @@ class HealthActivityManager {
 
   /// Parses a list of JSON objects into CalorieBurnedRecord instances.
   static List<CalorieBurnedRecord> parseCalorieData(List<HealthDataPoint> healthData) {
-    return healthData.map((data) => CalorieBurnedRecord.fromJson(data.toJson())).toList();
+    final t = healthData;
+
+    return t.map((data) => CalorieBurnedRecord.fromJson(data.toJson())).toList();
   }
 
   /// Parses a list of JSON objects into StepRecord instances.
@@ -229,205 +244,6 @@ class HealthActivityManager {
     return 0;
   }
 
-  /// Generate and store buckets
-  static List<HealthDataBucket> _bucketHealthData(
-      List<Zone2HealthDataPoint> dataPoints, int bucketSizeInMinutes) {
-    if (dataPoints.isEmpty) {
-      return [];
-    }
-
-    dataPoints.sort((a, b) => a.time.compareTo(b.time));
-
-    // Track consecutive minutes for each zone
-    Map<int, List<DateTime>> consecutiveZoneTimes = {};
-    int currentZone = dataPoints.first.cardioZone;
-    List<DateTime> currentStreak = [dataPoints.first.time];
-
-    // Process consecutive minutes
-    for (int i = 1; i < dataPoints.length; i++) {
-      var point = dataPoints[i];
-      var previousPoint = dataPoints[i - 1];
-
-      // Check if points are consecutive minutes
-      if (point.time.difference(previousPoint.time) == const Duration(minutes: 1)) {
-        if (point.cardioZone == currentZone) {
-          currentStreak.add(point.time);
-        } else {
-          // Zone changed, check if previous streak was valid
-          if (currentStreak.length >= 5) {
-            consecutiveZoneTimes.update(
-              currentZone,
-              (list) => list..addAll(currentStreak),
-              ifAbsent: () => List.from(currentStreak),
-            );
-          }
-          currentZone = point.cardioZone;
-          currentStreak = [point.time];
-        }
-      } else {
-        // Gap in data, check if previous streak was valid
-        if (currentStreak.length >= 10) {
-          consecutiveZoneTimes.update(
-            currentZone,
-            (list) => list..addAll(currentStreak),
-            ifAbsent: () => List.from(currentStreak),
-          );
-        }
-        currentZone = point.cardioZone;
-        currentStreak = [point.time];
-      }
-    }
-
-    // Check final streak
-    if (currentStreak.length >= 10) {
-      consecutiveZoneTimes.update(
-        currentZone,
-        (list) => list..addAll(currentStreak),
-        ifAbsent: () => List.from(currentStreak),
-      );
-    }
-
-    DateTime startTime = dataPoints.first.time;
-    DateTime endTime = dataPoints.last.time;
-
-    DateTime currentBucketStart = DateTime(
-      startTime.year,
-      startTime.month,
-      startTime.day,
-      startTime.hour,
-      startTime.minute - (startTime.minute % bucketSizeInMinutes),
-    );
-    DateTime currentBucketEnd = currentBucketStart.add(Duration(minutes: bucketSizeInMinutes));
-
-    List<HealthDataBucket> buckets = [];
-
-    while (currentBucketStart.isBefore(endTime.add(const Duration(minutes: 1)))) {
-      // Collect data points in this bucket
-      List<Zone2HealthDataPoint> bucketDataPoints = dataPoints
-          .where((dp) =>
-              (dp.time.isAtSameMomentAs(currentBucketStart) ||
-                  dp.time.isAfter(currentBucketStart)) &&
-              dp.time.isBefore(currentBucketEnd))
-          .toList();
-
-      double averageHeartRate = 0.0;
-      int predominantCardioZone = 0;
-      double totalCaloriesBurned = 0.0;
-      int totalSteps = 0;
-      int totalZonePoints = 0;
-      Map<int, int> cardioZoneMinutes = {};
-
-      if (bucketDataPoints.isNotEmpty) {
-        averageHeartRate = bucketDataPoints.map((dp) => dp.heartRate).reduce((a, b) => a + b) /
-            bucketDataPoints.length;
-
-        // Sum the unique calorie and step records in this bucket
-        Set<DateTime> processedTimes = {};
-        totalCaloriesBurned = 0.0;
-        totalSteps = 0;
-
-        for (var dp in bucketDataPoints) {
-          if (!processedTimes.contains(dp.time)) {
-            totalCaloriesBurned += dp.caloriesBurned;
-            totalSteps += dp.steps;
-            processedTimes.add(dp.time);
-          }
-        }
-
-        // Reset cardioZoneMinutes for this bucket
-        cardioZoneMinutes = {};
-        totalZonePoints = 0; // Reset zone points
-
-        // Create a Set to track minutes we've already counted
-        Set<DateTime> countedMinutes = {};
-
-        for (var dp in bucketDataPoints) {
-          // Only count if it's part of a valid streak and hasn't been counted yet
-          if ((consecutiveZoneTimes[dp.cardioZone]?.contains(dp.time) ?? false) &&
-              !countedMinutes.contains(dp.time)) {
-            cardioZoneMinutes.update(
-              dp.cardioZone,
-              (count) => count + 1,
-              ifAbsent: () => 1,
-            );
-            // Add zone points only for consecutive minutes
-            totalZonePoints += _getZonePoints(dp.cardioZone);
-            countedMinutes.add(dp.time);
-          }
-        }
-      }
-
-      buckets.add(HealthDataBucket(
-        startTime: currentBucketStart,
-        endTime: currentBucketEnd,
-        averageHeartRate: averageHeartRate,
-        predominantCardioZone: predominantCardioZone,
-        totalCaloriesBurned: totalCaloriesBurned,
-        totalSteps: totalSteps,
-        totalZonePoints: totalZonePoints,
-        cardioZoneMinutes: cardioZoneMinutes,
-      ));
-
-      // Move to next bucket
-      currentBucketStart = currentBucketEnd;
-      currentBucketEnd = currentBucketEnd.add(Duration(minutes: bucketSizeInMinutes));
-    }
-
-    _totalZonePoints = buckets.map((bucket) => bucket.totalZonePoints).reduce((a, b) => a + b);
-
-    return buckets;
-  }
-
-  /// Generate and store health data points
-  static List<Zone2HealthDataPoint> _generateHealthDataPoints(
-      Map<DateTime, double> heartRateTimeSeries,
-      Map<DateTime, double> calorieTimeSeries,
-      Map<DateTime, int> stepTimeSeries,
-      int userAge) {
-    List<Zone2HealthDataPoint> dataPoints = [];
-
-    Set<DateTime> allTimes = {};
-    allTimes.addAll(heartRateTimeSeries.keys);
-    allTimes.addAll(calorieTimeSeries.keys);
-    allTimes.addAll(stepTimeSeries.keys);
-
-    List<DateTime> sortedTimes = allTimes.toList()..sort();
-
-    for (var time in sortedTimes) {
-      double heartRate = heartRateTimeSeries[time] ?? 0.0;
-      double caloriesBurned = calorieTimeSeries[time] ?? 0.0;
-      int steps = stepTimeSeries[time] ?? 0;
-      int cardioZone = _getCardioZone(heartRate, userAge);
-
-      dataPoints.add(Zone2HealthDataPoint(
-        time: time,
-        heartRate: heartRate,
-        cardioZone: cardioZone,
-        caloriesBurned: caloriesBurned,
-        steps: steps,
-        zonePoints: 0,
-      ));
-    }
-
-    return dataPoints;
-  }
-
-  /// Calculate summary statistics from bucket data
-  static void _calculateSummaryStatistics(int bucketSizeInMinutes) {
-    _totalSteps = 0;
-    _totalCaloriesBurned = 0.0;
-    _zoneMinutes.updateAll((key, value) => 0);
-
-    for (var bucket in _buckets) {
-      _totalSteps += bucket.totalSteps;
-      _totalCaloriesBurned += bucket.totalCaloriesBurned;
-
-      bucket.cardioZoneMinutes.forEach((zone, minutes) {
-        _zoneMinutes[zone] = (_zoneMinutes[zone] ?? 0) + minutes;
-      });
-    }
-  }
-
   // Getter methods
   static List<HeartRateRecord> get heartRateRecords => _heartRateRecords;
   static List<CalorieBurnedRecord> get calorieRecords => _calorieRecords;
@@ -439,21 +255,7 @@ class HealthActivityManager {
   static Map<int, int> get zoneDurationMinutes => _zoneMinutes;
   static Map<int, ZoneConfig> get zoneConfigs => _zoneConfigs;
   static int get totalZonePoints => _totalZonePoints;
-}
-
-/// New class to hold zone configuration
-class ZoneConfig {
-  final String name;
-  final Color color;
-  final double minPercentage;
-  final double maxPercentage;
-  final IconData icon;
-
-  const ZoneConfig({
-    required this.name,
-    required this.color,
-    required this.minPercentage,
-    required this.maxPercentage,
-    required this.icon,
-  });
+  static bool get multipleCalorieSources => _multipleCalorieSources;
+  // Bucket calories by hour
+  static List<CalorieBurnedRecord> get hourlyCalorieRecords => _hourlyCalorieRecords;
 }

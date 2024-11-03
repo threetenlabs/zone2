@@ -323,7 +323,7 @@ class HealthService extends GetxService {
     final types = [
       HealthDataType.TOTAL_CALORIES_BURNED,
       HealthDataType.HEART_RATE,
-      HealthDataType.WORKOUT,
+      // HealthDataType.WORKOUT,
       HealthDataType.STEPS
     ];
 

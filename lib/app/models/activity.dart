@@ -1,3 +1,5 @@
+import 'package:flutter/material.dart';
+
 /// Class representing a heart rate record.
 class HeartRateRecord {
   final String uuid;
@@ -32,6 +34,7 @@ class CalorieBurnedRecord {
   final String unit;
   final DateTime dateFrom;
   final DateTime dateTo;
+  final String sourceName;
 
   CalorieBurnedRecord({
     required this.uuid,
@@ -39,6 +42,7 @@ class CalorieBurnedRecord {
     required this.unit,
     required this.dateFrom,
     required this.dateTo,
+    required this.sourceName,
   });
 
   factory CalorieBurnedRecord.fromJson(Map<String, dynamic> json) {
@@ -48,6 +52,7 @@ class CalorieBurnedRecord {
       unit: json['unit'],
       dateFrom: DateTime.parse(json['dateFrom']),
       dateTo: DateTime.parse(json['dateTo']),
+      sourceName: json['sourceName'],
     );
   }
 }
@@ -152,7 +157,7 @@ class HealthDataBucket {
   final int totalZonePoints;
   final Map<int, int> cardioZoneMinutes;
 
-    HealthDataBucket({
+  HealthDataBucket({
     required this.startTime,
     required this.endTime,
     required this.averageHeartRate,
@@ -161,5 +166,21 @@ class HealthDataBucket {
     required this.totalSteps,
     required this.totalZonePoints,
     required this.cardioZoneMinutes,
+  });
+}
+
+class ZoneConfig {
+  final String name;
+  final Color color;
+  final double minPercentage;
+  final double maxPercentage;
+  final IconData icon;
+
+  const ZoneConfig({
+    required this.name,
+    required this.color,
+    required this.minPercentage,
+    required this.maxPercentage,
+    required this.icon,
   });
 }
