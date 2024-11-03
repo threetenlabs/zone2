@@ -16,7 +16,7 @@ test:
 	flutter test
 
 pod:
-	cd packages/mobile/ios && pod update
+	cd ios && pod update
 
 generate:
 	flutter pub run build_runner build --delete-conflicting-outputs
@@ -38,8 +38,8 @@ zone2-keystore:
 
 beta-android:
 	flutter build appbundle --release --target lib/main.dart
-	cd packages/mobile/android && fastlane deploy
+	cd android && fastlane deploy
 
 beta-ios:
 	flutter build ipa --release --target lib/main.dart --export-options-plist=ios/AppStoreDistributionOptions.plist
-	cd packages/mobile/ios && fastlane deploy
+	cd ios && fastlane deploy

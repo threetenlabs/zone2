@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:logger/logger.dart';
 import 'package:health/health.dart';
+import 'package:zone2/app/models/activity_manager.dart';
 import 'package:zone2/app/models/food.dart';
 import 'package:zone2/app/services/food_service.dart';
 import 'package:zone2/app/services/health_service.dart';
@@ -46,6 +47,8 @@ class DiaryController extends GetxController {
   // Filtered meals with zinc values of 4.0
   final snackData = RxList<HealthDataPoint>();
 
+  final activityManager = HealthActivityManager().obs;
+
   @override
   void onInit() async {
     super.onInit();
@@ -78,7 +81,9 @@ class DiaryController extends GetxController {
     final sameDay = diaryDate.value.year == DateTime.now().year &&
         diaryDate.value.month == DateTime.now().month &&
         diaryDate.value.day == DateTime.now().day;
-    final endTime = sameDay ? null : diaryDate.value;
+    final endTime = sameDay
+        ? null
+        : DateTime(diaryDate.value.year, diaryDate.value.month, diaryDate.value.day, 23, 59, 49);
     final weightData =
         await healthService.getWeightData(timeFrame: TimeFrame.today, endTime: endTime);
     weightData.sort((a, b) => b.dateTo.compareTo(a.dateTo));
@@ -132,6 +137,11 @@ class DiaryController extends GetxController {
     // } else {
     //   logger.w('No meal data found');
     // }
+
+    final allActivityData =
+        await healthService.getActivityData(timeFrame: TimeFrame.today, endTime: endTime);
+
+    activityManager.value.processActivityData(activityData: allActivityData, userAge: 48);
   }
 
   Future<void> saveWeightToHealth() async {

@@ -1,10 +1,8 @@
 import 'package:zone2/app/modules/loading_service.dart';
-import 'package:zone2/app/services/audio_service.dart';
 import 'package:zone2/app/services/auth_service.dart';
 import 'package:zone2/app/services/firebase_service.dart';
 import 'package:zone2/app/services/food_service.dart';
 import 'package:zone2/app/services/health_service.dart';
-// import 'package:zone2/app/services/health_service.dart';
 import 'package:zone2/app/services/notification_service.dart';
 import 'package:zone2/app/services/shared_preferences_service.dart';
 import 'package:zone2/app/style/palette.dart';
@@ -50,15 +48,5 @@ class GlobalBindings extends Bindings {
 
     // Palette needed by Settings to get theme information
     Get.lazyPut<Palette>(() => palette, fenix: true);
-
-    // Audio controller needed for sound
-    Get.put<AudioService>(
-        AudioService()
-          ..initialize()
-          ..attachSettings(Get.find()),
-        permanent: true);
-
-    // In app purchase controller needed for in app purchases (when we get there)
-    // Get.lazyPut(() => InAppPurchaseController(), fenix: true);
   }
 }
