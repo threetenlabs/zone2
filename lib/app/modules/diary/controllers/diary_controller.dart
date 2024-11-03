@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:logger/logger.dart';
 import 'package:health/health.dart';
-import 'package:zone2/app/models/activity.dart';
 import 'package:zone2/app/models/activity_manager.dart';
 import 'package:zone2/app/models/food.dart';
 import 'package:zone2/app/services/food_service.dart';
@@ -27,7 +26,6 @@ class DiaryController extends GetxController {
   final customWaterDecimal = 0.obs;
   final foodSearchResults = Rxn<FoodSearchResponse>();
   final searchPerformed = false.obs;
-  final buckets = RxList<HealthDataBucket>();
 
   final selectedMealType = Rx<MealType>(MealType.BREAKFAST);
   // Holds the selected food from the open food facts search result list
@@ -48,6 +46,8 @@ class DiaryController extends GetxController {
   final dinnerData = RxList<HealthDataPoint>();
   // Filtered meals with zinc values of 4.0
   final snackData = RxList<HealthDataPoint>();
+
+  final activityManager = HealthActivityManager().obs;
 
   @override
   void onInit() async {
@@ -81,7 +81,9 @@ class DiaryController extends GetxController {
     final sameDay = diaryDate.value.year == DateTime.now().year &&
         diaryDate.value.month == DateTime.now().month &&
         diaryDate.value.day == DateTime.now().day;
-    final endTime = sameDay ? null : DateTime(diaryDate.value.year, diaryDate.value.month, diaryDate.value.day, 23, 59, 49);
+    final endTime = sameDay
+        ? null
+        : DateTime(diaryDate.value.year, diaryDate.value.month, diaryDate.value.day, 23, 59, 49);
     final weightData =
         await healthService.getWeightData(timeFrame: TimeFrame.today, endTime: endTime);
     weightData.sort((a, b) => b.dateTo.compareTo(a.dateTo));
@@ -139,9 +141,7 @@ class DiaryController extends GetxController {
     final allActivityData =
         await healthService.getActivityData(timeFrame: TimeFrame.today, endTime: endTime);
 
-    HealthActivityManager.processActivityData(activityData: allActivityData, userAge: 48);
-
-    buckets.value = HealthActivityManager.buckets;
+    activityManager.value.processActivityData(activityData: allActivityData, userAge: 48);
   }
 
   Future<void> saveWeightToHealth() async {

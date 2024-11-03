@@ -29,19 +29,19 @@ class ManageActivityBottomSheet extends GetView<DiaryController> {
                 ),
               ),
               // Wrap the cards in Expanded + SingleChildScrollView
-              Expanded(
+              const Expanded(
                 child: SingleChildScrollView(
                   child: Column(
                     children: [
-                      const Card(
+                      Card(
                         elevation: 8,
                         child: Padding(
                           padding: EdgeInsets.all(2.0),
                           child: ActiveZoneMinutesRadialChart(),
                         ),
                       ),
-                      const SizedBox(height: 16),
-                      const Card(
+                      SizedBox(height: 16),
+                      Card(
                         elevation: 8,
                         child: Padding(
                           padding: EdgeInsets.all(2.0),
@@ -51,8 +51,8 @@ class ManageActivityBottomSheet extends GetView<DiaryController> {
                       Card(
                         elevation: 8,
                         child: Padding(
-                          padding: const EdgeInsets.all(2.0),
-                          child: StepsChart(buckets: controller.buckets),
+                          padding: EdgeInsets.all(2.0),
+                          child: StepsChart(),
                         ),
                       ),
                     ],

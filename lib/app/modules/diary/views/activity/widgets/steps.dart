@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 import 'package:zone2/app/models/activity.dart';
+import 'package:zone2/app/modules/diary/controllers/diary_controller.dart';
 
-class StepsChart extends StatelessWidget {
-  final List<HealthDataBucket> buckets;
-
-  const StepsChart({super.key, required this.buckets});
+class StepsChart extends GetView<DiaryController> {
+  const StepsChart({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -18,10 +18,10 @@ class StepsChart extends StatelessWidget {
       ),
       primaryYAxis: const NumericAxis(title: AxisTitle(text: 'Steps')),
       series: <CartesianSeries>[
-        BarSeries<HealthDataBucket, DateTime>(
-          dataSource: buckets,
-          xValueMapper: (HealthDataBucket bucket, _) => bucket.startTime,
-          yValueMapper: (HealthDataBucket bucket, _) => bucket.totalSteps,
+        BarSeries<StepRecord, DateTime>(
+          dataSource: controller.activityManager.value.stepRecords,
+          xValueMapper: (StepRecord record, _) => record.dateFrom,
+          yValueMapper: (StepRecord record, _) => record.numericValue,
           name: 'Steps',
           dataLabelSettings: const DataLabelSettings(isVisible: true),
         ),
