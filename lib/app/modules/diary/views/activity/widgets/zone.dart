@@ -1,12 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
-import 'package:zone2/app/models/activity.dart';
 import 'package:zone2/app/models/activity_manager.dart';
 
 class ActiveZoneMinutesRadialChart extends StatelessWidget {
-  final List<HealthDataBucket> buckets;
-
-  const ActiveZoneMinutesRadialChart({super.key, required this.buckets});
+  const ActiveZoneMinutesRadialChart({super.key});
 
   @override
   Widget build(BuildContext context) {
