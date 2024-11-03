@@ -86,6 +86,57 @@ class HealthActivityManager {
     _calculateTotals();
   }
 
+  // static void _processHeartRateZones(int userAge) {
+  //   if (_heartRateRecords.isEmpty) return;
+
+  //   // Reset zone minutes and points
+  //   _zoneMinutes.updateAll((key, value) => 0);
+  //   _totalZonePoints = 0;
+
+  //   // Sort records by time
+  //   _heartRateRecords.sort((a, b) => a.dateFrom.compareTo(b.dateFrom));
+
+  //   List<DateTime> streak = [];
+  //   Map<DateTime, int> timeToZone = {}; // Track zone for each minute
+
+  //   // Process consecutive minutes
+  //   for (int i = 0; i < _heartRateRecords.length; i++) {
+  //     var record = _heartRateRecords[i];
+  //     int zone = _getCardioZone(record.numericValue, userAge);
+
+  //     if (zone >= 2) {
+  //       // Check if this is consecutive with previous minute
+  //       if (streak.isNotEmpty &&
+  //           record.dateFrom.difference(streak.last) == const Duration(minutes: 1)) {
+  //         streak.add(record.dateFrom);
+  //         timeToZone[record.dateFrom] = zone;
+  //       } else {
+  //         // Start new streak
+  //         streak = [record.dateFrom];
+  //         timeToZone = {record.dateFrom: zone};
+  //       }
+
+  //       // Always count zones 3-5
+  //       if (zone >= 3) {
+  //         _zoneMinutes[zone] = (_zoneMinutes[zone] ?? 0) + 1;
+  //       }
+  //       // For Zone 2, only count if part of a 5+ minute streak
+  //       else if (zone == 2 && streak.length >= 5) {
+  //         _zoneMinutes[2] = (_zoneMinutes[2] ?? 0) + 1;
+  //       }
+  //     } else {
+  //       // Reset streak if dropping below zone 2
+  //       streak = [];
+  //       timeToZone = {};
+  //     }
+  //   }
+
+  //   // Calculate total zone points based on minutes in each zone
+  //   _totalZonePoints = _zoneMinutes.entries.fold(0, (sum, entry) {
+  //     return sum + (_getZonePoints(entry.key) * entry.value);
+  //   });
+  // }
+
   /// Process heart rate data to identify zones
   static void _processHeartRateZones(int userAge) {
     if (_heartRateRecords.isEmpty) return;
@@ -96,7 +147,7 @@ class HealthActivityManager {
 
     for (var record in _heartRateRecords) {
       int zone = _getCardioZone(record.numericValue, userAge);
-      
+
       // Increment zone minutes
       _zoneMinutes[zone] = (_zoneMinutes[zone] ?? 0) + 1;
     }
