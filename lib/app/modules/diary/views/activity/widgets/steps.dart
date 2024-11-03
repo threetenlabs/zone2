@@ -10,23 +10,36 @@ class StepsChart extends GetView<DiaryController> {
 
   @override
   Widget build(BuildContext context) {
-    return SfCartesianChart(
-      title: const ChartTitle(text: 'Total Steps'),
-      primaryXAxis: DateTimeAxis(
-        intervalType: DateTimeIntervalType.minutes,
-        dateFormat: DateFormat('HH:mm'),
-      ),
-      primaryYAxis: const NumericAxis(title: AxisTitle(text: 'Steps')),
-      series: <CartesianSeries>[
-        BarSeries<StepRecord, DateTime>(
-          dataSource: controller.activityManager.value.stepRecords,
-          xValueMapper: (StepRecord record, _) => record.dateFrom,
-          yValueMapper: (StepRecord record, _) => record.numericValue,
-          name: 'Steps',
-          dataLabelSettings: const DataLabelSettings(isVisible: true),
+    return Obx(
+      () => SfCartesianChart(
+        title: const ChartTitle(text: 'Total Steps'),
+        primaryXAxis: DateTimeAxis(
+          intervalType: DateTimeIntervalType.hours,
+          interval: 3,
+          dateFormat: DateFormat('ha'),
+          majorGridLines: const MajorGridLines(width: 0),
         ),
-      ],
-      tooltipBehavior: TooltipBehavior(enable: true),
+        primaryYAxis: NumericAxis(
+          majorGridLines: const MajorGridLines(width: 0),
+          numberFormat: NumberFormat.compact(),
+        ),
+        series: <CartesianSeries>[
+          ColumnSeries<StepRecord, DateTime>(
+            dataSource: controller.activityManager.value.hourlyStepRecords,
+            xValueMapper: (StepRecord record, _) => record.dateFrom,
+            yValueMapper: (StepRecord record, _) => record.numericValue,
+            name: 'Steps',
+            width: 0.6,
+            spacing: 0.2,
+            borderRadius: BorderRadius.circular(6),
+            dataLabelSettings: const DataLabelSettings(
+              isVisible: true,
+              labelAlignment: ChartDataLabelAlignment.top,
+            ),
+          ),
+        ],
+        tooltipBehavior: TooltipBehavior(enable: true),
+      ),
     );
   }
 }

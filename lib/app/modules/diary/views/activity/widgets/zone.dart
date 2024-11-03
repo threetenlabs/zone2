@@ -10,7 +10,7 @@ class ActiveZoneMinutesRadialChart extends GetView<DiaryController> {
   Widget build(BuildContext context) {
     // Filter and calculate total Active Zone Minutes from zones 2-5 only
     Map<int, int> filteredZones =
-        Map.fromEntries(controller.activityManager.value.zoneDurationMinutes.entries.where((entry) {
+        Map.fromEntries(controller.activityManager.value.zoneMinutes.entries.where((entry) {
       int zoneNumber = entry.key;
       return zoneNumber >= 2 && zoneNumber <= 5;
     }));
