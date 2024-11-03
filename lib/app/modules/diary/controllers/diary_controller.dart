@@ -81,7 +81,7 @@ class DiaryController extends GetxController {
     final sameDay = diaryDate.value.year == DateTime.now().year &&
         diaryDate.value.month == DateTime.now().month &&
         diaryDate.value.day == DateTime.now().day;
-    final endTime = sameDay ? null : diaryDate.value;
+    final endTime = sameDay ? null : DateTime(diaryDate.value.year, diaryDate.value.month, diaryDate.value.day, 23, 59, 49);
     final weightData =
         await healthService.getWeightData(timeFrame: TimeFrame.today, endTime: endTime);
     weightData.sort((a, b) => b.dateTo.compareTo(a.dateTo));

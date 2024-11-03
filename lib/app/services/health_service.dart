@@ -335,7 +335,7 @@ class HealthService extends GetxService {
     final healthData = await Health()
         .getHealthDataFromTypes(types: types, startTime: calculatedStartTime, endTime: nowPlus);
 
-    return Health().removeDuplicates(healthData);
+    return healthData;
   }
 
   Future<HealthConnectSdkStatus> getHealthConnectSdkStatus() async {

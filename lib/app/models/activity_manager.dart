@@ -34,28 +34,28 @@ class HealthActivityManager {
     2: const ZoneConfig(
       name: 'Zone 2 (Light)',
       color: Color(0xFF98E169), // Light green
-      minPercentage: 61,
+      minPercentage: 60,
       maxPercentage: 70,
       icon: Icons.directions_walk,
     ),
     3: const ZoneConfig(
       name: 'Zone 3 (Moderate)',
       color: Color(0xFFFFD93D), // Bright yellow
-      minPercentage: 71,
+      minPercentage: 70,
       maxPercentage: 80,
       icon: Icons.directions_walk,
     ),
     4: const ZoneConfig(
       name: 'Zone 4 (Hard)',
       color: Color(0xFFFF8B3D), // Bright orange
-      minPercentage: 81,
+      minPercentage: 80,
       maxPercentage: 90,
       icon: Icons.directions_run,
     ),
     5: const ZoneConfig(
       name: 'Zone 5 (Maximum)',
       color: Color(0xFFFF5757), // Bright red
-      minPercentage: 91,
+      minPercentage: 90,
       maxPercentage: 100,
       icon: Icons.directions_bike,
     ),
@@ -79,74 +79,31 @@ class HealthActivityManager {
     _workoutRecords = _parseWorkoutData(
         activityData.where((data) => data.type == HealthDataType.WORKOUT).toList());
 
-    // Process heart rate zones and consecutive minutes
+    // Process heart rate zones
     _processHeartRateZones(userAge);
 
     // Calculate totals
     _calculateTotals();
   }
 
-  /// Process heart rate data to identify zones and consecutive minutes
+  /// Process heart rate data to identify zones
   static void _processHeartRateZones(int userAge) {
     if (_heartRateRecords.isEmpty) return;
 
-    // Sort records by time
-    _heartRateRecords.sort((a, b) => a.dateFrom.compareTo(b.dateFrom));
+    // Reset zone minutes
+    _zoneMinutes.updateAll((key, value) => 0);
+    _totalZonePoints = 0;
 
-    int currentZone = _getCardioZone(_heartRateRecords.first.numericValue, userAge);
-    List<DateTime> currentStreak = [_heartRateRecords.first.dateFrom];
-
-    // Track consecutive minutes for each zone
-    Map<int, List<DateTime>> consecutiveZoneTimes = {};
-
-    // Process consecutive minutes
-    for (int i = 1; i < _heartRateRecords.length; i++) {
-      var record = _heartRateRecords[i];
-      var previousRecord = _heartRateRecords[i - 1];
+    for (var record in _heartRateRecords) {
       int zone = _getCardioZone(record.numericValue, userAge);
-
-      if (record.dateFrom.difference(previousRecord.dateFrom) == const Duration(minutes: 1)) {
-        if (zone == currentZone) {
-          currentStreak.add(record.dateFrom);
-        } else {
-          // Zone changed, check if previous streak was valid
-          if (currentStreak.length >= 10) {
-            consecutiveZoneTimes.update(
-              currentZone,
-              (list) => list..addAll(currentStreak),
-              ifAbsent: () => List.from(currentStreak),
-            );
-          }
-          currentZone = zone;
-          currentStreak = [record.dateFrom];
-        }
-      } else {
-        // Gap in data, check if previous streak was valid
-        if (currentStreak.length >= 10) {
-          consecutiveZoneTimes.update(
-            currentZone,
-            (list) => list..addAll(currentStreak),
-            ifAbsent: () => List.from(currentStreak),
-          );
-        }
-        currentZone = zone;
-        currentStreak = [record.dateFrom];
-      }
+      
+      // Increment zone minutes
+      _zoneMinutes[zone] = (_zoneMinutes[zone] ?? 0) + 1;
     }
 
-    // Check final streak
-    if (currentStreak.length >= 10) {
-      consecutiveZoneTimes.update(
-        currentZone,
-        (list) => list..addAll(currentStreak),
-        ifAbsent: () => List.from(currentStreak),
-      );
-    }
-
-    // Calculate zone minutes and points
-    consecutiveZoneTimes.forEach((zone, times) {
-      _zoneMinutes[zone] = (_zoneMinutes[zone] ?? 0) + times.length;
-      _totalZonePoints += _getZonePoints(zone) * times.length;
+    // Calculate total zone points based on minutes in each zone
+    _totalZonePoints = _zoneMinutes.entries.fold(0, (sum, entry) {
+      return sum + (_getZonePoints(entry.key) * entry.value);
     });
   }
 
