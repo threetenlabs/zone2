@@ -171,8 +171,8 @@ Below is an example of how you can instruct your audience on installing and sett
 
 #### <a name='Addto.zsh'></a>Add to .zsh
 
-- export KEY_PASSWORD='our password'
-- export STORE_PASSWORD='our password'
+- export KEY_PASSWORD='ThreeTen Labs Password'
+- export STORE_PASSWORD='ThreeTen Labs Password'
 - export FASTLANE_USERNAME='threetenlabs email address'
 - export FASTLANE_APPLE_APPLICATION_SPECIFIC_PASSWORD= App Specific Password from [here](https://appleid.apple.com/account/manage)
 

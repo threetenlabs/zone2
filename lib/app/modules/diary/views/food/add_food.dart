@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:health/health.dart';
 import 'package:zone2/app/modules/diary/controllers/diary_controller.dart';
+import 'package:zone2/app/modules/diary/views/food/ai_food.dart';
 import 'package:zone2/app/modules/diary/views/food/food_search.dart';
 
 class AddFoodBottomSheet extends GetView<DiaryController> {
@@ -31,17 +32,14 @@ class AddFoodBottomSheet extends GetView<DiaryController> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  // Add Calories button
                   ElevatedButton(
-                    onPressed: () {
-                      // Add your add calories logic here
-                    },
+                    onPressed: () => _showAIBottomSheet(context), // Call search method
                     style: ElevatedButton.styleFrom(
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10), // Rounded corners
                       ),
                     ),
-                    child: const Text('Add Calories'),
+                    child: const Text('AI Search'),
                   ),
                   // Search button
                   ElevatedButton(
@@ -157,6 +155,19 @@ class AddFoodBottomSheet extends GetView<DiaryController> {
       useSafeArea: true,
       builder: (context) {
         return const FoodSearchWidget(); // Use the new widget here
+      },
+    );
+  }
+
+  void _showAIBottomSheet(BuildContext context) {
+    showModalBottomSheet(
+      barrierColor: Colors.transparent,
+      context: context,
+      enableDrag: false,
+      isScrollControlled: true, // Allow full screen
+      useSafeArea: true,
+      builder: (context) {
+        return const AISearchBottomSheet(); // Use the new widget here
       },
     );
   }

@@ -53,5 +53,9 @@
 	<string>Zone 2 will sync your data with the Apple Health app to give you better insights</string>
 	<key>NSHealthUpdateUsageDescription</key>
 	<string>Zone 2 will sync your data with the Apple Health app to give you better insights</string>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>Zone 2 uses speech recognition to allow you to search for foods by voice</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Zone 2 uses the microphone to allow you to search for foods by voice</string>
 	</dict>
 </plist>

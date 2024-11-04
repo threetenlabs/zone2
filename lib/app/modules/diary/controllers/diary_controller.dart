@@ -2,12 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:logger/logger.dart';
 import 'package:health/health.dart';
+import 'package:speech_to_text/speech_recognition_error.dart';
+import 'package:speech_to_text/speech_recognition_result.dart';
+import 'package:speech_to_text/speech_to_text.dart';
 import 'package:zone2/app/models/activity_manager.dart';
 import 'package:zone2/app/models/food.dart';
 import 'package:zone2/app/services/food_service.dart';
 import 'package:zone2/app/services/health_service.dart';
 import 'package:intl/intl.dart'; // Added for date formatting
 import 'package:zone2/app/services/notification_service.dart';
+import 'package:zone2/app/services/openai_service.dart';
 
 class DiaryController extends GetxController {
   final logger = Get.find<Logger>();
@@ -49,6 +53,19 @@ class DiaryController extends GetxController {
 
   final activityManager = HealthActivityManager().obs;
 
+  // AI Funzies
+  final isProcessing = false.obs;
+  final matchedFoods = RxList<String>();
+  final speech = SpeechToText();
+  final isAvailable = false.obs;
+  final isListening = false.obs;
+  final currentLocaleId = ''.obs;
+  final locales = <LocaleName>[].obs;
+  final hasError = false.obs;
+  final lastError = Rxn<SpeechRecognitionError>();
+  final recognizedWords = ''.obs;
+  final systemLocale = Rxn<LocaleName>();
+
   @override
   void onInit() async {
     super.onInit();
@@ -58,6 +75,85 @@ class DiaryController extends GetxController {
     ever(healthService.isAuthorized, (isAuthorized) => authorizedChanged(isAuthorized));
     ever(diaryDate, (date) => updateDateLabel());
     updateDateLabel();
+    await initSpeechState();
+  }
+
+  Future<void> initSpeechState() async {
+    try {
+      isAvailable.value = await speech.initialize(
+        onError: (error) => _onSpeechError(error),
+        onStatus: (status) => _onSpeechStatus(status),
+      );
+
+      if (isAvailable.value) {
+        locales.value = await speech.locales();
+        systemLocale.value = await speech.systemLocale();
+        currentLocaleId.value = systemLocale.value?.localeId ?? '';
+      }
+    } catch (e) {
+      logger.e('Error initializing speech: $e');
+      isAvailable.value = false;
+    }
+  }
+
+  Future<void> startListening() async {
+    if (!isAvailable.value || isListening.value) return;
+
+    try {
+      isListening.value = await speech.listen(
+        onResult: _onSpeechResult,
+        listenOptions: SpeechListenOptions(partialResults: true),
+        localeId: currentLocaleId.value,
+      );
+    } catch (e) {
+      logger.e('Error starting speech recognition: $e');
+      isListening.value = false;
+    }
+  }
+
+  Future<void> stopListening() async {
+    if (!isListening.value) return;
+
+    try {
+      await speech.stop();
+      isListening.value = false;
+      extractFoodItemsOpenAI(recognizedWords.value);
+    } catch (e) {
+      logger.e('Error stopping speech recognition: $e');
+    }
+  }
+
+  Future<void> cancelListening() async {
+    if (!isListening.value) return;
+
+    try {
+      await speech.cancel();
+      isListening.value = false;
+    } catch (e) {
+      logger.e('Error canceling speech recognition: $e');
+    }
+  }
+
+  void switchLanguage(String newLocaleId) {
+    currentLocaleId.value = newLocaleId;
+  }
+
+  void _onSpeechResult(SpeechRecognitionResult result) {
+    recognizedWords.value = result.recognizedWords;
+  }
+
+  void _onSpeechError(SpeechRecognitionError error) {
+    hasError.value = true;
+    lastError.value = error;
+    logger.e('Speech recognition error: ${error.errorMsg}');
+  }
+
+  void _onSpeechStatus(String status) {
+    logger.i('Speech recognition status: $status');
+    if (status == 'done') {
+      isListening.value = false;
+      extractFoodItemsOpenAI(recognizedWords.value);
+    }
   }
 
   Future<void> authorizedChanged(dynamic isAuthorized) async {
@@ -256,5 +352,15 @@ class DiaryController extends GetxController {
     await healthService.deleteData(HealthDataType.NUTRITION, selectedZone2Food.value!.startTime!,
         selectedZone2Food.value!.endTime!);
     await getHealthDataForSelectedDay();
+  }
+
+  Future<void> extractFoodItemsOpenAI(String text) async {
+    final result = await OpenAIService.to.extractFoodsFromText(text);
+    matchedFoods.value = result.choices.first.message.content
+            ?.map((item) => item.text)
+            .whereType<String>()
+            .toList() ??
+        [];
+    logger.i('Extracted food items: $result');
   }
 }
