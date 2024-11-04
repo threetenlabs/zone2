@@ -42,7 +42,8 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 
-.env
+.env**
+env.g.dart
 .firebase
 
 build/
@@ -55,6 +56,3 @@ packages/mobile/android/fastlane/report.xml
 report.xml
 
 ios-buildlog.txt
-
-.env.*
-env.g.dart
