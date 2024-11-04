@@ -26,7 +26,7 @@
         "--target",
         "lib/main.dart",
         "-d",
-        "D1C0A7B9-0166-4EE6-B077-35AD56F56A04" // iPhone 15
+        "A5972894-23F3-4B91-9432-D294D1D0B0B3" // iPhone 15 simulator
       ],
       "preLaunchTask": "pre-launch"
     }
