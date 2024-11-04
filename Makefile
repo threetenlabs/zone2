@@ -19,7 +19,7 @@ pod:
 	cd ios && pod update
 
 generate:
-	flutter pub run build_runner build --delete-conflicting-outputs
+	dart run build_runner build --delete-conflicting-outputs
 
 mobile:
 	flutter run --target lib/main.dart

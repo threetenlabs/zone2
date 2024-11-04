@@ -1,9 +1,11 @@
+import 'package:dart_openai/dart_openai.dart';
 import 'package:zone2/app/modules/loading_service.dart';
 import 'package:zone2/app/services/auth_service.dart';
 import 'package:zone2/app/services/firebase_service.dart';
 import 'package:zone2/app/services/food_service.dart';
 import 'package:zone2/app/services/health_service.dart';
 import 'package:zone2/app/services/notification_service.dart';
+import 'package:zone2/app/services/openai_service.dart';
 import 'package:zone2/app/services/shared_preferences_service.dart';
 import 'package:zone2/app/style/palette.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -41,6 +43,9 @@ class GlobalBindings extends Bindings {
     Get.put<HealthService>(HealthService(), permanent: true);
     // Get.put<FcmService>(FcmService(), permanent: true);
     Get.put<AuthService>(AuthService(), permanent: true);
+
+    Get.put<OpenAI>(OpenAI.instance);
+    Get.put<OpenAIService>(OpenAIService(), permanent: true);
 
     Get.put<FirebaseService>(FirebaseService(), permanent: true);
 

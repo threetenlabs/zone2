@@ -55,3 +55,6 @@ packages/mobile/android/fastlane/report.xml
 report.xml
 
 ios-buildlog.txt
+
+.env
+env.g.dart

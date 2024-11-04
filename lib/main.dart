@@ -1,12 +1,13 @@
 // ignore_for_file: dead_code
 
+import 'package:dart_openai/dart_openai.dart';
 import 'package:flutter/services.dart';
 import 'package:zone2/app/modules/global_bindings.dart';
-import 'package:zone2/app/services/forced_update_service.dart';
 import 'package:zone2/app/services/shared_preferences_service.dart';
 import 'package:zone2/app/services/theme_service.dart';
 import 'package:zone2/app/style/theme.dart';
 import 'package:zone2/app/style/palette.dart';
+import 'package:zone2/app/utils/env.dart';
 import 'package:zone2/firebase_options.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
@@ -33,6 +34,9 @@ Future<void> main() async {
   await GetStorage.init();
   await GetStorage.init('food_data');
   await GetStorage.init('theme_data');
+
+  OpenAI.apiKey = Env.openaiApiKey;
+  OpenAI.showLogs = kDebugMode;
 
   tz.initializeTimeZones();
 
@@ -62,10 +66,6 @@ Future<void> main() async {
 
   final GlobalBindings globalBindings = GlobalBindings(
       palette: palette, logger: logger, sharedPreferencesService: sharedPreferencesService);
-
-  final forcedUpdateService = ForcedUpdateService();
-  await forcedUpdateService.setIsAboveMinimumSupportedVersion();
-  Get.put(forcedUpdateService, permanent: true);
 
   if (kDebugMode && !kIsWeb) {
     bool useEmulator = false;
