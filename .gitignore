@@ -56,5 +56,5 @@ report.xml
 
 ios-buildlog.txt
 
-.env
+.env.*
 env.g.dart
