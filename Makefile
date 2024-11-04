@@ -21,13 +21,13 @@ pod:
 generate:
 	dart run build_runner build --delete-conflicting-outputs
 
-mobile:
+mobile: generate
 	flutter run --target lib/main.dart
 
-build-android:
+build-android: generate
 	flutter build appbundle --release --target lib/main.dart      
 
-build-ios:
+build-ios: generate
 	flutter build ipa --release --target lib/main.dart --export-options-plist=ios/AppStoreDistributionOptions.plist
 
 debug-keystore:
