@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:zone2/app/services/auth_service.dart';
 import 'package:zone2/app/services/shared_preferences_service.dart';
 import 'package:zone2/app/services/theme_service.dart';
 import 'package:flutter/material.dart';
@@ -48,6 +49,16 @@ class ProfileViewPortraitSmall extends GetWidget<ProfileController> {
                         ),
                         const SizedBox(height: 8.0),
                         Expanded(child: Container()),
+                        TextButton(
+                          onPressed: () {
+                            AuthService.to.signOut();
+                          },
+                          clipBehavior: Clip.antiAlias,
+                          child: const Column(children: [
+                            Icon(Icons.logout_outlined),
+                            Text('Sign Out'),
+                          ]),
+                        ),
                         if (kDebugMode)
                           OutlinedButton.icon(
                             icon: const Icon(Icons.delete_forever_outlined),
