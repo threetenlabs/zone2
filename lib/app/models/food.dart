@@ -228,8 +228,8 @@ class Zone2Food {
   /// The label for the zinc content of the meal.
   final String mealTypeLabel;
 
-  /// The value of the zinc content of the meal.
-  final double mealTypeValue;
+  /// The value gets mapped from the zinc content of the meal from the health app.
+  double mealTypeValue;
 
   final HealthDataType? type;
 
@@ -335,7 +335,7 @@ class Zone2Food {
         potassiumLabel: potassiumInfo[0],
         potassiumValue: potassiumInfo[1],
         mealTypeLabel: mealType.name,
-        mealTypeValue: HealthService.to.convertDataTypeToDouble(mealType));
+        mealTypeValue: HealthService.to.convertMealthTypeToDouble(mealType));
 
     return meal;
   }

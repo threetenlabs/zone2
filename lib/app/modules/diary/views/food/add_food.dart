@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:health/health.dart';
 import 'package:zone2/app/modules/diary/controllers/diary_controller.dart';
 import 'package:zone2/app/modules/diary/views/food/ai_food.dart';
 import 'package:zone2/app/modules/diary/views/food/food_search.dart';
@@ -26,10 +25,7 @@ class AddFoodBottomSheet extends GetView<DiaryController> {
                   onPressed: () => Navigator.pop(context), // Close the bottom sheet
                 ),
               ),
-              Text(
-                controller.selectedMealType.value.toString().split('.').last,
-                style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-              ),
+
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -65,7 +61,7 @@ class AddFoodBottomSheet extends GetView<DiaryController> {
                 ],
               ),
               const SizedBox(height: 16),
-              _buildMealList(), // Keep the meal list here
+              Expanded(child: _buildMealList()), // Keep the meal list here
             ],
           ),
         ),
@@ -74,75 +70,64 @@ class AddFoodBottomSheet extends GetView<DiaryController> {
   }
 
   Widget _buildMealList() {
-    RxList<HealthDataPoint> mealList;
-    switch (controller.selectedMealType.value) {
-      case MealType.BREAKFAST:
-        mealList = controller.breakfastData;
-        break;
-      case MealType.LUNCH:
-        mealList = controller.lunchData;
-        break;
-      case MealType.DINNER:
-        mealList = controller.dinnerData;
-        break;
-      case MealType.SNACK:
-        mealList = controller.snackData;
-        break;
-      default:
-        mealList = controller.breakfastData;
-        break;
-    }
-    return Obx(() {
-      if (mealList.isNotEmpty) {
-        return ListView.builder(
-          shrinkWrap: true,
-          itemCount: mealList.length,
-          itemBuilder: (context, index) {
-            final item = mealList[index];
-            final nutritionHealthValue = item.value as NutritionHealthValue;
-            return GestureDetector(
-              // {{ edit_1 }}
-              onLongPress: () async {
-                // Show confirmation dialog
-                final confirm = await showDialog<bool>(
-                  context: context,
-                  builder: (BuildContext context) {
-                    return AlertDialog(
-                      title: const Text('Confirm Deletion'),
-                      content: const Text('Are you sure you want to delete this meal?'),
-                      actions: [
-                        TextButton(
-                          onPressed: () => Navigator.of(context).pop(false), // No
-                          child: const Text('No'),
-                        ),
-                        TextButton(
-                          onPressed: () => Navigator.of(context).pop(true), // Yes
-                          child: const Text('Yes'),
-                        ),
-                      ],
-                    );
+    return DefaultTabController(
+      length: 2,
+      child: Column(
+        children: [
+          const TabBar(
+            tabs: [
+              Tab(text: 'Frequent'),
+              Tab(text: 'Favorites'),
+            ],
+          ),
+          Expanded(
+            child: TabBarView(
+              children: [
+                // Frequent items tab
+                _buildMockList(const [
+                  {
+                    'name': 'Chicken Breast',
+                    'calories': 165,
+                    'protein': 31,
+                    'fat': 3.6,
+                    'carbs': 0
                   },
-                );
+                  {'name': 'Protein Shake', 'calories': 120, 'protein': 24, 'fat': 1, 'carbs': 3},
+                  {'name': 'Banana', 'calories': 105, 'protein': 1.3, 'fat': 0.4, 'carbs': 27},
+                ]),
 
-                // If confirmed, call deleteFood method
-                if (confirm == true) {
-                  // controller.deleteFood(item.dateFrom, item.dateTo);
-                }
-              },
-              child: ListTile(
-                title: Text('Food: ${nutritionHealthValue.name}'),
-                subtitle: Text(
-                  'Calories: ${nutritionHealthValue.calories?.toStringAsFixed(1) ?? '0.0'} | Protein: ${nutritionHealthValue.protein?.toStringAsFixed(1) ?? '0.0'}g | '
-                  'Fat: ${nutritionHealthValue.fat?.toStringAsFixed(1) ?? '0.0'}g | Carbs: ${nutritionHealthValue.carbs?.toStringAsFixed(1) ?? '0.0'}g',
-                ),
-              ),
-            );
+                // Favorites tab
+                _buildMockList(const [
+                  {'name': 'Oatmeal', 'calories': 150, 'protein': 5, 'fat': 3, 'carbs': 27},
+                  {'name': 'Greek Yogurt', 'calories': 130, 'protein': 12, 'fat': 4, 'carbs': 9},
+                  {'name': 'Almonds', 'calories': 164, 'protein': 6, 'fat': 14, 'carbs': 6},
+                ]),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMockList(List<Map<String, dynamic>> items) {
+    return ListView.builder(
+      shrinkWrap: true,
+      itemCount: items.length,
+      itemBuilder: (context, index) {
+        final item = items[index];
+        return ListTile(
+          title: Text('Food: ${item['name']}'),
+          subtitle: Text(
+            'Calories: ${item['calories']} | Protein: ${item['protein']}g | '
+            'Fat: ${item['fat']}g | Carbs: ${item['carbs']}g',
+          ),
+          onTap: () {
+            // TODO: Implement quick add functionality
           },
         );
-      } else {
-        return const Text('No meals logged'); // Handle no meals
-      }
-    });
+      },
+    );
   }
 
   void _showSearchBottomSheet(BuildContext context) {

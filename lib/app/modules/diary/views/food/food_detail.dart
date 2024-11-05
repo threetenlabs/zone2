@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:zone2/app/modules/diary/controllers/diary_controller.dart';
 import 'package:get/get.dart';
 import 'package:zone2/app/modules/diary/widgets/nutritional_card.dart';
+import 'package:zone2/app/services/health_service.dart';
 
 enum ConversionType {
   openfoodfacts,
@@ -52,7 +53,7 @@ class FoodDetailBottomSheet extends GetView<DiaryController> {
                               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
                           const SizedBox(height: 10),
                           Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            mainAxisAlignment: MainAxisAlignment.start,
                             children: [
                               // Numeric input for serving count
                               Obx(
@@ -80,17 +81,93 @@ class FoodDetailBottomSheet extends GetView<DiaryController> {
                               ),
                               // Read-only label for serving size
                               Obx(
-                                () => Text(
-                                  controller.selectedZone2Food.value?.servingLabel.isNotEmpty ??
-                                          false
-                                      ? controller.selectedZone2Food.value!.servingLabel
-                                      : 'Serving',
-                                  style: const TextStyle(fontSize: 16),
-                                  textAlign: TextAlign.left,
+                                () => Padding(
+                                  padding: const EdgeInsets.only(left: 8.0),
+                                  child: Text(
+                                    controller.selectedZone2Food.value?.servingLabel.isNotEmpty ??
+                                            false
+                                        ? controller.selectedZone2Food.value!.servingLabel
+                                        : 'Serving',
+                                    style: const TextStyle(fontSize: 16),
+                                    textAlign: TextAlign.left,
+                                  ),
                                 ),
                               ),
                             ],
                           ),
+                          const SizedBox(height: 16),
+                          const Text('Meal Type',
+                              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                          const SizedBox(height: 10),
+                          Obx(() {
+                            final isEditable =
+                                controller.selectedZone2Food.value?.startTime == null;
+                            final selectedValue = isEditable
+                                ? HealthService.to
+                                    .convertMealthTypeToDouble(controller.selectedMealType.value)
+                                : controller.selectedZone2Food.value?.mealTypeValue;
+
+                            return SingleChildScrollView(
+                              scrollDirection: Axis.horizontal,
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                children: [
+                                  Radio<double>(
+                                    value: 1.0,
+                                    groupValue: selectedValue,
+                                    onChanged: isEditable
+                                        ? (value) {
+                                            controller.selectedMealType.value =
+                                                HealthService.to.convertDoubleToMealType(value!);
+                                            controller.selectedZone2Food.value!.mealTypeValue =
+                                                value;
+                                          }
+                                        : null,
+                                  ),
+                                  const Text('Breakfast'),
+                                  Radio<double>(
+                                    value: 2.0,
+                                    groupValue: selectedValue,
+                                    onChanged: isEditable
+                                        ? (value) {
+                                            controller.selectedMealType.value =
+                                                HealthService.to.convertDoubleToMealType(value!);
+                                            controller.selectedZone2Food.value!.mealTypeValue =
+                                                value;
+                                          }
+                                        : null,
+                                  ),
+                                  const Text('Lunch'),
+                                  Radio<double>(
+                                    value: 3.0,
+                                    groupValue: selectedValue,
+                                    onChanged: isEditable
+                                        ? (value) {
+                                            controller.selectedMealType.value =
+                                                HealthService.to.convertDoubleToMealType(value!);
+                                            controller.selectedZone2Food.value!.mealTypeValue =
+                                                value;
+                                          }
+                                        : null,
+                                  ),
+                                  const Text('Dinner'),
+                                  Radio<double>(
+                                    value: 4.0,
+                                    groupValue: selectedValue,
+                                    onChanged: isEditable
+                                        ? (value) {
+                                            controller.selectedMealType.value =
+                                                HealthService.to.convertDoubleToMealType(value!);
+                                            controller.selectedZone2Food.value!.mealTypeValue =
+                                                value;
+                                          }
+                                        : null,
+                                  ),
+                                  const Text('Snack'),
+                                ],
+                              ),
+                            );
+                          }),
                           const SizedBox(height: 16),
                           if (controller.selectedZone2Food.value?.startTime == null)
                             Obx(() => ElevatedButton(

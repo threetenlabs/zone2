@@ -135,14 +135,7 @@ class DiaryView extends GetView<DiaryController> {
       isScrollControlled: true, // Allow full screen
       useSafeArea: true,
       builder: (context) {
-        return const ManageFoodBottomSheet(
-          calorieTarget: 2000, // Example target
-          caloriesConsumed: 1200, // Example consumed
-          caloriesBurned: 300, // Example burned
-          proteinConsumed: 80, // Example protein
-          carbsConsumed: 150, // Example carbs
-          fatConsumed: 50, // Example fat
-        );
+        return const ManageFoodBottomSheet();
       },
     );
   }

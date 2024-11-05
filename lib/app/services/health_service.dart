@@ -4,6 +4,7 @@ import 'package:logger/logger.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:zone2/app/models/food.dart';
 import 'package:zone2/app/services/notification_service.dart';
+import 'dart:math' as math;
 
 enum WeightUnit { kilogram, pound }
 
@@ -149,7 +150,7 @@ class HealthService extends GetxService {
     HealthDataType.TOTAL_CALORIES_BURNED,
   ];
 
-  double convertDataTypeToDouble(MealType type) {
+  double convertMealthTypeToDouble(MealType type) {
     switch (type) {
       case MealType.BREAKFAST:
         return 1.0;
@@ -160,6 +161,7 @@ class HealthService extends GetxService {
       case MealType.SNACK:
         return 4.0;
       default:
+        logger.e('Unsupported meal type: $type');
         return 0.0;
     }
   }
@@ -175,7 +177,8 @@ class HealthService extends GetxService {
       case 4.0:
         return MealType.SNACK;
       default:
-        return MealType.UNKNOWN;
+        logger.e('Unsupported meal type: $value');
+        return MealType.BREAKFAST;
     }
   }
 
@@ -403,7 +406,7 @@ class HealthService extends GetxService {
           protein: meal.proteinValue * qty,
           fatTotal: meal.totalFatValue * qty,
           name: '${meal.name} | ${meal.brand} | ${qty.toStringAsFixed(1)} | ${meal.servingLabel}',
-          sodium: meal.sodiumValue * qty,
+          sodium: math.min(meal.sodiumValue * qty, 100),
           cholesterol: meal.cholesterolValue * qty,
           fiber: meal.fiberValue * qty,
           fatUnsaturated: (meal.totalFatValue - meal.saturatedValue) * qty,

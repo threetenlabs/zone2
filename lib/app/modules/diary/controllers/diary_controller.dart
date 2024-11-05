@@ -43,16 +43,15 @@ class DiaryController extends GetxController {
 
   // Meal tracking
   final selectedMealType = Rx<MealType>(MealType.BREAKFAST);
+  final filteredMealType = Rx<MealType>(MealType.ALL);
   final selectedOpenFoodFactsFood = Rxn<OpenFoodFactsFood>();
   final selectedZone2Food = Rxn<Zone2Food>();
   final selectedPlatformHealthFood = Rxn<HealthDataPoint>();
   final foodServingQty = Rxn<double>();
   final foodServingController = TextEditingController(text: '');
 
-  final breakfastData = RxList<HealthDataPoint>();
-  final lunchData = RxList<HealthDataPoint>();
-  final dinnerData = RxList<HealthDataPoint>();
-  final snackData = RxList<HealthDataPoint>();
+  final allMeals = RxList<HealthDataPoint>();
+  final filteredMeals = RxList<HealthDataPoint>();
 
   // Activity tracking
   final activityManager = HealthActivityManager().obs;
@@ -248,25 +247,25 @@ class DiaryController extends GetxController {
       isWaterLogged.value = false;
     }
 
-    final allMeals = await healthService.getMealData(timeFrame: TimeFrame.today, endTime: endTime);
-    breakfastData.value =
-        allMeals.where((meal) => (meal.value as NutritionHealthValue).zinc == 1.0).toList();
-    lunchData.value =
-        allMeals.where((meal) => (meal.value as NutritionHealthValue).zinc == 2.0).toList();
-    dinnerData.value =
-        allMeals.where((meal) => (meal.value as NutritionHealthValue).zinc == 3.0).toList();
-    snackData.value =
-        allMeals.where((meal) => (meal.value as NutritionHealthValue).zinc == 4.0).toList();
-    // if (breakfastData.isNotEmpty) {
-    //   logger.i('Meal data: ${breakfastData.first}');
-    // } else {
-    //   logger.w('No meal data found');
-    // }
+    allMeals.value = await healthService.getMealData(timeFrame: TimeFrame.today, endTime: endTime);
+    filterMealsByType(filteredMealType.value);
 
     final allActivityData =
         await healthService.getActivityData(timeFrame: TimeFrame.today, endTime: endTime);
 
     activityManager.value.processActivityData(activityData: allActivityData, userAge: 48);
+  }
+
+  Future<void> filterMealsByType(MealType type) async {
+    if (type == MealType.ALL) {
+      filteredMeals.value = allMeals;
+    } else {
+      filteredMeals.value = allMeals
+          .where((meal) =>
+              (meal.value as NutritionHealthValue).zinc ==
+              HealthService.to.convertMealthTypeToDouble(type))
+          .toList();
+    }
   }
 
   Future<void> saveWeightToHealth() async {
@@ -373,14 +372,15 @@ class DiaryController extends GetxController {
   }
 
   Future<void> searchFood(String query) async {
+    searchPerformed.value = false;
     await EasyLoading.show(
       status: 'Searching for food...',
       maskType: EasyLoadingMaskType.black,
     );
 
-    searchPerformed.value = true;
     foodSearchResults.value = await foodService.searchFood(query);
     await EasyLoading.dismiss();
+    searchPerformed.value = true;
   }
 
   Future<void> findFoodByBarcode(String barcode) async {
