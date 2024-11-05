@@ -4,6 +4,7 @@ import 'package:health/health.dart';
 import 'package:zone2/app/modules/diary/controllers/diary_controller.dart';
 import 'package:zone2/app/modules/diary/views/food/ai_food.dart';
 import 'package:zone2/app/modules/diary/views/food/food_search.dart';
+import 'package:zone2/app/modules/diary/views/food/scanner/scan_food_bottomsheet.dart';
 
 class AddFoodBottomSheet extends GetView<DiaryController> {
   const AddFoodBottomSheet({super.key});
@@ -53,9 +54,7 @@ class AddFoodBottomSheet extends GetView<DiaryController> {
                   ),
                   // Scan Barcode button
                   ElevatedButton(
-                    onPressed: () {
-                      // Add your scan barcode logic here
-                    },
+                    onPressed: () => _showScanFoodBottomSheet(context),
                     style: ElevatedButton.styleFrom(
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10), // Rounded corners
@@ -168,6 +167,19 @@ class AddFoodBottomSheet extends GetView<DiaryController> {
       useSafeArea: true,
       builder: (context) {
         return const AISearchBottomSheet(); // Use the new widget here
+      },
+    );
+  }
+
+  void _showScanFoodBottomSheet(BuildContext context) {
+    showModalBottomSheet(
+      barrierColor: Colors.transparent,
+      context: context,
+      enableDrag: false,
+      isScrollControlled: true, // Allow full screen
+      useSafeArea: true,
+      builder: (context) {
+        return const ScanFoodBottomSheet(); // Use the new widget here
       },
     );
   }

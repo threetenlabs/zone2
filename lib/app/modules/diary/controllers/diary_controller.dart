@@ -1,7 +1,11 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:get/get.dart';
 import 'package:logger/logger.dart';
 import 'package:health/health.dart';
+import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:speech_to_text/speech_recognition_error.dart';
 import 'package:speech_to_text/speech_recognition_result.dart';
 import 'package:speech_to_text/speech_to_text.dart';
@@ -17,12 +21,18 @@ class DiaryController extends GetxController {
   final logger = Get.find<Logger>();
   final healthService = Get.find<HealthService>();
   final foodService = Get.find<FoodService>();
+
+  // Weight tracking
   final weightWhole = 70.obs;
   final weightDecimal = 0.obs;
   final healthData = RxList<HealthDataPoint>();
   final isWeightLogged = false.obs; // Track if weight is logged
+
+  // Date tracking
   final diaryDate = DateTime.now().obs;
   final diaryDateLabel = ''.obs; // Observable for date label
+
+  // Water tracking
   final waterIntake = 0.0.obs; // Track total water intake
   final waterGoal = 120.0.obs; // Set water goal
   final isWaterLogged = false.obs; // Track if water is logged
@@ -31,26 +41,20 @@ class DiaryController extends GetxController {
   final foodSearchResults = Rxn<FoodSearchResponse>();
   final searchPerformed = false.obs;
 
+  // Meal tracking
   final selectedMealType = Rx<MealType>(MealType.BREAKFAST);
-  // Holds the selected food from the open food facts search result list
   final selectedOpenFoodFactsFood = Rxn<OpenFoodFactsFood>();
-  // Holds the current zone2 food
   final selectedZone2Food = Rxn<Zone2Food>();
-  // Holds the selected food from the platform specific health data point
   final selectedPlatformHealthFood = Rxn<HealthDataPoint>();
-  // Holds the serving quantity of the selected meal
   final foodServingQty = Rxn<double>();
   final foodServingController = TextEditingController(text: '');
 
-  // Filtered meals with zinc values of 1.0
   final breakfastData = RxList<HealthDataPoint>();
-  // Filtered meals with zinc values of 2.0
   final lunchData = RxList<HealthDataPoint>();
-  // Filtered meals with zinc values of 3.0
   final dinnerData = RxList<HealthDataPoint>();
-  // Filtered meals with zinc values of 4.0
   final snackData = RxList<HealthDataPoint>();
 
+  // Activity tracking
   final activityManager = HealthActivityManager().obs;
 
   // AI Funzies
@@ -66,6 +70,12 @@ class DiaryController extends GetxController {
   final recognizedWords = ''.obs;
   final systemLocale = Rxn<LocaleName>();
 
+  // Barcode scanning
+  final Rxn<Barcode> barcode = Rxn<Barcode>();
+  final Rxn<BarcodeCapture> capture = Rxn<BarcodeCapture>();
+  late MobileScannerController scannerController;
+  StreamSubscription<Object?>? scannerSubscription;
+
   @override
   void onInit() async {
     super.onInit();
@@ -76,6 +86,10 @@ class DiaryController extends GetxController {
     ever(diaryDate, (date) => updateDateLabel());
     updateDateLabel();
     await initSpeechState();
+
+    scannerController = MobileScannerController();
+
+    scannerSubscription = scannerController.barcodes.listen(handleBarcode);
   }
 
   Future<void> initSpeechState() async {
@@ -154,6 +168,21 @@ class DiaryController extends GetxController {
       isListening.value = false;
       extractFoodItemsOpenAI(recognizedWords.value);
     }
+  }
+
+  Future<void> handleBarcode(BarcodeCapture barcodeCapture) async {
+    if (capture.value == barcodeCapture) return;
+
+    capture.value = barcodeCapture;
+
+    barcode.value = barcodeCapture.barcodes.first;
+    final foodId = barcodeCapture.barcodes.first.displayValue;
+    logger.i('barcode: $foodId');
+
+    await findFoodByBarcode(foodId ?? '');
+
+    barcode.value = null;
+    capture.value = null;
   }
 
   Future<void> authorizedChanged(dynamic isAuthorized) async {
@@ -344,8 +373,27 @@ class DiaryController extends GetxController {
   }
 
   Future<void> searchFood(String query) async {
+    await EasyLoading.show(
+      status: 'Searching for food...',
+      maskType: EasyLoadingMaskType.black,
+    );
+
     searchPerformed.value = true;
     foodSearchResults.value = await foodService.searchFood(query);
+    await EasyLoading.dismiss();
+  }
+
+  Future<void> findFoodByBarcode(String barcode) async {
+    logger.i('finding food by barcode: $barcode');
+
+    await EasyLoading.show(status: 'Getting food...', maskType: EasyLoadingMaskType.black);
+    final result = await foodService.getFoodById(barcode);
+    logger.i('Food: ${result.product?.productName}');
+
+    if (result.product != null) {
+      selectedOpenFoodFactsFood.value = OpenFoodFactsFood.fromOpenFoodFacts(result.product!);
+    }
+    await EasyLoading.dismiss();
   }
 
   Future<void> deleteFood() async {
