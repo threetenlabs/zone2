@@ -23,8 +23,5 @@ class RedirectMiddleware extends GetMiddleware {
     } else {
       return const RouteSettings(name: Routes.login);
     }
-    // } else {
-    //   return const RouteSettings(name: Routes.login);
-    // }
   }
 }
