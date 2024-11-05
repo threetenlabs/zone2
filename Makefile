@@ -19,6 +19,7 @@ pod:
 	cd ios && pod update
 
 generate:
+	dart run build_runner clean
 	dart run build_runner build --delete-conflicting-outputs
 
 mobile: generate

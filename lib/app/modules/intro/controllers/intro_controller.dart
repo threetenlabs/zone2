@@ -127,7 +127,8 @@ class IntroController extends GetxController {
   }
 
   Future<bool> canBeDone() async {
-    return HealthService.to.hasPermissions.value ?? false;
+    // TODO: Revisit this - IOS will always return null
+    return HealthService.to.hasPermissions.value ?? true;
   }
 
   Future<void> requestHealthPermissions() async {
@@ -163,7 +164,12 @@ class IntroController extends GetxController {
   //create a method called onFinish that saves a boolean called introFinished to sharedPreferences
   void onFinish() {
     _sharedPreferencesService.setIsIntroductionFinished(true);
-    _sharedPreferencesService.setZone2Goals(double.parse(weightController.text), double.parse(targetWeightController.text), zone2Reason.value, zone2Birthdate.value, zone2Gender.value!);
+    _sharedPreferencesService.setZone2Goals(
+        double.parse(weightController.text),
+        double.parse(targetWeightController.text),
+        zone2Reason.value,
+        zone2Birthdate.value,
+        zone2Gender.value!);
     introLogger.i('Introduction Finished');
     Get.offNamed(Routes.home);
   }

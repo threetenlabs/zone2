@@ -240,8 +240,8 @@ class HealthService extends GetxService {
   @override
   Future<void> onInit() async {
     super.onInit();
-    Health().configure();
-    Health().getHealthConnectSdkStatus();
+    await Health().configure();
+    await Health().getHealthConnectSdkStatus();
   }
 
   Future<bool> authorize() async {
@@ -262,7 +262,7 @@ class HealthService extends GetxService {
     hasPermissions.value = await Health().hasPermissions(types, permissions: permissions);
 
     bool authorized = false;
-    if (hasPermissions.value != null && !hasPermissions.value!) {
+    if (hasPermissions.value == null || !hasPermissions.value!) {
       try {
         authorized = await Health().requestAuthorization(types, permissions: permissions);
         isAuthorized.value = authorized;
