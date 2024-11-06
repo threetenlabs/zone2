@@ -1,7 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
-import 'dart:convert';
 
 import 'package:logger/logger.dart';
 import 'package:openfoodfacts/openfoodfacts.dart';
@@ -94,25 +93,23 @@ class FoodService extends GetxService {
     }
   }
 
-  Future<dynamic> getFoodById(String barcode) async {
-    final response = await OpenFoodAPIClient.getProductV3(
-      ProductQueryConfiguration(
-        barcode,
-        version: ProductQueryVersion.v3,
-        language: OpenFoodFactsLanguage.ENGLISH,
-        country: OpenFoodFactsCountry.USA,
-        fields: productFields,
-      ),
-      user: const User(userId: '', password: ''),
-      uriHelper: kDebugMode ? uriHelperFoodTest : uriHelperFoodProd,
-    );
+  Future<ProductResultV3> getFoodById(String barcode) async {
+    try {
+      final response = await OpenFoodAPIClient.getProductV3(
+        ProductQueryConfiguration(
+          barcode,
+          version: ProductQueryVersion.v3,
+          language: OpenFoodFactsLanguage.ENGLISH,
+          country: OpenFoodFactsCountry.USA,
+          fields: productFields,
+        ),
+        user: const User(userId: '', password: ''),
+        uriHelper: kDebugMode ? uriHelperFoodTest : uriHelperFoodProd,
+      );
 
-    final food = response.product;
-    if (food != null) {
-      final j = jsonEncode(food.toJson());
-      debugPrint(j);
-      return j;
-    } else {
+      return response;
+    } catch (e) {
+      logger.e('Error getting food by id: $e');
       throw Exception('Failed to load food data');
     }
   }

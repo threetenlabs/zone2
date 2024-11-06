@@ -6,8 +6,8 @@ class FirebaseService {
   static FirebaseService get to => FirebaseService();
   final logger = Get.find<Logger>();
 
-  final CollectionReference meccaCollectionReference =
-      FirebaseFirestore.instance.collection('meccas');
+  final CollectionReference userCollectionReference =
+      FirebaseFirestore.instance.collection('users');
 
   // Future<FirebaseFunctionResult<CreateGameResponse>> createGame(String gameType) async {
   //   try {

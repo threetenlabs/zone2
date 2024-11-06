@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:collection';
+import 'package:toastification/toastification.dart';
 import 'package:zone2/app/style/palette.dart';
-import 'package:elegant_notification/elegant_notification.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -17,7 +17,7 @@ class NotificationService {
         title: title,
         message: message,
         iconAsset: iconAsset,
-        notificationType: NotificationType.achievement));
+        notificationType: NotificationType.custom));
     if (!_isShowingNotification) {
       _showNextNotification();
     }
@@ -48,44 +48,76 @@ class NotificationService {
     _NotificationRequest request = _notificationQueue.removeFirst();
 
     request.notificationType == NotificationType.error
-        ?
+        ? toastification.show(
+            type: ToastificationType.error,
+            style: ToastificationStyle.flatColored,
+            title: Text(request.title),
+            description: Text(request.message),
+            alignment: Alignment.topCenter,
+            autoCloseDuration: const Duration(seconds: 4),
+            boxShadow: highModeShadow,
+            applyBlurEffect: true,
+            showProgressBar: false,
+          )
         // Show the notification
-        ElegantNotification.error(
-            notificationMargin: 50,
-            title: Text(request.title,
-                style: TextStyle(
-                    color: palette.darkBackGround, fontSize: 12, fontWeight: FontWeight.bold)),
-            description: Text(request.message,
-                style: TextStyle(color: palette.darkBackGround, fontSize: 12)),
-            toastDuration: const Duration(milliseconds: 6000),
-            showProgressIndicator: false,
-          ).show(Get.overlayContext!)
+        // ElegantNotification.error(
+        //     notificationMargin: 50,
+        //     title: Text(request.title,
+        //         style: TextStyle(
+        //             color: palette.darkBackGround, fontSize: 12, fontWeight: FontWeight.bold)),
+        //     description: Text(request.message,
+        //         style: TextStyle(color: palette.darkBackGround, fontSize: 12)),
+        //     toastDuration: const Duration(milliseconds: 6000),
+        //     showProgressIndicator: false,
+        //   ).show(Get.overlayContext!)
         : request.notificationType == NotificationType.success
-            ? ElegantNotification.success(
-                notificationMargin: 50,
-                title: Text(request.title,
-                    style: TextStyle(
-                        color: palette.darkBackGround, fontSize: 12, fontWeight: FontWeight.bold)),
-                description: Text(request.message,
-                    style: TextStyle(color: palette.darkBackGround, fontSize: 12)),
-                toastDuration: const Duration(milliseconds: 6000),
-                showProgressIndicator: false,
-              ).show(Get.overlayContext!)
+            ? toastification.show(
+                type: ToastificationType.success,
+                style: ToastificationStyle.flatColored,
+                title: Text(request.title),
+                description: Text(request.message),
+                alignment: Alignment.topCenter,
+                autoCloseDuration: const Duration(seconds: 4),
+                boxShadow: highModeShadow,
+                applyBlurEffect: true,
+                showProgressBar: false,
+              )
+            // ? ElegantNotification.success(
+            //     notificationMargin: 50,
+            //     title: Text(request.title,
+            //         style: TextStyle(
+            //             color: palette.darkBackGround, fontSize: 12, fontWeight: FontWeight.bold)),
+            //     description: Text(request.message,
+            //         style: TextStyle(color: palette.darkBackGround, fontSize: 12)),
+            //     toastDuration: const Duration(milliseconds: 6000),
+            //     showProgressIndicator: false,
+            //   ).show(Get.overlayContext!)
             :
             // Show the notification
-            ElegantNotification(
-                notificationMargin: 50,
-                title: Text(request.title,
-                    style: TextStyle(
-                        color: palette.darkBackGround, fontSize: 12, fontWeight: FontWeight.bold)),
-                description: Text(request.message,
-                    style: TextStyle(color: palette.darkBackGround, fontSize: 12)),
-                icon: request.iconAsset != null
-                    ? Image.asset(request.iconAsset!, height: 100, width: 100, fit: BoxFit.fill)
-                    : null,
-                toastDuration: const Duration(milliseconds: 6000),
-                showProgressIndicator: false,
-              ).show(Get.overlayContext!);
+            toastification.show(
+                type: ToastificationType.info,
+                style: ToastificationStyle.flatColored,
+                title: Text(request.title),
+                description: Text(request.message),
+                alignment: Alignment.topCenter,
+                autoCloseDuration: const Duration(seconds: 4),
+                boxShadow: highModeShadow,
+                applyBlurEffect: true,
+                showProgressBar: false,
+              );
+    // ElegantNotification(
+    //   notificationMargin: 50,
+    //   title: Text(request.title,
+    //       style:
+    //           TextStyle(color: palette.darkBackGround, fontSize: 12, fontWeight: FontWeight.bold)),
+    //   description:
+    //       Text(request.message, style: TextStyle(color: palette.darkBackGround, fontSize: 12)),
+    //   icon: request.iconAsset != null
+    //       ? Image.asset(request.iconAsset!, height: 100, width: 100, fit: BoxFit.fill)
+    //       : null,
+    //   toastDuration: const Duration(milliseconds: 6000),
+    //   showProgressIndicator: false,
+    // ).show(Get.overlayContext!);
 
     Future.delayed(const Duration(milliseconds: 6000), () {
       _isShowingNotification = false;
@@ -104,4 +136,4 @@ class _NotificationRequest {
       {required this.title, required this.message, required this.notificationType, this.iconAsset});
 }
 
-enum NotificationType { achievement, error, success }
+enum NotificationType { custom, error, success }

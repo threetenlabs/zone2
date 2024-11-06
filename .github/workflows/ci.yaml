@@ -1,0 +1,31 @@
+name: CI Pipeline
+
+on:
+  push:
+
+jobs:
+  ci-test:
+    env:
+      OPENAI_API_KEY: sk-proj-POAEff-8675309_u12RxTHJ_ThisIsNotARealKey
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Flutter SDK
+        uses: flutter-actions/setup-flutter@v3
+        with:
+          channel: stable
+          version: 3.24.3
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Generate Env
+        run: make generate
+
+      - name: Analyze project source
+        run: dart analyze
+
+      - name: Run tests
+        run: flutter test

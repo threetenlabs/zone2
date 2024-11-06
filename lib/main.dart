@@ -14,7 +14,7 @@ import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:firebase_remote_config/firebase_remote_config.dart';
-
+import 'package:toastification/toastification.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
@@ -98,8 +98,8 @@ Future<void> main() async {
     };
   }
 
-  runApp(
-    GetMaterialApp(
+  runApp(ToastificationWrapper(
+    child: GetMaterialApp(
       title: "Zone 2",
       initialBinding: globalBindings,
       debugShowCheckedModeBanner: true,
@@ -110,5 +110,5 @@ Future<void> main() async {
       getPages: AppPages.routes,
       builder: EasyLoading.init(),
     ),
-  );
+  ));
 }

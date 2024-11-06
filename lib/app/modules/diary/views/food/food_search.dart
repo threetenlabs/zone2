@@ -43,14 +43,13 @@ class FoodSearchWidget extends GetWidget<DiaryController> {
                 child: ListView.builder(
                   itemCount: foodSearchResponse.foods.length,
                   itemBuilder: (context, index) {
-                    final food = foodSearchResponse.foods[index];
+                    final openFoodFactsFood = foodSearchResponse.foods[index];
                     return ListTile(
-                      title: Text(food.description),
-                      subtitle: Text('Brand: ${food.brand}'),
+                      title: Text(openFoodFactsFood.description),
+                      subtitle: Text('Brand: ${openFoodFactsFood.brand}'),
                       onTap: () {
-                        controller.selectedOpenFoodFactsFood.value = food;
-                        controller.selectedZone2Food.value = Zone2Food.fromOpenFoodFactsFood(
-                            food, controller.selectedMealType.value);
+                        controller.selectedOpenFoodFactsFood.value = openFoodFactsFood;
+                        controller.selectedZone2Food.value = Zone2Food.fromOpenFoodFactsFood(openFoodFactsFood);
                         controller.foodServingController.text = '';
                         _showFoodDetail(context);
                       }, // Show food details on tap

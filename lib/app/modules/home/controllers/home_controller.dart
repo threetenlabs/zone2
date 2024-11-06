@@ -34,13 +34,6 @@ class HomeController extends GetxController {
   void onInit() {
     super.onInit();
 
-    // navBarItems.value = [
-    //   NavBarItemData("Diary", OMIcons.book, 110, palette.mainMenuGames),
-    //   NavBarItemData("Zone", OMIcons.trackChanges, 115, palette.mainMenuSettings),
-    //   NavBarItemData("Track", OMIcons.barChart, 100, palette.mainMenuStore),
-    //   NavBarItemData("Profile", OMIcons.accountCircle, 105, palette.mainMenuProfile),
-    // ];
-
     navBarItems.value = [
       const BottomBarItem(
         inActiveItem: Icon(

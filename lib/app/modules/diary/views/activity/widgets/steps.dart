@@ -15,9 +15,21 @@ class StepsChart extends GetView<DiaryController> {
         title: const ChartTitle(text: 'Total Steps'),
         primaryXAxis: DateTimeAxis(
           intervalType: DateTimeIntervalType.hours,
-          interval: 3,
+          interval: 1,
           dateFormat: DateFormat('ha'),
           majorGridLines: const MajorGridLines(width: 0),
+          labelIntersectAction: AxisLabelIntersectAction.none,
+          desiredIntervals: 12,
+          maximumLabels: 13,
+          axisLabelFormatter: (AxisLabelRenderDetails args) {
+            DateTime date = DateTime.fromMillisecondsSinceEpoch(args.value.toInt());
+            if (date.hour % 2 == 0) {
+              String amPm = date.hour < 12 ? 'A' : 'P';
+              String hour = (date.hour % 12 == 0 ? 12 : date.hour % 12).toString();
+              return ChartAxisLabel('$hour$amPm', args.textStyle);
+            }
+            return ChartAxisLabel('', args.textStyle);
+          },
         ),
         primaryYAxis: NumericAxis(
           majorGridLines: const MajorGridLines(width: 0),
