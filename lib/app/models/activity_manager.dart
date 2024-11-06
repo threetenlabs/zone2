@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:health/health.dart';
+import 'package:logger/logger.dart';
 import 'package:zone2/app/models/activity.dart';
 import 'package:get/get.dart';
 
 /// Class to manage and process health activity data
 class HealthActivityManager extends GetxController {
+  final logger = Get.find<Logger>();
   // Convert static lists to RxList
   final heartRateRecords = RxList<HeartRateRecord>([]);
   final calorieRecords = RxList<CalorieBurnedRecord>([]);
@@ -19,6 +21,8 @@ class HealthActivityManager extends GetxController {
   final totalZonePoints = 0.obs;
   final multipleCalorieSources = false.obs;
 
+  final totalActiveZoneMinutes = 0.obs;
+
   // Convert zone minutes to RxMap
   final zoneMinutes = RxMap<int, int>({
     1: 0, // Very Light
@@ -27,6 +31,8 @@ class HealthActivityManager extends GetxController {
     4: 0, // Hard
     5: 0, // Maximum
   });
+
+  final filteredZoneMinutes = RxMap<int, int>({});
 
   // Zone configs can remain final since they don't change
   final zoneConfigs = {
@@ -119,6 +125,15 @@ class HealthActivityManager extends GetxController {
     totalZonePoints.value = zoneMinutes.entries.fold(0, (sum, entry) {
       return sum + (_getZonePoints(entry.key) * entry.value);
     });
+
+    totalActiveZoneMinutes.value = filteredZoneMinutes.values.isEmpty
+        ? 1 // Avoid division by zero
+        : filteredZoneMinutes.values.reduce((a, b) => a + b);
+
+    filteredZoneMinutes.value = Map.fromEntries(zoneMinutes.entries.where((entry) {
+      int zoneNumber = entry.key;
+      return zoneNumber >= 2 && zoneNumber <= 5;
+    }));
   }
 
   // Add this new method to bucket calories by hour
@@ -128,12 +143,14 @@ class HealthActivityManager extends GetxController {
     // Create a map to store hourly totals
     Map<DateTime, double> hourlyTotals = {};
 
-    // Get the date from the first record to use as reference
-    DateTime firstDate = DateTime(
-      calorieRecords.first.dateFrom.year,
-      calorieRecords.first.dateFrom.month,
-      calorieRecords.first.dateFrom.day,
-    );
+    // Get the date from the first record, or use current date if no records
+    DateTime firstDate = calorieRecords.isEmpty
+        ? DateTime.now()
+        : DateTime(
+            calorieRecords.first.dateFrom.year,
+            calorieRecords.first.dateFrom.month,
+            calorieRecords.first.dateFrom.day,
+          );
 
     // Initialize all hours with 0 calories
     for (int hour = 0; hour < 24; hour++) {
@@ -179,12 +196,14 @@ class HealthActivityManager extends GetxController {
     // Create a map to store hourly totals
     Map<DateTime, int> hourlyTotals = {};
 
-    // Get the date from the first record to use as reference
-    DateTime firstDate = DateTime(
-      stepRecords.first.dateFrom.year,
-      stepRecords.first.dateFrom.month,
-      stepRecords.first.dateFrom.day,
-    );
+    // Get the date from the first record, or use current date if no records
+    DateTime firstDate = stepRecords.isEmpty
+        ? DateTime.now()
+        : DateTime(
+            stepRecords.first.dateFrom.year,
+            stepRecords.first.dateFrom.month,
+            stepRecords.first.dateFrom.day,
+          );
 
     // Initialize all hours with 0 steps
     for (int hour = 0; hour < 24; hour++) {
@@ -253,6 +272,8 @@ class HealthActivityManager extends GetxController {
     totalSteps.value = 0;
     totalCaloriesBurned.value = 0.0;
     zoneMinutes.updateAll((key, value) => 0);
+    filteredZoneMinutes.value = {};
+    totalActiveZoneMinutes.value = 0;
   }
 
   /// Parses a list of JSON objects into HeartRateRecord instances.

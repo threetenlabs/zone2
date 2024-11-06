@@ -15,9 +15,21 @@ class CaloriesBurnedChart extends GetView<DiaryController> {
         title: const ChartTitle(text: 'Total Calories Burned'),
         primaryXAxis: DateTimeAxis(
           intervalType: DateTimeIntervalType.hours,
-          interval: 3,
+          interval: 1,
           dateFormat: DateFormat('ha'),
           majorGridLines: const MajorGridLines(width: 0),
+          labelIntersectAction: AxisLabelIntersectAction.none,
+          desiredIntervals: 12,
+          maximumLabels: 13,
+          axisLabelFormatter: (AxisLabelRenderDetails args) {
+            DateTime date = DateTime.fromMillisecondsSinceEpoch(args.value.toInt());
+            if (date.hour % 2 == 0) {
+              String amPm = date.hour < 12 ? 'A' : 'P';
+              String hour = (date.hour % 12 == 0 ? 12 : date.hour % 12).toString();
+              return ChartAxisLabel('$hour$amPm', args.textStyle);
+            }
+            return ChartAxisLabel('', args.textStyle);
+          },
         ),
         primaryYAxis: NumericAxis(
           majorGridLines: const MajorGridLines(width: 0),
@@ -32,6 +44,10 @@ class CaloriesBurnedChart extends GetView<DiaryController> {
             width: 0.6, // Adjust bar width (0-1)
             spacing: 0.2, // Adjust spacing between bars
             borderRadius: BorderRadius.circular(6), // Optional: rounded corners
+            emptyPointSettings: EmptyPointSettings(
+              mode: EmptyPointMode.zero,
+              color: Colors.transparent,
+            ),
             dataLabelSettings: const DataLabelSettings(
               isVisible: true,
               labelAlignment: ChartDataLabelAlignment.top,

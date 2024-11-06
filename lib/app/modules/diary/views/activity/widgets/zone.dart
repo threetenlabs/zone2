@@ -8,26 +8,16 @@ class ActiveZoneMinutesRadialChart extends GetView<DiaryController> {
 
   @override
   Widget build(BuildContext context) {
-    // Filter and calculate total Active Zone Minutes from zones 2-5 only
-    Map<int, int> filteredZones =
-        Map.fromEntries(controller.activityManager.value.zoneMinutes.entries.where((entry) {
-      int zoneNumber = entry.key;
-      return zoneNumber >= 2 && zoneNumber <= 5;
-    }));
-
-    int totalActiveZoneMinutes = filteredZones.values.isEmpty
-        ? 1 // Avoid division by zero
-        : filteredZones.values.reduce((a, b) => a + b);
-
     // Set the total minutes for percentage calculation
-    _ChartData.setTotalMinutes(totalActiveZoneMinutes);
+    _ChartData.setTotalMinutes(controller.activityManager.value.totalActiveZoneMinutes.value);
 
     // Convert the filtered map to a list of data points and sort by zone number in reverse
-    List<_ChartData> chartData = filteredZones.entries.map((entry) {
+    List<_ChartData> chartData =
+        controller.activityManager.value.filteredZoneMinutes.entries.map((entry) {
       return _ChartData(controller.activityManager.value.zoneConfigs[entry.key]?.name ?? '',
           entry.key, entry.value);
     }).toList()
-      ..sort((a, b) => b.zoneNumber.compareTo(a.zoneNumber)); // Sort in descending order
+          ..sort((a, b) => b.zoneNumber.compareTo(a.zoneNumber)); // Sort in descending order
 
     // List of icons for the legend
     List<Widget> legendIcons = [
