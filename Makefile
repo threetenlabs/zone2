@@ -36,11 +36,3 @@ debug-keystore:
 
 zone2-keystore:
 	keytool -list -v -alias zone2 -keystore ./zone2.jks
-
-beta-android:
-	flutter build appbundle --release --target lib/main.dart
-	cd android && fastlane deploy
-
-beta-ios:
-	flutter build ipa --release --target lib/main.dart --export-options-plist=ios/AppStoreDistributionOptions.plist
-	cd ios && fastlane deploy

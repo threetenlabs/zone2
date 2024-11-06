@@ -42,7 +42,7 @@ class ManageFoodBottomSheet extends GetView<DiaryController> {
                 runSpacing: 0.0,
                 alignment: WrapAlignment.center,
                 children: [
-                  _buildMealTypeChip(context, MealType.ALL, Icons.all_inclusive, 'All'),
+                  _buildMealTypeChip(context, MealType.UNKNOWN, Icons.all_inclusive, 'All'),
                   _buildMealTypeChip(
                       context, MealType.BREAKFAST, Icons.egg_alt_outlined, 'Breakfast'),
                   _buildMealTypeChip(context, MealType.LUNCH, Icons.lunch_dining, 'Lunch'),

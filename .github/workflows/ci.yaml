@@ -21,10 +21,11 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
-      # - name: Analyze project source
-      #   run: dart analyze
       - name: Generate Env
         run: make generate
+
+      - name: Analyze project source
+        run: dart analyze
 
       - name: Run tests
         run: flutter test

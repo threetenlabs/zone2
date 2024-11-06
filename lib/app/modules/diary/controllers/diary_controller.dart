@@ -43,7 +43,7 @@ class DiaryController extends GetxController {
 
   // Meal tracking
   final selectedMealType = Rx<MealType>(MealType.BREAKFAST);
-  final filteredMealType = Rx<MealType>(MealType.ALL);
+  final filteredMealType = Rx<MealType>(MealType.UNKNOWN);
   final selectedOpenFoodFactsFood = Rxn<OpenFoodFactsFood>();
   final selectedZone2Food = Rxn<Zone2Food>();
   final selectedPlatformHealthFood = Rxn<HealthDataPoint>();
@@ -258,7 +258,7 @@ class DiaryController extends GetxController {
   }
 
   Future<void> filterMealsByType(MealType type) async {
-    if (type == MealType.ALL) {
+    if (type == MealType.UNKNOWN) {
       filteredMeals.value = allMeals;
     } else {
       filteredMeals.value = allMeals
