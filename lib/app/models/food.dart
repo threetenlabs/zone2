@@ -43,7 +43,7 @@ class OpenFoodFactsFood {
   factory OpenFoodFactsFood.fromOpenFoodFacts(openfoodfacts.Product product) {
     final barcode = product.barcode;
     final description = product.productName;
-    final brand = product.brands;
+    final brand = product.brands ?? 'N/A';
     final nutriments = product.nutriments;
 
     List<OpenFoodFactsNutriment> nutrients = [
@@ -225,9 +225,6 @@ class Zone2Food {
   /// The value of the potassium content of the meal.
   final double potassiumValue;
 
-  /// The label for the zinc content of the meal.
-  final String mealTypeLabel;
-
   /// The value gets mapped from the zinc content of the meal from the health app.
   double mealTypeValue;
 
@@ -263,7 +260,6 @@ class Zone2Food {
     required this.cholesterolValue,
     required this.potassiumLabel,
     required this.potassiumValue,
-    required this.mealTypeLabel,
     required this.mealTypeValue,
     this.type,
     this.startTime,
@@ -297,7 +293,7 @@ class Zone2Food {
     return ['${displayValue.toString()} $unit', value];
   }
 
-  factory Zone2Food.fromOpenFoodFactsFood(OpenFoodFactsFood food, MealType mealType) {
+  factory Zone2Food.fromOpenFoodFactsFood(OpenFoodFactsFood food) {
     final energyInfo = _getNutrientInfo(food, openfoodfacts.Nutrient.energyKCal.name);
     final proteinInfo = _getNutrientInfo(food, openfoodfacts.Nutrient.proteins.name);
     final carbsInfo = _getNutrientInfo(food, openfoodfacts.Nutrient.carbohydrates.name);
@@ -334,8 +330,7 @@ class Zone2Food {
         cholesterolValue: cholesterolInfo[1],
         potassiumLabel: potassiumInfo[0],
         potassiumValue: potassiumInfo[1],
-        mealTypeLabel: mealType.name,
-        mealTypeValue: HealthService.to.convertMealthTypeToDouble(mealType));
+        mealTypeValue: 0.0);
 
     return meal;
   }
@@ -376,7 +371,6 @@ class Zone2Food {
       cholesterolValue: healthInfo.cholesterol ?? 0.0,
       potassiumLabel: '${healthInfo.potassium ?? 0.0} g',
       potassiumValue: healthInfo.potassium ?? 0.0,
-      mealTypeLabel: '',
       mealTypeValue: healthInfo.zinc ?? 0.0,
       type: dataPoint.type,
       startTime: dataPoint.dateFrom,

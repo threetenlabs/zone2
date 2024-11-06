@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:zone2/app/modules/diary/controllers/diary_controller.dart';
+import 'package:zone2/app/modules/diary/views/food/food_detail.dart';
 import 'package:zone2/app/modules/diary/views/food/scanner/scanner_barcode_label.dart';
 import 'package:zone2/app/modules/diary/views/food/scanner/scanner_error_widget.dart';
 
@@ -30,7 +31,7 @@ class ScanFoodBottomSheet extends GetView<DiaryController> {
               controller: controller.scannerController,
               onDetect: (capture) {
                 Navigator.pop(context);
-                
+                _showFoodDetail(context);
               },
               errorBuilder: (context, error, child) {
                 return ScannerErrorWidget(error: error);
@@ -90,6 +91,18 @@ class ScanFoodBottomSheet extends GetView<DiaryController> {
             );
           },
         );
+      },
+    );
+  }
+
+  void _showFoodDetail(BuildContext context) {
+    showModalBottomSheet(
+      barrierColor: Colors.transparent,
+      isScrollControlled: true, // Allow full screen
+      useSafeArea: true,
+      context: context,
+      builder: (context) {
+        return const FoodDetailBottomSheet();
       },
     );
   }

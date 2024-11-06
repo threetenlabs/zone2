@@ -386,14 +386,21 @@ class DiaryController extends GetxController {
   Future<void> findFoodByBarcode(String barcode) async {
     logger.i('finding food by barcode: $barcode');
 
-    await EasyLoading.show(status: 'Getting food...', maskType: EasyLoadingMaskType.black);
-    final result = await foodService.getFoodById(barcode);
-    logger.i('Food: ${result.product?.productName}');
+    try {
+      await EasyLoading.show(status: 'Getting food...', maskType: EasyLoadingMaskType.black);
+      final result = await foodService.getFoodById(barcode);
+      logger.i('Food: ${result.product?.productName}');
 
-    if (result.product != null) {
-      selectedOpenFoodFactsFood.value = OpenFoodFactsFood.fromOpenFoodFacts(result.product!);
+      if (result.product != null) {
+        selectedOpenFoodFactsFood.value = OpenFoodFactsFood.fromOpenFoodFacts(result.product!);
+        selectedZone2Food.value = Zone2Food.fromOpenFoodFactsFood(selectedOpenFoodFactsFood.value!);
+        update();
+      }
+    } catch (e) {
+      logger.e('Error finding food by barcode: $e');
+    } finally {
+      await EasyLoading.dismiss();
     }
-    await EasyLoading.dismiss();
   }
 
   Future<void> deleteFood() async {
