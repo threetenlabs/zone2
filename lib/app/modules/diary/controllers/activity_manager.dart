@@ -5,7 +5,7 @@ import 'package:zone2/app/models/activity.dart';
 import 'package:get/get.dart';
 
 /// Class to manage and process health activity data
-class HealthActivityManager extends GetxController {
+class HealthActivityManager {
   final logger = Get.find<Logger>();
   // Convert static lists to RxList
   final heartRateRecords = RxList<HeartRateRecord>([]);

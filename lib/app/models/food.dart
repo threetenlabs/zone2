@@ -1,5 +1,4 @@
 import 'package:health/health.dart';
-import 'package:zone2/app/services/health_service.dart';
 import 'package:openfoodfacts/openfoodfacts.dart' as openfoodfacts;
 
 class FoodSearchResponse {
@@ -119,7 +118,7 @@ class OpenFoodFactsFood {
       barcode: barcode ?? '',
       description: description ?? '',
       nutriments: nutrients,
-      brand: brand ?? '',
+      brand: brand,
       servingSizeUnit: servingSizeUnit,
       servingSize: servingSize,
       householdServingFullText: servingSizeStr,

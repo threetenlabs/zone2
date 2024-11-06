@@ -9,7 +9,7 @@ import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:speech_to_text/speech_recognition_error.dart';
 import 'package:speech_to_text/speech_recognition_result.dart';
 import 'package:speech_to_text/speech_to_text.dart';
-import 'package:zone2/app/models/activity_manager.dart';
+import 'package:zone2/app/modules/diary/controllers/activity_manager.dart';
 import 'package:zone2/app/models/food.dart';
 import 'package:zone2/app/services/food_service.dart';
 import 'package:zone2/app/services/health_service.dart';
@@ -248,6 +248,7 @@ class DiaryController extends GetxController {
     }
 
     allMeals.value = await healthService.getMealData(timeFrame: TimeFrame.today, endTime: endTime);
+
     filterMealsByType(filteredMealType.value);
 
     final allActivityData =
