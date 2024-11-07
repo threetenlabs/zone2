@@ -116,11 +116,12 @@ class DiaryController extends GetxController {
     if (!isAvailable.value || isListening.value) return;
 
     try {
-      isListening.value = await speech.listen(
+      await speech.listen(
         onResult: _onSpeechResult,
         listenOptions: SpeechListenOptions(partialResults: true),
         localeId: currentLocaleId.value,
       );
+      isListening.value = true;
     } catch (e) {
       logger.e('Error starting speech recognition: $e');
       isListening.value = false;
