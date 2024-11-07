@@ -12,6 +12,30 @@ class StepsChart extends GetView<DiaryController> {
   Widget build(BuildContext context) {
     return Obx(
       () => SfCartesianChart(
+        zoomPanBehavior: ZoomPanBehavior(
+          enablePanning: true,
+          enablePinching: true,
+        ),
+        trackballBehavior: TrackballBehavior(
+          enable: true,
+          activationMode: ActivationMode.singleTap,
+          tooltipDisplayMode: TrackballDisplayMode.floatAllPoints,
+          shouldAlwaysShow: true,
+          tooltipSettings: InteractiveTooltip(enable: true, color: Colors.red),
+          builder: (BuildContext context, TrackballDetails trackballDetails) {
+            return Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.black87,
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: Text(
+                '${trackballDetails.point!.y?.toInt()} steps',
+                style: const TextStyle(color: Colors.white),
+              ),
+            );
+          },
+        ),
         title: const ChartTitle(text: 'Total Steps'),
         primaryXAxis: DateTimeAxis(
           intervalType: DateTimeIntervalType.hours,
@@ -50,7 +74,24 @@ class StepsChart extends GetView<DiaryController> {
             ),
           ),
         ],
-        tooltipBehavior: TooltipBehavior(enable: true),
+        // tooltipBehavior: TooltipBehavior(
+        //   enable: true,
+        //   activationMode: ActivationMode.longPress,
+        //   shouldAlwaysShow: true,
+        //   builder: (dynamic data, dynamic point, dynamic series, int pointIndex, int seriesIndex) {
+        //     return Container(
+        //       padding: const EdgeInsets.all(8),
+        //       decoration: BoxDecoration(
+        //         color: Colors.black87,
+        //         borderRadius: BorderRadius.circular(4),
+        //       ),
+        //       child: Text(
+        //         '${data.numericValue} steps',
+        //         style: const TextStyle(color: Colors.white),
+        //       ),
+        //     );
+        //   },
+        // ),
       ),
     );
   }

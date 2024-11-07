@@ -289,6 +289,81 @@ class IntroSmall extends GetWidget<IntroController> {
             decoration: pageDecoration,
           ),
           PageViewModel(
+            titleWidget: Padding(
+              padding: const EdgeInsets.only(top: 28.0),
+              child: Text(
+                "Additional Targets",
+                style: titleStyle,
+              ),
+            ),
+            bodyWidget: Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                CommonAssets.images.undraw.undrawHealthyLifestyleReIfwg.svg(
+                  width: 200,
+                  height: 200,
+                ),
+                Text(
+                  "These can be changed later from the settings menu",
+                  style: bodyStyle,
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 20),
+                TextField(
+                  decoration: const InputDecoration(
+                    labelText: 'Daily Water Goal (oz)',
+                    border: OutlineInputBorder(),
+                  ),
+                  keyboardType: TextInputType.number,
+                  controller: TextEditingController(text: '100'),
+                  onChanged: (value) => controller.setDailyWaterGoal(int.tryParse(value) ?? 100),
+                ),
+                const SizedBox(height: 20),
+                TextField(
+                  decoration: const InputDecoration(
+                    labelText: 'Daily Zone Points Goal',
+                    border: OutlineInputBorder(),
+                  ),
+                  keyboardType: TextInputType.number,
+                  controller: TextEditingController(text: '100'),
+                  onChanged: (value) =>
+                      controller.setDailyZonePointsGoal(int.tryParse(value) ?? 100),
+                ),
+                const SizedBox(height: 20),
+                TextField(
+                  decoration: const InputDecoration(
+                    labelText: 'Daily Calorie Intake Goal',
+                    border: OutlineInputBorder(),
+                  ),
+                  keyboardType: TextInputType.number,
+                  onChanged: (value) =>
+                      controller.setDailyCalorieIntakeGoal(int.tryParse(value) ?? 0),
+                ),
+                const SizedBox(height: 20),
+                TextField(
+                  decoration: const InputDecoration(
+                    labelText: 'Daily Calories Burned Goal',
+                    border: OutlineInputBorder(),
+                  ),
+                  keyboardType: TextInputType.number,
+                  onChanged: (value) =>
+                      controller.setDailyCaloriesBurnedGoal(int.tryParse(value) ?? 0),
+                ),
+                const SizedBox(height: 20),
+                TextField(
+                  decoration: const InputDecoration(
+                    labelText: 'Daily Steps Goal',
+                    border: OutlineInputBorder(),
+                  ),
+                  keyboardType: TextInputType.number,
+                  controller: TextEditingController(text: '10000'),
+                  onChanged: (value) => controller.setDailyStepsGoal(int.tryParse(value) ?? 10000),
+                ),
+              ],
+            ),
+            decoration: pageDecoration,
+          ),
+          PageViewModel(
             titleWidget: const Padding(
               padding: EdgeInsets.only(top: 16.0),
               child: Text(

@@ -9,6 +9,7 @@ import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:speech_to_text/speech_recognition_error.dart';
 import 'package:speech_to_text/speech_recognition_result.dart';
 import 'package:speech_to_text/speech_to_text.dart';
+import 'package:syncfusion_flutter_charts/charts.dart';
 import 'package:zone2/app/modules/diary/controllers/activity_manager.dart';
 import 'package:zone2/app/models/food.dart';
 import 'package:zone2/app/services/food_service.dart';
@@ -74,6 +75,8 @@ class DiaryController extends GetxController {
   final Rxn<BarcodeCapture> capture = Rxn<BarcodeCapture>();
   late MobileScannerController scannerController;
   StreamSubscription<Object?>? scannerSubscription;
+
+  ChartSeriesController? chartController;
 
   @override
   void onInit() async {
@@ -200,6 +203,7 @@ class DiaryController extends GetxController {
     }
   }
 
+  // TODO: Each Health Data Type should be its own method, this should aggregate them all
   Future<void> getHealthDataForSelectedDay() async {
     // Retrieve weight data
     final sameDay = diaryDate.value.year == DateTime.now().year &&

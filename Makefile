@@ -1,4 +1,4 @@
-.PHONY: test, seed, assets
+.PHONY: test seed assets
 
 clean:
 	flutter clean && flutter pub get
