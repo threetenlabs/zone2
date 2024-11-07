@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:zone2/app/modules/diary/controllers/diary_controller.dart';
+import 'package:zone2/app/modules/diary/views/food/ai_food.dart';
 // import 'package:zone2/app/modules/diary/views/food/ai_food.dart';
-import 'package:zone2/app/modules/diary/views/food/voice_food_input.dart';
 import 'package:zone2/app/modules/diary/views/food/food_search.dart';
 import 'package:zone2/app/modules/diary/views/food/scanner/scan_food_bottomsheet.dart';
 
@@ -152,7 +152,7 @@ class AddFoodBottomSheet extends GetView<DiaryController> {
       isScrollControlled: true, // Allow full screen
       useSafeArea: true,
       builder: (context) {
-        return const VoiceFoodInputView(); // Use the new widget here
+        return const AISearchBottomSheet(); // Use the new widget here
       },
     );
   }

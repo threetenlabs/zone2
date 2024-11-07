@@ -74,6 +74,10 @@
         <intent>
             <action android:name="androidx.health.ACTION_SHOW_PERMISSIONS_RATIONALE" />
         </intent>
+        <intent>
+            <action android:name="android.speech.RecognitionService" />
+        </intent>
+
         <!-- Add more queries as needed -->
     </queries>
     <uses-permission android:name="android.permission.INTERNET"/>

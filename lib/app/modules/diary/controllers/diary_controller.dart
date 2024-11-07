@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
@@ -17,7 +16,6 @@ import 'package:zone2/app/services/health_service.dart';
 import 'package:intl/intl.dart'; // Added for date formatting
 import 'package:zone2/app/services/notification_service.dart';
 import 'package:zone2/app/services/openai_service.dart';
-import 'package:zone2/app/routes/app_routes.dart';
 
 class FoodVoiceResult {
   final String label;
@@ -78,7 +76,7 @@ class DiaryController extends GetxController {
   final isProcessing = false.obs;
   final matchedFoods = RxList<String>();
   final speech = SpeechToText();
-  final isAvailable = false.obs;
+  final isTTSAvailable = false.obs;
   final isListening = false.obs;
   final currentLocaleId = ''.obs;
   final locales = <LocaleName>[].obs;
@@ -118,29 +116,26 @@ class DiaryController extends GetxController {
 
   Future<void> initSpeechState() async {
     try {
-      isAvailable.value = await speech.initialize(
+      isTTSAvailable.value = await speech.initialize(
         onError: (error) => _onSpeechError(error),
         onStatus: (status) => _onSpeechStatus(status),
-        options: [
-          SpeechToText.androidNoBluetooth,
-          SpeechToText.androidIntentLookup,
-        ],
+        debugLogging: true,
       );
 
-      if (isAvailable.value) {
+      if (isTTSAvailable.value) {
         locales.value = await speech.locales();
         systemLocale.value = await speech.systemLocale();
         currentLocaleId.value = systemLocale.value?.localeId ?? 'en_US';
       }
     } catch (e) {
       logger.e('Error initializing speech: $e');
-      isAvailable.value = false;
+      isTTSAvailable.value = false;
       NotificationService.to.showError('Error', 'Failed to initialize speech recognition');
     }
   }
 
   Future<void> startListening() async {
-    if (!isAvailable.value || isListening.value) return;
+    if (!isTTSAvailable.value || isListening.value) return;
 
     try {
       // Reset states before starting
@@ -152,24 +147,22 @@ class DiaryController extends GetxController {
       isListening.value = true;
       update(); // Force UI update
 
-      final success = await speech.listen(
+      await speech.listen(
         onResult: _onSpeechResult,
         listenOptions: SpeechListenOptions(
           partialResults: true,
+          cancelOnError: true,
+          autoPunctuation: true,
+          enableHapticFeedback: true,
           onDevice: true,
-          listenMode: ListenMode.confirmation,
+          listenMode: ListenMode.deviceDefault,
         ),
         localeId: currentLocaleId.value,
-        cancelOnError: true,
         listenFor: const Duration(seconds: 30),
       );
 
-      // Update state based on success
-      isListening.value = success;
-      if (!success) {
-        hasError.value = true;
-        NotificationService.to.showError('Error', 'Failed to start listening');
-      }
+      // Update status to true
+      isListening.value = true;
     } catch (e) {
       logger.e('Error starting speech recognition: $e');
       isListening.value = false;
@@ -610,9 +603,9 @@ class DiaryController extends GetxController {
       final results = await foodService.searchFood(foodDescription);
       foodSearchResults.value = results;
 
-      if (results != null && results.foods.isNotEmpty) {
+      if (results.foods.isNotEmpty) {
         // Navigate to search results view
-        Get.toNamed(AppRoutes.ADD_FOOD); // Use AppRoutes instead of Routes
+        Get.snackbar('Got results', 'Found ${results.foods.length} results');
       } else {
         Get.snackbar(
           'No Results',
