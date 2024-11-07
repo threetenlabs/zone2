@@ -32,7 +32,6 @@ class OpenAIService extends GetxService {
 
   Future<Map<String, dynamic>> extractFoodsFromText(String text) async {
     try {
-      // Create the function definition
       final sumNumbersTool = OpenAIToolModel(
         type: "function",
         function: OpenAIFunctionModel.withParameters(
@@ -50,16 +49,25 @@ class OpenAIService extends GetxService {
                     name: "food",
                     properties: [
                       OpenAIFunctionProperty.string(
-                        name: "item",
-                        description: "The food item name",
+                        name: "label",
+                        description: "Display label for the food item",
                       ),
                       OpenAIFunctionProperty.string(
+                        name: "searchTerm",
+                        description: "Simple search term for the food database",
+                      ),
+                      OpenAIFunctionProperty.number(
                         name: "quantity",
-                        description: "The quantity or portion size",
+                        description: "Numeric quantity of the food",
                       ),
                       OpenAIFunctionProperty.string(
-                        name: "preparation",
-                        description: "How the food was prepared",
+                        name: "unit",
+                        description: "Unit of measurement",
+                      ),
+                      OpenAIFunctionProperty.string(
+                        name: "mealType",
+                        description: "Type of meal (BREAKFAST, LUNCH, DINNER, SNACK)",
+                        enumValues: ["BREAKFAST", "LUNCH", "DINNER", "SNACK"],
                       ),
                     ],
                   ),

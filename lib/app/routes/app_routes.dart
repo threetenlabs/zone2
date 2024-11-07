@@ -19,6 +19,7 @@ abstract class Routes {
   static const scribologyRoundStory = _Paths.scribologyRoundStory;
   static const scribologyRoundLeaderboard = _Paths.scribologyRoundLeaderboard;
   static const landing = _Paths.landing;
+  static const ADD_FOOD = '/add-food';
 }
 
 abstract class _Paths {

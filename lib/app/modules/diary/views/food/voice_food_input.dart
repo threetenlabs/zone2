@@ -190,23 +190,30 @@ class VoiceFoodInputView extends GetView<DiaryController> {
       },
       child: Scaffold(
         appBar: AppBar(
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back),
-            onPressed: () {
-              controller.cancelListening();
-              Get.back();
-            },
-          ),
+          automaticallyImplyLeading: true,
           title: const Text('Voice Input'),
           actions: [
             IconButton(
               icon: const Icon(Icons.close),
               onPressed: () {
                 controller.cancelListening();
-                Get.back();
+                controller.hasError.value = false;
+                controller.matchedFoods.clear();
+                controller.recognizedWords.value = '';
+                Get.until((route) => route.settings.name == '/landing');
               },
             ),
           ],
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed: () {
+              controller.cancelListening();
+              controller.hasError.value = false;
+              controller.matchedFoods.clear();
+              controller.recognizedWords.value = '';
+              Get.until((route) => route.settings.name == '/landing');
+            },
+          ),
         ),
         body: Obx(() {
           return Padding(
@@ -322,8 +329,8 @@ class VoiceFoodInputView extends GetView<DiaryController> {
                                     trailing: IconButton(
                                       icon: const Icon(Icons.add_circle_outline),
                                       onPressed: () {
-                                        controller.searchFood(controller.matchedFoods[index]);
-                                        Get.toNamed('/food-search');
+                                        controller
+                                            .selectFoodFromVoice(controller.matchedFoods[index]);
                                       },
                                     ),
                                   ),

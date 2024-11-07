@@ -17,6 +17,23 @@ import 'package:zone2/app/services/health_service.dart';
 import 'package:intl/intl.dart'; // Added for date formatting
 import 'package:zone2/app/services/notification_service.dart';
 import 'package:zone2/app/services/openai_service.dart';
+import 'package:zone2/app/routes/app_routes.dart';
+
+class FoodVoiceResult {
+  final String label;
+  final String searchTerm;
+  final double quantity;
+  final String unit;
+  final MealType mealType;
+
+  FoodVoiceResult({
+    required this.label,
+    required this.searchTerm,
+    required this.quantity,
+    required this.unit,
+    required this.mealType,
+  });
+}
 
 class DiaryController extends GetxController {
   final logger = Get.find<Logger>();
@@ -77,6 +94,11 @@ class DiaryController extends GetxController {
   StreamSubscription<Object?>? scannerSubscription;
 
   final isTestMode = true.obs; // Toggle this for testing
+
+  final voiceResults = RxList<FoodVoiceResult>();
+
+  String selectedVoiceFood = '';
+  RxList<FoodVoiceResult> searchResults = RxList<FoodVoiceResult>();
 
   @override
   void onInit() async {
@@ -447,15 +469,35 @@ class DiaryController extends GetxController {
   }
 
   Future<void> searchFood(String query) async {
-    searchPerformed.value = false;
-    await EasyLoading.show(
-      status: 'Searching for food...',
-      maskType: EasyLoadingMaskType.black,
-    );
+    try {
+      // Reset states
+      searchPerformed.value = false;
+      foodSearchResults.value = null;
+      selectedZone2Food.value = null;
+      selectedOpenFoodFactsFood.value = null;
 
-    foodSearchResults.value = await foodService.searchFood(query);
-    await EasyLoading.dismiss();
-    searchPerformed.value = true;
+      await EasyLoading.show(
+        status: 'Searching for food...',
+        maskType: EasyLoadingMaskType.black,
+      );
+
+      // Perform search
+      final results = await foodService.searchFood(query);
+      foodSearchResults.value = results;
+
+      // Only navigate if we have results
+      if (results != null && results.foods.isNotEmpty) {
+        await Get.toNamed('/food-search');
+      } else {
+        NotificationService.to.showError('No Results', 'No foods found matching "$query"');
+      }
+    } catch (e) {
+      logger.e('Error searching food: $e');
+      NotificationService.to.showError('Error', 'Failed to search for food');
+    } finally {
+      await EasyLoading.dismiss();
+      searchPerformed.value = true;
+    }
   }
 
   Future<void> findFoodByBarcode(String barcode) async {
@@ -490,43 +532,102 @@ class DiaryController extends GetxController {
 
       if (isTestMode.value) {
         await Future.delayed(const Duration(seconds: 1));
-        matchedFoods.value = [
-          "2 eggs (scrambled with spinach)",
-          "1 slice whole grain toast with avocado",
-          "1 cup greek yogurt with honey",
-          "1 cup black coffee"
+        voiceResults.value = [
+          FoodVoiceResult(
+            label: "2 scrambled eggs with spinach",
+            searchTerm: "eggs",
+            quantity: 2,
+            unit: "large",
+            mealType: MealType.BREAKFAST,
+          ),
+          FoodVoiceResult(
+            label: "1 slice whole grain toast with avocado",
+            searchTerm: "whole grain bread",
+            quantity: 1,
+            unit: "slice",
+            mealType: MealType.BREAKFAST,
+          ),
+          // ... other test items
         ];
+        matchedFoods.value = voiceResults.map((r) => r.label).toList();
       } else {
         final jsonResponse = await OpenAIService.to.extractFoodsFromText(text);
         final items = (jsonResponse['foods']['items'] as List<dynamic>);
 
-        matchedFoods.value = items
-            .map((food) {
-              final item = food['food']['item'] as String?;
-              final quantity = food['food']['quantity'] as String?;
-              final preparation = food['food']['preparation'] as String?;
+        voiceResults.value = items.map((food) {
+          final mealType = _parseMealType(food['food']['mealType'] as String);
+          return FoodVoiceResult(
+            label: food['food']['label'] as String,
+            searchTerm: food['food']['searchTerm'] as String,
+            quantity: food['food']['quantity'] as double,
+            unit: food['food']['unit'] as String,
+            mealType: mealType,
+          );
+        }).toList();
 
-              if (item == null) return '';
-
-              if (quantity != null && preparation != null) {
-                return "$quantity $item ($preparation)";
-              } else if (quantity != null) {
-                return "$quantity $item";
-              } else if (preparation != null) {
-                return "$item ($preparation)";
-              }
-              return item;
-            })
-            .where((item) => item.isNotEmpty)
-            .toList();
+        matchedFoods.value = voiceResults.map((r) => r.label).toList();
       }
     } catch (e) {
       logger.e('Error extracting foods: $e');
       NotificationService.to
           .showError('Error', 'Failed to process speech input. Please try again.');
+      voiceResults.clear();
       matchedFoods.clear();
     } finally {
       isProcessing.value = false;
+    }
+  }
+
+  MealType _parseMealType(String type) {
+    switch (type.toUpperCase()) {
+      case 'BREAKFAST':
+        return MealType.BREAKFAST;
+      case 'LUNCH':
+        return MealType.LUNCH;
+      case 'DINNER':
+        return MealType.DINNER;
+      case 'SNACK':
+        return MealType.SNACK;
+      default:
+        return MealType.UNKNOWN;
+    }
+  }
+
+  void selectFoodFromVoice(String foodDescription) async {
+    try {
+      // Store the selected food description
+      selectedVoiceFood = foodDescription;
+
+      // Reset search results before new search
+      foodSearchResults.value = null;
+
+      await EasyLoading.show(
+        status: 'Searching for food...',
+        maskType: EasyLoadingMaskType.black,
+      );
+
+      // Perform the search
+      final results = await foodService.searchFood(foodDescription);
+      foodSearchResults.value = results;
+
+      if (results != null && results.foods.isNotEmpty) {
+        // Navigate to search results view
+        Get.toNamed(AppRoutes.ADD_FOOD); // Use AppRoutes instead of Routes
+      } else {
+        Get.snackbar(
+          'No Results',
+          'No foods found matching "$foodDescription"',
+          snackPosition: SnackPosition.TOP,
+        );
+      }
+    } catch (error) {
+      Get.snackbar(
+        'Error',
+        'Failed to search for food: ${error.toString()}',
+        snackPosition: SnackPosition.TOP,
+      );
+    } finally {
+      await EasyLoading.dismiss();
     }
   }
 }
