@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
@@ -75,6 +76,8 @@ class DiaryController extends GetxController {
   late MobileScannerController scannerController;
   StreamSubscription<Object?>? scannerSubscription;
 
+  final isTestMode = true.obs; // Toggle this for testing
+
   @override
   void onInit() async {
     super.onInit();
@@ -96,16 +99,21 @@ class DiaryController extends GetxController {
       isAvailable.value = await speech.initialize(
         onError: (error) => _onSpeechError(error),
         onStatus: (status) => _onSpeechStatus(status),
+        options: [
+          SpeechToText.androidNoBluetooth,
+          SpeechToText.androidIntentLookup,
+        ],
       );
 
       if (isAvailable.value) {
         locales.value = await speech.locales();
         systemLocale.value = await speech.systemLocale();
-        currentLocaleId.value = systemLocale.value?.localeId ?? '';
+        currentLocaleId.value = systemLocale.value?.localeId ?? 'en_US';
       }
     } catch (e) {
       logger.e('Error initializing speech: $e');
       isAvailable.value = false;
+      NotificationService.to.showError('Error', 'Failed to initialize speech recognition');
     }
   }
 
@@ -113,14 +121,40 @@ class DiaryController extends GetxController {
     if (!isAvailable.value || isListening.value) return;
 
     try {
-      isListening.value = await speech.listen(
+      // Reset states before starting
+      hasError.value = false;
+      isProcessing.value = false;
+      recognizedWords.value = '';
+
+      // Set listening state before the actual listen call
+      isListening.value = true;
+      update(); // Force UI update
+
+      final success = await speech.listen(
         onResult: _onSpeechResult,
-        listenOptions: SpeechListenOptions(partialResults: true),
+        listenOptions: SpeechListenOptions(
+          partialResults: true,
+          onDevice: true,
+          listenMode: ListenMode.confirmation,
+        ),
         localeId: currentLocaleId.value,
+        cancelOnError: true,
+        listenFor: const Duration(seconds: 30),
       );
+
+      // Update state based on success
+      isListening.value = success;
+      if (!success) {
+        hasError.value = true;
+        NotificationService.to.showError('Error', 'Failed to start listening');
+      }
     } catch (e) {
       logger.e('Error starting speech recognition: $e');
       isListening.value = false;
+      hasError.value = true;
+      NotificationService.to.showError('Error', 'Failed to start listening');
+    } finally {
+      update(); // Ensure UI updates
     }
   }
 
@@ -153,20 +187,60 @@ class DiaryController extends GetxController {
 
   void _onSpeechResult(SpeechRecognitionResult result) {
     recognizedWords.value = result.recognizedWords;
+    if (result.finalResult && recognizedWords.value.isNotEmpty) {
+      isListening.value = false;
+      extractFoodItemsOpenAI(recognizedWords.value);
+    }
   }
 
   void _onSpeechError(SpeechRecognitionError error) {
+    logger.e('Speech recognition error: ${error.errorMsg}');
+
+    // Update states
+    isListening.value = false;
+    isProcessing.value = false;
     hasError.value = true;
     lastError.value = error;
-    logger.e('Speech recognition error: ${error.errorMsg}');
+
+    String errorMessage = 'Speech recognition error';
+
+    switch (error.errorMsg) {
+      case 'error_speech_timeout':
+        errorMessage = 'No speech detected. Please try again.';
+        break;
+      case 'error_no_match':
+        errorMessage = 'Could not understand speech. Please try again.';
+        break;
+      case 'error_network':
+        errorMessage = 'Network error. Please check your connection.';
+        break;
+      default:
+        errorMessage = 'Recognition error. Please try again.';
+    }
+
+    NotificationService.to.showError('Error', errorMessage);
+    update(); // Force UI update
   }
 
   void _onSpeechStatus(String status) {
     logger.i('Speech recognition status: $status');
-    if (status == 'done') {
-      isListening.value = false;
-      extractFoodItemsOpenAI(recognizedWords.value);
+
+    switch (status) {
+      case 'listening':
+        isListening.value = true;
+        hasError.value = false;
+        break;
+      case 'notListening':
+        isListening.value = false;
+        break;
+      case 'done':
+        isListening.value = false;
+        if (recognizedWords.value.isNotEmpty) {
+          extractFoodItemsOpenAI(recognizedWords.value);
+        }
+        break;
     }
+    update(); // Force UI update
   }
 
   Future<void> handleBarcode(BarcodeCapture barcodeCapture) async {
@@ -411,12 +485,48 @@ class DiaryController extends GetxController {
   }
 
   Future<void> extractFoodItemsOpenAI(String text) async {
-    final result = await OpenAIService.to.extractFoodsFromText(text);
-    matchedFoods.value = result.choices.first.message.content
-            ?.map((item) => item.text)
-            .whereType<String>()
-            .toList() ??
-        [];
-    logger.i('Extracted food items: $result');
+    try {
+      isProcessing.value = true;
+
+      if (isTestMode.value) {
+        await Future.delayed(const Duration(seconds: 1));
+        matchedFoods.value = [
+          "2 eggs (scrambled with spinach)",
+          "1 slice whole grain toast with avocado",
+          "1 cup greek yogurt with honey",
+          "1 cup black coffee"
+        ];
+      } else {
+        final jsonResponse = await OpenAIService.to.extractFoodsFromText(text);
+        final items = (jsonResponse['foods']['items'] as List<dynamic>);
+
+        matchedFoods.value = items
+            .map((food) {
+              final item = food['food']['item'] as String?;
+              final quantity = food['food']['quantity'] as String?;
+              final preparation = food['food']['preparation'] as String?;
+
+              if (item == null) return '';
+
+              if (quantity != null && preparation != null) {
+                return "$quantity $item ($preparation)";
+              } else if (quantity != null) {
+                return "$quantity $item";
+              } else if (preparation != null) {
+                return "$item ($preparation)";
+              }
+              return item;
+            })
+            .where((item) => item.isNotEmpty)
+            .toList();
+      }
+    } catch (e) {
+      logger.e('Error extracting foods: $e');
+      NotificationService.to
+          .showError('Error', 'Failed to process speech input. Please try again.');
+      matchedFoods.clear();
+    } finally {
+      isProcessing.value = false;
+    }
   }
 }

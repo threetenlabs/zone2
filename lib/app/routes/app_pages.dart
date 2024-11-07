@@ -15,6 +15,7 @@ import '../modules/login/bindings/login_binding.dart';
 import '../modules/login/views/login_view.dart';
 import '../modules/update/bindings/update_bindings.dart';
 import '../modules/update/views/update_view.dart';
+import '../modules/diary/views/food/voice_food_input.dart';
 
 part 'app_routes.dart';
 
@@ -54,6 +55,11 @@ class AppPages {
     GetPage(
       name: _Paths.landing,
       page: () => const DiaryView(),
+      binding: DiaryBinding(),
+    ),
+    GetPage(
+      name: '/voice-input',
+      page: () => const VoiceFoodInputView(),
       binding: DiaryBinding(),
     ),
   ];
