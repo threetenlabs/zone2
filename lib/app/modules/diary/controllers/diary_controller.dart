@@ -125,7 +125,7 @@ class DiaryController extends GetxController {
       if (isTTSAvailable.value) {
         locales.value = await speech.locales();
         systemLocale.value = await speech.systemLocale();
-        currentLocaleId.value = systemLocale.value?.localeId ?? 'en_US';
+        currentLocaleId.value = systemLocale.value?.localeId ?? '';
       }
     } catch (e) {
       logger.e('Error initializing speech: $e');
@@ -147,18 +147,24 @@ class DiaryController extends GetxController {
       isListening.value = true;
       update(); // Force UI update
 
+      // await speech.listen(
+      //   onResult: _onSpeechResult,
+      //   listenOptions: SpeechListenOptions(partialResults: true),
+      //   localeId: currentLocaleId.value,
+      // );
+
       await speech.listen(
-        onResult: _onSpeechResult,
+        onResult: (rs) {
+          logger.i(rs);
+        },
+        listenFor: Duration(seconds: 15),
+        pauseFor: Duration(seconds: 15),
         listenOptions: SpeechListenOptions(
+          listenMode: ListenMode.dictation,
+          onDevice: false,
           partialResults: true,
           cancelOnError: true,
-          autoPunctuation: true,
-          enableHapticFeedback: true,
-          onDevice: true,
-          listenMode: ListenMode.deviceDefault,
         ),
-        localeId: currentLocaleId.value,
-        listenFor: const Duration(seconds: 30),
       );
 
       // Update status to true
