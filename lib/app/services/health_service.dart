@@ -1,6 +1,7 @@
 import 'package:health/health.dart';
 import 'package:get/get.dart';
 import 'package:logger/logger.dart';
+import 'package:memory_cache/memory_cache.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:zone2/app/models/food.dart';
 import 'package:zone2/app/services/notification_service.dart';
@@ -31,6 +32,19 @@ class HealthService extends GetxService {
   final isAuthorized = false.obs;
   final status = HealthConnectSdkStatus.sdkUnavailable.obs;
   final hasPermissions = RxnBool(false);
+  final memoryCache = MemoryCache();
+
+  @override
+  Future<void> onInit() async {
+    super.onInit();
+    await Health().configure();
+    await Health().getHealthConnectSdkStatus();
+  }
+
+  @override
+  Future<void> onClose() async {
+    super.onClose();
+  }
 
   /// List of data types that require write permissions
   final List<HealthDataType> _writePermissionTypes = [
@@ -165,13 +179,6 @@ class HealthService extends GetxService {
     return TimeFrameResult(startDateTime: startTime, endDateTime: endTime);
   }
 
-  @override
-  Future<void> onInit() async {
-    super.onInit();
-    await Health().configure();
-    await Health().getHealthConnectSdkStatus();
-  }
-
   Future<bool> authorize() async {
     List<HealthDataType> types = dataTypesZone2;
     List<HealthDataAccess> permissions = [];
@@ -205,44 +212,88 @@ class HealthService extends GetxService {
   Future<List<HealthDataPoint>> getWaterData(
       {required TimeFrame timeFrame, required DateTime seedDate}) async {
     final types = [HealthDataType.WATER];
+    final key =
+        'water_${DateTime(seedDate.year, seedDate.month, seedDate.day).toIso8601String()}_${timeFrame.name}';
     TimeFrameResult result =
         await getDateRangeForTimeFrame(seedDate: seedDate, timeFrame: timeFrame);
 
+    // Check for cached data
+    final cachedData = memoryCache.read<List<HealthDataPoint>>(key);
+    if (cachedData != null) {
+      return cachedData; // Return cached data if available
+    }
+
     final healthData = await Health().getHealthDataFromTypes(
         types: types, startTime: result.startDateTime, endTime: result.endDateTime);
+
+    // Store fetched data in cache
+    memoryCache.create(key, healthData, expiry: const Duration(minutes: 10));
     return Health().removeDuplicates(healthData);
   }
 
   Future<List<HealthDataPoint>> getStepData(
       {required TimeFrame timeFrame, required DateTime seedDate}) async {
     final types = [HealthDataType.STEPS];
+    final key =
+        'steps_${DateTime(seedDate.year, seedDate.month, seedDate.day).toIso8601String()}_${timeFrame.name}';
     TimeFrameResult result =
         await getDateRangeForTimeFrame(seedDate: seedDate, timeFrame: timeFrame);
 
+    // Check for cached data
+    final cachedData = memoryCache.read<List<HealthDataPoint>>(key);
+    if (cachedData != null) {
+      return cachedData; // Return cached data if available
+    }
+
     final healthData = await Health().getHealthDataFromTypes(
         types: types, startTime: result.startDateTime, endTime: result.endDateTime);
+
+    // Store fetched data in cache
+    memoryCache.create(key, healthData, expiry: const Duration(minutes: 10));
     return Health().removeDuplicates(healthData);
   }
 
   Future<List<HealthDataPoint>> getWeightData(
       {required TimeFrame timeFrame, required DateTime seedDate}) async {
     final types = [HealthDataType.WEIGHT];
+    final key =
+        'weight_${DateTime(seedDate.year, seedDate.month, seedDate.day).toIso8601String()}_${timeFrame.name}';
     TimeFrameResult result =
         await getDateRangeForTimeFrame(seedDate: seedDate, timeFrame: timeFrame);
 
+    // Check for cached data
+    final cachedData = memoryCache.read<List<HealthDataPoint>>(key);
+    if (cachedData != null) {
+      return cachedData; // Return cached data if available
+    }
+
     final healthData = await Health().getHealthDataFromTypes(
         types: types, startTime: result.startDateTime, endTime: result.endDateTime);
+
+    // Store fetched data in cache
+    memoryCache.create(key, healthData, expiry: const Duration(minutes: 10));
     return Health().removeDuplicates(healthData);
   }
 
   Future<List<HealthDataPoint>> getMealData(
       {required TimeFrame timeFrame, required DateTime seedDate}) async {
     final types = [HealthDataType.NUTRITION];
+    final key =
+        'meal_${DateTime(seedDate.year, seedDate.month, seedDate.day).toIso8601String()}_${timeFrame.name}';
     TimeFrameResult result =
         await getDateRangeForTimeFrame(seedDate: seedDate, timeFrame: timeFrame);
 
+    // Check for cached data
+    final cachedData = memoryCache.read<List<HealthDataPoint>>(key);
+    if (cachedData != null) {
+      return cachedData; // Return cached data if available
+    }
+
     final healthData = await Health().getHealthDataFromTypes(
         types: types, startTime: result.startDateTime, endTime: result.endDateTime);
+
+    // Store fetched data in cache
+    memoryCache.create(key, healthData, expiry: const Duration(minutes: 10));
     return Health().removeDuplicates(healthData);
   }
 
@@ -254,14 +305,24 @@ class HealthService extends GetxService {
       HealthDataType.WORKOUT,
       HealthDataType.STEPS
     ];
+    final key =
+        'activity_${DateTime(seedDate.year, seedDate.month, seedDate.day).toIso8601String()}_${timeFrame.name}';
 
     TimeFrameResult result =
         await getDateRangeForTimeFrame(seedDate: seedDate, timeFrame: timeFrame);
 
+    // Check for cached data
+    final cachedData = memoryCache.read<List<HealthDataPoint>>(key);
+    if (cachedData != null) {
+      return cachedData; // Return cached data if available
+    }
+
     final healthData = await Health().getHealthDataFromTypes(
         types: types, startTime: result.startDateTime, endTime: result.endDateTime);
 
-    return healthData;
+    // Store fetched data in cache
+    memoryCache.create(key, healthData, expiry: const Duration(minutes: 10));
+    return Health().removeDuplicates(healthData);
   }
 
   Future<HealthConnectSdkStatus> getHealthConnectSdkStatus() async {

@@ -17,6 +17,9 @@ class HealthServiceMock extends GetxService with Mock implements HealthService {
   Future<void> onInit() async => super.onInit();
 
   @override
+  Future<void> onClose() async => super.onClose();
+
+  @override
   final isAuthorized = false.obs;
 }
 
