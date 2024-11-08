@@ -77,7 +77,7 @@ class SharedPreferencesService {
     await _persistence.saveSoundsOn(_soundsOn.value);
   }
 
-  bool get isIntroductionFinished => _getIsIntroductionFinished();
+    bool get isIntroductionFinished => _getIsIntroductionFinished();
 
   bool _getIsIntroductionFinished() {
     return _persistence.box.read(_persistence.isIntroductionFinished) ?? false;
@@ -86,15 +86,6 @@ class SharedPreferencesService {
   Future<void> setIsIntroductionFinished(bool value) async {
     _isIntroductionFinished.value = value;
     await _persistence.saveIsIntroductionFinished(value);
-  }
-
-  Future<void> setZone2Goals(
-      double startingWeight, double targetWeight, String motivatingFactor, String birthdate, String gender) async {
-    await _persistence.saveZone2StartingWeight(startingWeight);
-    await _persistence.saveZone2TargetWeight(targetWeight);
-    await _persistence.saveZone2MotivatingFactor(motivatingFactor);
-    await _persistence.saveZone2Birthdate(birthdate);
-    await _persistence.saveZone2Gender(gender);
   }
 
   Stream<bool> get soundsOnStream => _soundsOnStreamController.stream;

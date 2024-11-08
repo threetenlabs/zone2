@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:dart_openai/dart_openai.dart';
 import 'package:get/get.dart';
 import 'package:logger/logger.dart';
@@ -33,34 +35,97 @@ class OpenAIService extends GetxService {
     return completion.choices.first;
   }
 
-  Future<OpenAIChatCompletionModel> extractFoodsFromText(String prompt) async {
+  Future<Map<String, dynamic>> extractFoodsFromText(String text) async {
     try {
-      final completion = await openAI.chat.create(
-        model: 'gpt-4o-mini',
+      final sumNumbersTool = OpenAIToolModel(
+        type: "function",
+        function: OpenAIFunctionModel.withParameters(
+          name: "extract_foods",
+          description: "Extract food items from user speech input",
+          parameters: [
+            OpenAIFunctionProperty.object(
+              name: "foods",
+              description: "Array of food items with details",
+              properties: [
+                OpenAIFunctionProperty.array(
+                  name: "items",
+                  description: "List of food items",
+                  items: OpenAIFunctionProperty.object(
+                    name: "food",
+                    properties: [
+                      OpenAIFunctionProperty.string(
+                        name: "label",
+                        description: "Display label for the food item",
+                      ),
+                      OpenAIFunctionProperty.string(
+                        name: "searchTerm",
+                        description: "Simple search term for the food database",
+                      ),
+                      OpenAIFunctionProperty.number(
+                        name: "quantity",
+                        description: "Numeric quantity of the food",
+                      ),
+                      OpenAIFunctionProperty.string(
+                        name: "unit",
+                        description: "Unit of measurement",
+                      ),
+                      OpenAIFunctionProperty.string(
+                        name: "mealType",
+                        description: "Type of meal (BREAKFAST, LUNCH, DINNER, SNACK)",
+                        enumValues: ["BREAKFAST", "LUNCH", "DINNER", "SNACK"],
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      );
+
+      // Create the chat completion
+      final chat = await OpenAI.instance.chat.create(
+        model: "gpt-3.5-turbo",
         messages: [
           OpenAIChatCompletionChoiceMessageModel(
             role: OpenAIChatMessageRole.system,
             content: [
               OpenAIChatCompletionChoiceMessageContentItemModel.text(
-                """You are a food entity extraction system. Extract only the food items from the given text.
-                       Return the response as a JSON array of strings containing only the food items.
-                       Break down compound items into their main components.
-                       Example: "I had a cheeseburger with french fries and a chocolate milkshake" 
-                       -> ["cheeseburger", "french fries", "chocolate milkshake", "burger", "cheese"]""",
-              ),
+                  '''Extract food items from user's speech, normalizing portions and combining similar items.
+                Include quantity and preparation method when mentioned.'''),
             ],
           ),
           OpenAIChatCompletionChoiceMessageModel(
             role: OpenAIChatMessageRole.user,
-            content: [OpenAIChatCompletionChoiceMessageContentItemModel.text(prompt)],
+            content: [
+              OpenAIChatCompletionChoiceMessageContentItemModel.text(text),
+            ],
           ),
         ],
+        tools: [sumNumbersTool],
       );
 
-      return completion;
+      // Handle the response
+      final message = chat.choices.first.message;
+
+      if (message.toolCalls != null && message.toolCalls!.isNotEmpty) {
+        final call = message.toolCalls!.first;
+        if (call.function.name == "extract_foods") {
+          final decodedArgs = jsonDecode(call.function.arguments);
+          logger.d('OpenAI Response: $decodedArgs');
+          return decodedArgs;
+        }
+      }
+
+      logger.w('No valid tool calls in response');
+      return {
+        'foods': {'items': []}
+      };
     } catch (e) {
-      logger.e('Error extracting food items with OpenAI: $e');
-      rethrow;
+      logger.e('Error calling OpenAI: $e');
+      return {
+        'foods': {'items': []}
+      };
     }
   }
 }

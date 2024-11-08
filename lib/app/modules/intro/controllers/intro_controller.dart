@@ -1,6 +1,9 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:zone2/app/models/user.dart';
 import 'package:zone2/app/routes/app_pages.dart';
+import 'package:zone2/app/services/firebase_service.dart';
 import 'package:zone2/app/services/health_service.dart';
 import 'package:zone2/app/services/shared_preferences_service.dart';
 import 'package:get/get.dart';
@@ -24,6 +27,11 @@ class IntroController extends GetxController {
   final suggestedWeightLossUpperBound = 0.0.obs;
   final suggestedWeightLossTarget = ''.obs;
   final zone2TargetWeight = 0.0.obs;
+  final RxInt dailyWaterGoalInOz = 100.obs;
+  final RxInt dailyZonePointsGoal = 100.obs;
+  final RxInt dailyCalorieIntakeGoal = 1700.obs;
+  final RxInt dailyCaloriesBurnedGoal = 0.obs;
+  final RxInt dailyStepsGoal = 10000.obs;
 
   final suggestedWeightLossMessage =
       "We'll use your progress to predict when you'll hit your target as you follow your custom plan and adopting a healthy lifestyle. Your results cannot be guaranteed, but users typically lose 1-2 lb per week."
@@ -120,6 +128,39 @@ class IntroController extends GetxController {
     return targetWeightController.text.isNotEmpty;
   }
 
+  Future<void> setDailyWaterGoal(int goal) async {
+    dailyWaterGoalInOz.value = goal;
+    showNextButton.value = await haveAllGoals();
+  }
+
+  Future<void> setDailyZonePointsGoal(int goal) async {
+    dailyZonePointsGoal.value = goal;
+    showNextButton.value = await haveAllGoals();
+  }
+
+  Future<void> setDailyCalorieIntakeGoal(int goal) async {
+    dailyCalorieIntakeGoal.value = goal;
+    showNextButton.value = await haveAllGoals();
+  }
+
+  Future<void> setDailyCaloriesBurnedGoal(int goal) async {
+    dailyCaloriesBurnedGoal.value = goal;
+    showNextButton.value = await haveAllGoals();
+  }
+
+  Future<void> setDailyStepsGoal(int goal) async {
+    dailyStepsGoal.value = goal;
+    showNextButton.value = await haveAllGoals();
+  }
+
+  Future<bool> haveAllGoals() async {
+    return dailyWaterGoalInOz.value != 0 &&
+        dailyZonePointsGoal.value != 0 &&
+        dailyCalorieIntakeGoal.value != 0 &&
+        dailyCaloriesBurnedGoal.value != 0 &&
+        dailyStepsGoal.value != 0;
+  }
+
   Future<void> setReason(String reason) async {
     introLogger.i('setReason: $reason');
     zone2Reason.value = reason;
@@ -152,9 +193,12 @@ class IntroController extends GetxController {
         showNextButton.value = await haveGoals();
         break;
       case 3:
-        showNextButton.value = await haveTheMotivatingFactor();
+        showNextButton.value = await haveAllGoals();
         break;
       case 4:
+        showNextButton.value = await haveTheMotivatingFactor();
+        break;
+      case 5:
         showNextButton.value = false;
         await requestHealthPermissions();
         break;
@@ -164,12 +208,22 @@ class IntroController extends GetxController {
   //create a method called onFinish that saves a boolean called introFinished to sharedPreferences
   void onFinish() {
     _sharedPreferencesService.setIsIntroductionFinished(true);
-    _sharedPreferencesService.setZone2Goals(
-        double.parse(weightController.text),
-        double.parse(targetWeightController.text),
-        zone2Reason.value,
-        zone2Birthdate.value,
-        zone2Gender.value!);
+    introLogger.i('Introduction Finished');
+    FirebaseService.to.updateUserZoneSettings(ZoneSettings(
+        journeyStartDate: Timestamp.now(),
+        dailyWaterGoalInOz: dailyWaterGoalInOz.value,
+        dailyZonePointsGoal: dailyZonePointsGoal.value,
+        dailyCalorieIntakeGoal: dailyCalorieIntakeGoal.value,
+        dailyCaloriesBurnedGoal: dailyCaloriesBurnedGoal.value,
+        dailyStepsGoal: dailyStepsGoal.value,
+        reasonForStartingJourney: zone2Reason.value,
+        initialWeightInLbs: double.parse(weightController.text),
+        targetWeightInLbs: double.parse(targetWeightController.text),
+        heightInInches: heightInches.value.toDouble(),
+        heightInFeet: heightFeet.value.toInt(),
+        birthDate: zone2Birthdate.value,
+        gender: zone2Gender.value!));
+
     introLogger.i('Introduction Finished');
     Get.offNamed(Routes.home);
   }
