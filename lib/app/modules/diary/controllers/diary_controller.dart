@@ -1,7 +1,7 @@
 import 'dart:async';
 
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:get/get.dart';
 import 'package:logger/logger.dart';
 import 'package:health/health.dart';
@@ -12,6 +12,7 @@ import 'package:speech_to_text/speech_to_text.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 import 'package:zone2/app/modules/diary/controllers/activity_manager.dart';
 import 'package:zone2/app/models/food.dart';
+import 'package:zone2/app/modules/loading_service.dart';
 import 'package:zone2/app/services/food_service.dart';
 import 'package:zone2/app/services/health_service.dart';
 import 'package:intl/intl.dart'; // Added for date formatting
@@ -268,21 +269,36 @@ class DiaryController extends GetxController {
     }
   }
 
-  // TODO: Each Health Data Type should be its own method, this should aggregate them all
   Future<void> getHealthDataForSelectedDay() async {
-    // Retrieve weight data
-    final sameDay = diaryDate.value.year == DateTime.now().year &&
-        diaryDate.value.month == DateTime.now().month &&
-        diaryDate.value.day == DateTime.now().day;
-    final endTime = sameDay
-        ? null
-        : DateTime(diaryDate.value.year, diaryDate.value.month, diaryDate.value.day, 23, 59, 49);
+    try {
+      await BusyIndicatorService.to.showBusyIndicator('Getting health data...');
+      await Future.wait([
+        _retrieveWeightData(),
+        _retrieveWaterData(),
+        _retrieveMealData(),
+        _retrieveActivityData(),
+      ]);
+    } catch (e) {
+      logger.e('Error getting health data: $e');
+      FirebaseCrashlytics.instance.recordError(e, null, fatal: true);
+    } finally {
+      BusyIndicatorService.to.hideBusyIndicator();
+    }
+  }
+
+  Future<void> _retrieveWeightData() async {
+    // final sameDay = diaryDate.value.year == DateTime.now().year &&
+    //     diaryDate.value.month == DateTime.now().month &&
+    //     diaryDate.value.day == DateTime.now().day;
+    // final endTime = sameDay
+    //     ? null
+    //     : DateTime(diaryDate.value.year, diaryDate.value.month, diaryDate.value.day, 23, 59, 49);
+
     final weightData =
-        await healthService.getWeightData(timeFrame: TimeFrame.today, endTime: endTime);
+        await healthService.getWeightData(timeFrame: TimeFrame.day, seedDate: diaryDate.value);
     weightData.sort((a, b) => b.dateTo.compareTo(a.dateTo));
 
     if (weightData.isNotEmpty) {
-      // logger.i('Weight data: ${weightData.first}');
       final weight = weightData.first.value as NumericHealthValue;
       final weightInKilograms = weight.numericValue.toDouble();
       final weightInPounds =
@@ -296,33 +312,56 @@ class DiaryController extends GetxController {
       logger.w('No weight data found');
       isWeightLogged.value = false;
     }
+  }
 
-    // Retrieve water data
+  Future<void> _retrieveWaterData() async {
+    // final sameDay = diaryDate.value.year == DateTime.now().year &&
+    //     diaryDate.value.month == DateTime.now().month &&
+    //     diaryDate.value.day == DateTime.now().day;
+    // final endTime = sameDay
+    //     ? null
+    //     : DateTime(diaryDate.value.year, diaryDate.value.month, diaryDate.value.day, 23, 59, 49);
+
     final waterData =
-        await healthService.getWaterData(timeFrame: TimeFrame.today, endTime: endTime);
-    // Process water data as needed
+        await healthService.getWaterData(timeFrame: TimeFrame.day, seedDate: diaryDate.value);
+
     if (waterData.isNotEmpty) {
-      // Example: Sum total water intake from the retrieved data
       double waterIntakeInLiters = waterData.fold(
           0, (sum, data) => sum + (data.value as NumericHealthValue).numericValue.toDouble());
       double waterIntakeInOunces =
           await healthService.convertWaterUnit(waterIntakeInLiters, WaterUnit.ounce);
       waterIntake.value = waterIntakeInOunces; // Update the water intake observable
-      // logger.i('Total water intake: $waterIntake oz');
       isWaterLogged.value = waterIntake.value > waterGoal.value;
       logger.i('Water logged: $isWaterLogged.value');
     } else {
       logger.w('No water data found');
       isWaterLogged.value = false;
     }
+  }
 
-    allMeals.value = await healthService.getMealData(timeFrame: TimeFrame.today, endTime: endTime);
+  Future<void> _retrieveMealData() async {
+    // final sameDay = diaryDate.value.year == DateTime.now().year &&
+    //     diaryDate.value.month == DateTime.now().month &&
+    //     diaryDate.value.day == DateTime.now().day;
+    // final endTime = sameDay
+    //     ? null
+    //     : DateTime(diaryDate.value.year, diaryDate.value.month, diaryDate.value.day, 23, 59, 49);
 
+    allMeals.value =
+        await healthService.getMealData(timeFrame: TimeFrame.day, seedDate: diaryDate.value);
     filterMealsByType(filteredMealType.value);
+  }
+
+  Future<void> _retrieveActivityData() async {
+    // final sameDay = diaryDate.value.year == DateTime.now().year &&
+    //     diaryDate.value.month == DateTime.now().month &&
+    //     diaryDate.value.day == DateTime.now().day;
+    // final endTime = sameDay
+    //     ? null
+    //     : DateTime(diaryDate.value.year, diaryDate.value.month, diaryDate.value.day, 23, 59, 49);
 
     final allActivityData =
-        await healthService.getActivityData(timeFrame: TimeFrame.today, endTime: endTime);
-
+        await healthService.getActivityData(timeFrame: TimeFrame.day, seedDate: diaryDate.value);
     activityManager.value.processActivityData(activityData: allActivityData, userAge: 48);
   }
 
@@ -443,13 +482,12 @@ class DiaryController extends GetxController {
 
   Future<void> searchFood(String query) async {
     searchPerformed.value = false;
-    await EasyLoading.show(
-      status: 'Searching for food...',
-      maskType: EasyLoadingMaskType.black,
+    await BusyIndicatorService.to.showBusyIndicator(
+      'Searching for food...',
     );
 
     foodSearchResults.value = await foodService.searchFood(query);
-    await EasyLoading.dismiss();
+    BusyIndicatorService.to.hideBusyIndicator();
     searchPerformed.value = true;
   }
 
@@ -457,7 +495,7 @@ class DiaryController extends GetxController {
     logger.i('finding food by barcode: $barcode');
 
     try {
-      await EasyLoading.show(status: 'Getting food...', maskType: EasyLoadingMaskType.black);
+      await BusyIndicatorService.to.showBusyIndicator('Getting food...');
       final result = await foodService.getFoodById(barcode);
       logger.i('Food: ${result.product?.productName}');
 
@@ -469,7 +507,7 @@ class DiaryController extends GetxController {
     } catch (e) {
       logger.e('Error finding food by barcode: $e');
     } finally {
-      await EasyLoading.dismiss();
+      BusyIndicatorService.to.hideBusyIndicator();
     }
   }
 
@@ -505,7 +543,8 @@ class DiaryController extends GetxController {
         matchedFoods.value = voiceResults.map((r) => r.label).toList();
       } else {
         final openAIChatCompletion = await OpenAIService.to.extractFoodsFromText(text);
-        final newItems = FoodVoiceResult.fromOpenAiCompletion(openAIChatCompletion['foods']['items'] as List<dynamic>);
+        final newItems = FoodVoiceResult.fromOpenAiCompletion(
+            openAIChatCompletion['foods']['items'] as List<dynamic>);
         voiceResults.value = newItems;
 
         matchedFoods.value = voiceResults.map((r) => r.label).toList();
@@ -544,10 +583,7 @@ class DiaryController extends GetxController {
       // Reset search results before new search
       foodSearchResults.value = null;
 
-      await EasyLoading.show(
-        status: 'Searching for food...',
-        maskType: EasyLoadingMaskType.black,
-      );
+      await BusyIndicatorService.to.showBusyIndicator('Searching for food...');
 
       // Perform the search
       final results = await foodService.searchFood(foodDescription);
@@ -570,7 +606,7 @@ class DiaryController extends GetxController {
         snackPosition: SnackPosition.TOP,
       );
     } finally {
-      await EasyLoading.dismiss();
+      BusyIndicatorService.to.hideBusyIndicator();
     }
   }
 }

@@ -19,7 +19,7 @@ import 'helper/mocks.dart';
 
 void main() {
   setUpAll(() {
-    registerFallbackValue(TimeFrame.today);
+    registerFallbackValue(TimeFrame.day);
     registerFallbackValue(WeightUnit.pound);
     registerFallbackValue(WaterUnit.ounce);
   });
@@ -34,7 +34,8 @@ void main() {
     final authServiceMock = AuthServiceMock();
     final foodServiceMock = FoodServiceMock();
 
-    when(() => healthServiceMock.getWeightData(timeFrame: any(named: 'timeFrame')))
+    when(() => healthServiceMock.getWeightData(
+            timeFrame: any(named: 'timeFrame'), seedDate: any(named: 'seedDate')))
         .thenAnswer((_) async => [
               HealthDataPoint(
                 uuid: "b9f088c4-05ee-3058-b223-c2f8deab02af",
@@ -51,7 +52,8 @@ void main() {
               )
             ]);
 
-    when(() => healthServiceMock.getMealData(timeFrame: any(named: 'timeFrame')))
+    when(() => healthServiceMock.getMealData(
+            timeFrame: any(named: 'timeFrame'), seedDate: any(named: 'seedDate')))
         .thenAnswer((_) async => [
               HealthDataPoint(
                 uuid: "8285f360-2100-46bd-bc24-5eb84264ebcf",
@@ -80,7 +82,8 @@ void main() {
               )
             ]);
 
-    when(() => healthServiceMock.getActivityData(timeFrame: any(named: 'timeFrame')))
+    when(() => healthServiceMock.getActivityData(
+            timeFrame: any(named: 'timeFrame'), seedDate: any(named: 'seedDate')))
         .thenAnswer((_) async => [
               HealthDataPoint(
                 uuid: "b0401744-fae8-4979-9afc-cf4b34f5fa4b",
@@ -97,7 +100,8 @@ void main() {
               )
             ]);
 
-    when(() => healthServiceMock.getWaterData(timeFrame: any(named: 'timeFrame')))
+    when(() => healthServiceMock.getWaterData(
+            timeFrame: any(named: 'timeFrame'), seedDate: any(named: 'seedDate')))
         .thenAnswer((_) async => [
               HealthDataPoint(
                 uuid: "bbf478e8-d685-493a-ad57-14e7a99f1a52",

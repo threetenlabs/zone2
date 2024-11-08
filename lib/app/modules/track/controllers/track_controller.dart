@@ -29,8 +29,8 @@ class TrackController extends GetxController {
 
   // Method to get weight data based on time frame
   Future<List<WeightData>> getWeightData(TimeFrame timeFrame) async {
-    final now = DateTime.now();
-    final weightData = await healthService.getWeightData(timeFrame: timeFrame, endTime: now);
+    final weightData =
+        await healthService.getWeightData(timeFrame: timeFrame, seedDate: DateTime.now());
 
     // Group by date and take the last entry for each date
     Map<String, HealthDataPoint> latestEntries = {};
