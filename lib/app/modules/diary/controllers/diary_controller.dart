@@ -18,6 +18,64 @@ import 'package:intl/intl.dart'; // Added for date formatting
 import 'package:zone2/app/services/notification_service.dart';
 import 'package:zone2/app/services/openai_service.dart';
 
+class FoodVoiceResult {
+  final String label;
+  final String searchTerm;
+  final double quantity;
+  final String unit;
+  final MealType mealType;
+
+  FoodVoiceResult({
+    required this.label,
+    required this.searchTerm,
+    required this.quantity,
+    required this.unit,
+    required this.mealType,
+  });
+
+  // Factory method to create a FoodVoiceResult from JSON
+  factory FoodVoiceResult.fromJson(Map<String, dynamic> json) {
+    return FoodVoiceResult(
+      label: json['label'],
+      searchTerm: json['searchTerm'],
+      quantity: json['quantity'].toDouble(),
+      unit: json['unit'],
+      mealType: _parseMealType(json['mealType']),
+    );
+  }
+
+  // Factory method to create a list of FoodVoiceResult from OpenAI completion
+  static List<FoodVoiceResult> fromOpenAiCompletion(List<dynamic> items) {
+    return items.map((item) {
+      // Handle nulls for food items
+      final food = item['food'];
+      return FoodVoiceResult(
+        label: food?['label'] as String? ?? 'Unknown Food', // Default value for label
+        searchTerm: food?['searchTerm'] as String? ?? '', // Default to empty string
+        quantity: (food?['quantity'] as double?) ?? 0.0, // Default to 0.0
+        unit: food?['unit'] as String? ?? 'units', // Default unit
+        mealType: _parseMealType(food?['mealType'] as String? ?? 'UNKNOWN'), // Default to UNKNOWN
+      );
+    }).toList();
+  }
+
+  // Helper method to parse meal type from string
+  static MealType _parseMealType(String type) {
+    switch (type.toUpperCase()) {
+      case 'BREAKFAST':
+        return MealType.BREAKFAST;
+      case 'LUNCH':
+        return MealType.LUNCH;
+      case 'DINNER':
+        return MealType.DINNER;
+      case 'SNACK':
+        return MealType.SNACK;
+      default:
+        return MealType.UNKNOWN;
+    }
+  }
+}
+
 class DiaryController extends GetxController {
   final logger = Get.find<Logger>();
   final healthService = Get.find<HealthService>();
@@ -69,6 +127,12 @@ class DiaryController extends GetxController {
   final lastError = Rxn<SpeechRecognitionError>();
   final recognizedWords = ''.obs;
   final systemLocale = Rxn<LocaleName>();
+  final isTestMode = false.obs; // Toggle this for testing
+
+  final voiceResults = RxList<FoodVoiceResult>();
+
+  String selectedVoiceFood = '';
+  RxList<FoodVoiceResult> searchResults = RxList<FoodVoiceResult>();
 
   // Barcode scanning
   final Rxn<Barcode> barcode = Rxn<Barcode>();
@@ -416,12 +480,97 @@ class DiaryController extends GetxController {
   }
 
   Future<void> extractFoodItemsOpenAI(String text) async {
-    final result = await OpenAIService.to.extractFoodsFromText(text);
-    matchedFoods.value = result.choices.first.message.content
-            ?.map((item) => item.text)
-            .whereType<String>()
-            .toList() ??
-        [];
-    logger.i('Extracted food items: $result');
+    try {
+      isProcessing.value = true;
+
+      if (isTestMode.value) {
+        await Future.delayed(const Duration(seconds: 1));
+        voiceResults.value = [
+          FoodVoiceResult(
+            label: "2 scrambled eggs with spinach",
+            searchTerm: "eggs",
+            quantity: 2,
+            unit: "large",
+            mealType: MealType.BREAKFAST,
+          ),
+          FoodVoiceResult(
+            label: "1 slice whole grain toast with avocado",
+            searchTerm: "whole grain bread",
+            quantity: 1,
+            unit: "slice",
+            mealType: MealType.BREAKFAST,
+          ),
+          // ... other test items
+        ];
+        matchedFoods.value = voiceResults.map((r) => r.label).toList();
+      } else {
+        final openAIChatCompletion = await OpenAIService.to.extractFoodsFromText(text);
+        final newItems = FoodVoiceResult.fromOpenAiCompletion(openAIChatCompletion['foods']['items'] as List<dynamic>);
+        voiceResults.value = newItems;
+
+        matchedFoods.value = voiceResults.map((r) => r.label).toList();
+      }
+    } catch (e) {
+      logger.e('Error extracting foods: $e');
+      NotificationService.to
+          .showError('Error', 'Failed to process speech input. Please try again.');
+      voiceResults.clear();
+      matchedFoods.clear();
+    } finally {
+      isProcessing.value = false;
+    }
+  }
+
+  MealType _parseMealType(String type) {
+    switch (type.toUpperCase()) {
+      case 'BREAKFAST':
+        return MealType.BREAKFAST;
+      case 'LUNCH':
+        return MealType.LUNCH;
+      case 'DINNER':
+        return MealType.DINNER;
+      case 'SNACK':
+        return MealType.SNACK;
+      default:
+        return MealType.UNKNOWN;
+    }
+  }
+
+  void selectFoodFromVoice(String foodDescription) async {
+    try {
+      // Store the selected food description
+      selectedVoiceFood = foodDescription;
+
+      // Reset search results before new search
+      foodSearchResults.value = null;
+
+      await EasyLoading.show(
+        status: 'Searching for food...',
+        maskType: EasyLoadingMaskType.black,
+      );
+
+      // Perform the search
+      final results = await foodService.searchFood(foodDescription);
+      foodSearchResults.value = results;
+
+      if (results.foods.isNotEmpty) {
+        // Navigate to search results view
+        Get.snackbar('Got results', 'Found ${results.foods.length} results');
+      } else {
+        Get.snackbar(
+          'No Results',
+          'No foods found matching "$foodDescription"',
+          snackPosition: SnackPosition.TOP,
+        );
+      }
+    } catch (error) {
+      Get.snackbar(
+        'Error',
+        'Failed to search for food: ${error.toString()}',
+        snackPosition: SnackPosition.TOP,
+      );
+    } finally {
+      await EasyLoading.dismiss();
+    }
   }
 }

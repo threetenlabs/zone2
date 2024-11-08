@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:zone2/app/models/user.dart';
 import 'package:zone2/app/routes/app_pages.dart';
-import 'package:zone2/app/services/auth_service.dart';
 import 'package:zone2/app/services/firebase_service.dart';
 import 'package:zone2/app/services/health_service.dart';
 import 'package:zone2/app/services/shared_preferences_service.dart';
