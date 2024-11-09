@@ -10,9 +10,12 @@ import 'package:speech_to_text/speech_recognition_error.dart';
 import 'package:speech_to_text/speech_recognition_result.dart';
 import 'package:speech_to_text/speech_to_text.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
+import 'package:zone2/app/models/user.dart';
 import 'package:zone2/app/modules/diary/controllers/activity_manager.dart';
 import 'package:zone2/app/models/food.dart';
+import 'package:zone2/app/modules/diary/controllers/food_manager.dart';
 import 'package:zone2/app/modules/loading_service.dart';
+import 'package:zone2/app/services/auth_service.dart';
 import 'package:zone2/app/services/food_service.dart';
 import 'package:zone2/app/services/health_service.dart';
 import 'package:intl/intl.dart'; // Added for date formatting
@@ -102,16 +105,12 @@ class DiaryController extends GetxController {
   final searchPerformed = false.obs;
 
   // Meal tracking
+  final foodManager = FoodManager().obs;
   final selectedMealType = Rx<MealType>(MealType.BREAKFAST);
-  final filteredMealType = Rx<MealType>(MealType.UNKNOWN);
   final selectedOpenFoodFactsFood = Rxn<OpenFoodFactsFood>();
   final selectedZone2Food = Rxn<Zone2Food>();
-  final selectedPlatformHealthFood = Rxn<HealthDataPoint>();
   final foodServingQty = Rxn<double>();
   final foodServingController = TextEditingController(text: '');
-
-  final allMeals = RxList<HealthDataPoint>();
-  final filteredMeals = RxList<HealthDataPoint>();
 
   // Activity tracking
   final activityManager = HealthActivityManager().obs;
@@ -131,7 +130,7 @@ class DiaryController extends GetxController {
   final isTestMode = false.obs; // Toggle this for testing
 
   final voiceResults = RxList<FoodVoiceResult>();
-
+  final zone2User = Rxn<Zone2User>();
   String selectedVoiceFood = '';
   RxList<FoodVoiceResult> searchResults = RxList<FoodVoiceResult>();
 
@@ -157,6 +156,16 @@ class DiaryController extends GetxController {
     scannerController = MobileScannerController();
 
     scannerSubscription = scannerController.barcodes.listen(handleBarcode);
+    await getHealthDataForSelectedDay(true);
+  }
+
+  @override
+  void onReady() {
+    super.onReady();
+    AuthService.to.zone2User.stream.listen((user) {
+      logger.i('zone2User: $user');
+      zone2User.value = user;
+    });
   }
 
   Future<void> initSpeechState() async {
@@ -262,14 +271,14 @@ class DiaryController extends GetxController {
 
       // await healthService.deleteData(HealthDataType.WEIGHT, diaryDate.value, TimeFrame.today);
 
-      await getHealthDataForSelectedDay();
+      await getHealthDataForSelectedDay(true);
       // logger.i('Health data: $healthData');
     } catch (e) {
       logger.e('Error loading health data: $e');
     }
   }
 
-  Future<void> getHealthDataForSelectedDay() async {
+  Future<void> getHealthDataForSelectedDay(bool forceRefresh) async {
     try {
       await BusyIndicatorService.to.showBusyIndicator('Getting health data...');
       await Future.wait([
@@ -286,16 +295,9 @@ class DiaryController extends GetxController {
     }
   }
 
-  Future<void> _retrieveWeightData() async {
-    // final sameDay = diaryDate.value.year == DateTime.now().year &&
-    //     diaryDate.value.month == DateTime.now().month &&
-    //     diaryDate.value.day == DateTime.now().day;
-    // final endTime = sameDay
-    //     ? null
-    //     : DateTime(diaryDate.value.year, diaryDate.value.month, diaryDate.value.day, 23, 59, 49);
-
-    final weightData =
-        await healthService.getWeightData(timeFrame: TimeFrame.day, seedDate: diaryDate.value);
+  Future<void> _retrieveWeightData({bool? forceRefresh = false}) async {
+    final weightData = await healthService.getWeightData(
+        timeFrame: TimeFrame.day, seedDate: diaryDate.value, forceRefresh: forceRefresh);
     weightData.sort((a, b) => b.dateTo.compareTo(a.dateTo));
 
     if (weightData.isNotEmpty) {
@@ -314,16 +316,9 @@ class DiaryController extends GetxController {
     }
   }
 
-  Future<void> _retrieveWaterData() async {
-    // final sameDay = diaryDate.value.year == DateTime.now().year &&
-    //     diaryDate.value.month == DateTime.now().month &&
-    //     diaryDate.value.day == DateTime.now().day;
-    // final endTime = sameDay
-    //     ? null
-    //     : DateTime(diaryDate.value.year, diaryDate.value.month, diaryDate.value.day, 23, 59, 49);
-
-    final waterData =
-        await healthService.getWaterData(timeFrame: TimeFrame.day, seedDate: diaryDate.value);
+  Future<void> _retrieveWaterData({bool? forceRefresh = false}) async {
+    final waterData = await healthService.getWaterData(
+        timeFrame: TimeFrame.day, seedDate: diaryDate.value, forceRefresh: forceRefresh);
 
     if (waterData.isNotEmpty) {
       double waterIntakeInLiters = waterData.fold(
@@ -339,42 +334,16 @@ class DiaryController extends GetxController {
     }
   }
 
-  Future<void> _retrieveMealData() async {
-    // final sameDay = diaryDate.value.year == DateTime.now().year &&
-    //     diaryDate.value.month == DateTime.now().month &&
-    //     diaryDate.value.day == DateTime.now().day;
-    // final endTime = sameDay
-    //     ? null
-    //     : DateTime(diaryDate.value.year, diaryDate.value.month, diaryDate.value.day, 23, 59, 49);
-
-    allMeals.value =
-        await healthService.getMealData(timeFrame: TimeFrame.day, seedDate: diaryDate.value);
-    filterMealsByType(filteredMealType.value);
+  Future<void> _retrieveMealData({bool? forceRefresh = false}) async {
+    final foodDataPoints = await healthService.getMealData(
+        timeFrame: TimeFrame.day, seedDate: diaryDate.value, forceRefresh: forceRefresh);
+    foodManager.value.processFoodData(foodDataPoints);
   }
 
-  Future<void> _retrieveActivityData() async {
-    // final sameDay = diaryDate.value.year == DateTime.now().year &&
-    //     diaryDate.value.month == DateTime.now().month &&
-    //     diaryDate.value.day == DateTime.now().day;
-    // final endTime = sameDay
-    //     ? null
-    //     : DateTime(diaryDate.value.year, diaryDate.value.month, diaryDate.value.day, 23, 59, 49);
-
-    final allActivityData =
-        await healthService.getActivityData(timeFrame: TimeFrame.day, seedDate: diaryDate.value);
+  Future<void> _retrieveActivityData({bool? forceRefresh = false}) async {
+    final allActivityData = await healthService.getActivityData(
+        timeFrame: TimeFrame.day, seedDate: diaryDate.value, forceRefresh: forceRefresh);
     activityManager.value.processActivityData(activityData: allActivityData, userAge: 48);
-  }
-
-  Future<void> filterMealsByType(MealType type) async {
-    if (type == MealType.UNKNOWN) {
-      filteredMeals.value = allMeals;
-    } else {
-      filteredMeals.value = allMeals
-          .where((meal) =>
-              (meal.value as NutritionHealthValue).zinc ==
-              HealthService.to.convertMealthTypeToDouble(type))
-          .toList();
-    }
   }
 
   Future<void> saveWeightToHealth() async {
@@ -402,14 +371,17 @@ class DiaryController extends GetxController {
   Future<void> saveMealToHealth() async {
     try {
       final servingQty = double.tryParse(foodServingController.text) ?? 0.0;
+      final mealType = HealthService.to.convertMealthTypeToDouble(selectedMealType.value);
       selectedZone2Food.value!.servingQuantity = servingQty;
+      selectedZone2Food.value!.mealTypeValue = mealType;
+
       final success =
           await healthService.saveMealToHealth(selectedMealType.value, selectedZone2Food.value!);
       if (success) {
         // Send success notification
         NotificationService.to
             .showSuccess('Meal Saved', 'Your meal has been successfully saved to health data.');
-        await getHealthDataForSelectedDay();
+        await _retrieveMealData(forceRefresh: true);
       } else {
         NotificationService.to
             .showError('Meal Not Saved', 'Your meal was not saved to health data.');
@@ -453,13 +425,13 @@ class DiaryController extends GetxController {
       diaryDate.value = diaryDate.value.add(const Duration(days: 1));
       await resetTracking();
     }
-    await getHealthDataForSelectedDay();
+    await getHealthDataForSelectedDay(false);
   }
 
   Future<void> navigateToPreviousDay() async {
     diaryDate.value = diaryDate.value.subtract(const Duration(days: 1));
     await resetTracking();
-    await getHealthDataForSelectedDay();
+    await getHealthDataForSelectedDay(false);
   }
 
   Future<void> addWater(double ounces) async {
@@ -474,7 +446,7 @@ class DiaryController extends GetxController {
       NotificationService.to.showSuccess(
           'Water Saved', 'Your water intake has been successfully saved to health data.');
 
-      await getHealthDataForSelectedDay();
+      await _retrieveWaterData(forceRefresh: true);
     } catch (e) {
       logger.e('Error saving weight to Health: $e');
     }
@@ -514,7 +486,7 @@ class DiaryController extends GetxController {
   Future<void> deleteFood() async {
     await healthService.deleteData(HealthDataType.NUTRITION, selectedZone2Food.value!.startTime!,
         selectedZone2Food.value!.endTime!);
-    await getHealthDataForSelectedDay();
+    await _retrieveMealData(forceRefresh: true);
   }
 
   Future<void> extractFoodItemsOpenAI(String text) async {

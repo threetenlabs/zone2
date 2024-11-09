@@ -12,22 +12,22 @@ class FoodCarousel extends GetView<DiaryController> {
   @override
   Widget build(BuildContext context) {
     return Obx(() {
-      if (controller.filteredMeals.isNotEmpty) {
+      if (controller.foodManager.value.filteredMeals.isNotEmpty) {
         return Center(
           child: ConstrainedBox(
-            constraints: const BoxConstraints(maxHeight: 400),
+            constraints: const BoxConstraints(maxHeight: 300),
             child: CarouselView(
               itemExtent: 330,
               shrinkExtent: 200,
               onTap: (index) {
                 controller.selectedZone2Food.value =
-                    Zone2Food.fromHealthDataPoint(controller.filteredMeals[index]);
+                    Zone2Food.fromHealthDataPoint(controller.foodManager.value.filteredMeals[index]);
                 controller.foodServingController.text =
                     controller.selectedZone2Food.value?.servingQuantity.toStringAsFixed(1) ?? '';
                 _showFoodDetail(context);
               },
-              children: List<Widget>.generate(controller.filteredMeals.length, (int index) {
-                final item = controller.filteredMeals[index];
+              children: List<Widget>.generate(controller.foodManager.value.filteredMeals.length, (int index) {
+                final item = controller.foodManager.value.filteredMeals[index];
                 final nutritionHealthValue = item.value as NutritionHealthValue;
                 return FoodCarouselCard(
                     index: index,

@@ -19,8 +19,8 @@ class AuthService {
   final FirebaseFirestore db = Get.find();
   final GoogleSignIn googleSignIn = Get.find();
   Rxn<User> firebaseUser = Rxn<User>();
+  final zone2User = Rxn<Zone2User>();
   // final fcmService = Get.find<FcmService>();
-  final StreamController<Zone2User> userStreamController = StreamController<Zone2User>.broadcast();
 
   final appUser = Zone2User(
       uid: '',
@@ -48,6 +48,7 @@ class AuthService {
     if (updatedUser?.uid != null) {
       try {
         appUser.value = await getUser();
+        zone2User.value = appUser.value;
         listenForUserChanges();
       } catch (e) {
         FirebaseCrashlytics.instance.recordError(e, StackTrace.current);
@@ -63,6 +64,7 @@ class AuthService {
           name: '',
           onboardingComplete: false,
           zoneSettings: ZoneSettings.fromJson({}));
+      zone2User.value = appUser.value;
     }
 
     isAuthenticatedUser.value = updatedUser != null && updatedUser.isAnonymous == false;
@@ -104,7 +106,7 @@ class AuthService {
     db.collection('users').doc(auth.currentUser!.uid).snapshots().listen((snapshot) {
       if (snapshot.exists) {
         Zone2User updatedUser = Zone2User.fromJson(snapshot.data()!);
-        userStreamController.add(updatedUser);
+        zone2User.value = updatedUser;
       }
     });
   }

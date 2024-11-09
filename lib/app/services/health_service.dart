@@ -86,7 +86,7 @@ class HealthService extends GetxService {
         return 4.0;
       default:
         logger.e('Unsupported meal type: $type');
-        return 0.0;
+        return 1.0;
     }
   }
 
@@ -144,7 +144,7 @@ class HealthService extends GetxService {
         seedDate.month == DateTime.now().month &&
         seedDate.day == DateTime.now().day;
     final endTime = sameDay && timeFrame == TimeFrame.day
-        ? seedDate.add(const Duration(hours: 1)) // Use seedDate instead of endTime
+        ? DateTime.now().add(const Duration(minutes: 5)) // Use seedDate instead of endTime
         : DateTime(seedDate.year, seedDate.month, seedDate.day, 23, 59, 49);
 
     DateTime startTime;
@@ -210,7 +210,7 @@ class HealthService extends GetxService {
   }
 
   Future<List<HealthDataPoint>> getWaterData(
-      {required TimeFrame timeFrame, required DateTime seedDate}) async {
+      {required TimeFrame timeFrame, required DateTime seedDate, bool? forceRefresh}) async {
     final types = [HealthDataType.WATER];
     final key =
         'water_${DateTime(seedDate.year, seedDate.month, seedDate.day).toIso8601String()}_${timeFrame.name}';
@@ -219,7 +219,7 @@ class HealthService extends GetxService {
 
     // Check for cached data
     final cachedData = memoryCache.read<List<HealthDataPoint>>(key);
-    if (cachedData != null) {
+    if (cachedData != null && !forceRefresh!) {
       return cachedData; // Return cached data if available
     }
 
@@ -232,7 +232,7 @@ class HealthService extends GetxService {
   }
 
   Future<List<HealthDataPoint>> getStepData(
-      {required TimeFrame timeFrame, required DateTime seedDate}) async {
+      {required TimeFrame timeFrame, required DateTime seedDate, bool? forceRefresh}) async {
     final types = [HealthDataType.STEPS];
     final key =
         'steps_${DateTime(seedDate.year, seedDate.month, seedDate.day).toIso8601String()}_${timeFrame.name}';
@@ -241,7 +241,7 @@ class HealthService extends GetxService {
 
     // Check for cached data
     final cachedData = memoryCache.read<List<HealthDataPoint>>(key);
-    if (cachedData != null) {
+    if (cachedData != null && !forceRefresh!) {
       return cachedData; // Return cached data if available
     }
 
@@ -254,7 +254,7 @@ class HealthService extends GetxService {
   }
 
   Future<List<HealthDataPoint>> getWeightData(
-      {required TimeFrame timeFrame, required DateTime seedDate}) async {
+      {required TimeFrame timeFrame, required DateTime seedDate, bool? forceRefresh}) async {
     final types = [HealthDataType.WEIGHT];
     final key =
         'weight_${DateTime(seedDate.year, seedDate.month, seedDate.day).toIso8601String()}_${timeFrame.name}';
@@ -263,7 +263,7 @@ class HealthService extends GetxService {
 
     // Check for cached data
     final cachedData = memoryCache.read<List<HealthDataPoint>>(key);
-    if (cachedData != null) {
+    if (cachedData != null && !forceRefresh!) {
       return cachedData; // Return cached data if available
     }
 
@@ -276,7 +276,7 @@ class HealthService extends GetxService {
   }
 
   Future<List<HealthDataPoint>> getMealData(
-      {required TimeFrame timeFrame, required DateTime seedDate}) async {
+      {required TimeFrame timeFrame, required DateTime seedDate, bool? forceRefresh}) async {
     final types = [HealthDataType.NUTRITION];
     final key =
         'meal_${DateTime(seedDate.year, seedDate.month, seedDate.day).toIso8601String()}_${timeFrame.name}';
@@ -285,7 +285,7 @@ class HealthService extends GetxService {
 
     // Check for cached data
     final cachedData = memoryCache.read<List<HealthDataPoint>>(key);
-    if (cachedData != null) {
+    if (cachedData != null && !forceRefresh!) {
       return cachedData; // Return cached data if available
     }
 
@@ -298,7 +298,7 @@ class HealthService extends GetxService {
   }
 
   Future<List<HealthDataPoint>> getActivityData(
-      {required TimeFrame timeFrame, required DateTime seedDate}) async {
+      {required TimeFrame timeFrame, required DateTime seedDate, bool? forceRefresh}) async {
     final types = [
       HealthDataType.TOTAL_CALORIES_BURNED,
       HealthDataType.HEART_RATE,
@@ -313,7 +313,7 @@ class HealthService extends GetxService {
 
     // Check for cached data
     final cachedData = memoryCache.read<List<HealthDataPoint>>(key);
-    if (cachedData != null) {
+    if (cachedData != null && !forceRefresh!) {
       return cachedData; // Return cached data if available
     }
 

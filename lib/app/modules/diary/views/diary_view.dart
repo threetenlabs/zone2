@@ -15,7 +15,6 @@ class DiaryView extends GetView<DiaryController> {
 
   @override
   Widget build(BuildContext context) {
-    controller.getHealthDataForSelectedDay();
     return Scaffold(
       body: SafeArea(
         maintainBottomViewPadding: true,
@@ -44,7 +43,7 @@ class DiaryView extends GetView<DiaryController> {
                     subtitle: 'Log your meals and snacks',
                     iconColor: Theme.of(context).colorScheme.secondary,
                     onTap: () => _showAddFoodBottomSheet(context),
-                    isChecked: controller.isWeightLogged.value,
+                    isChecked: false,
                   ),
                   _buildDiaryCard(
                     context,
@@ -53,17 +52,15 @@ class DiaryView extends GetView<DiaryController> {
                     subtitle: 'Monitor your Zone Minutes',
                     iconColor: Theme.of(context).colorScheme.tertiary,
                     onTap: () => _showManageActivityBottomSheet(context),
-                    isChecked: controller.isWeightLogged.value,
+                    isChecked: false,
                   ),
-                  Obx(
-                    () => _buildDiaryCard(context,
-                        icon: Icons.local_drink,
-                        title: 'Track Hydration',
-                        subtitle: 'Keep track of your water intake',
-                        iconColor: Theme.of(context).colorScheme.tertiary,
-                        onTap: () => _showWaterBottomSheet(context),
-                        isChecked: controller.isWaterLogged.value),
-                  ),
+                  _buildDiaryCard(context,
+                      icon: Icons.local_drink,
+                      title: 'Track Hydration',
+                      subtitle: 'Keep track of your water intake',
+                      iconColor: Theme.of(context).colorScheme.tertiary,
+                      onTap: () => _showWaterBottomSheet(context),
+                      isChecked: false),
                 ],
               ),
             ),

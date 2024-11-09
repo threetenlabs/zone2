@@ -52,7 +52,7 @@ class ManageFoodBottomSheet extends GetView<DiaryController> {
               ),
               const SizedBox(height: 16),
               const SizedBox(
-                height: 100,
+                height: 180,
                 child: MacroCard(), // Use the new MacroCard widget
               ),
               const SizedBox(height: 16),
@@ -66,19 +66,19 @@ class ManageFoodBottomSheet extends GetView<DiaryController> {
 
   Widget _buildMealTypeChip(BuildContext context, MealType type, IconData icon, String label) {
     return Obx(() => FilterChip(
-          selected: controller.filteredMealType.value == type,
+          selected: controller.foodManager.value.filteredMealType.value == type,
           showCheckmark: false,
           avatar: Icon(
             icon,
             size: 18,
-            color: controller.filteredMealType.value == type
+            color: controller.foodManager.value.filteredMealType.value == type
                 ? Theme.of(context).colorScheme.onPrimary
                 : Theme.of(context).colorScheme.primary,
           ),
           label: Text(
             label,
             style: TextStyle(
-              color: controller.filteredMealType.value == type
+              color: controller.foodManager.value.filteredMealType.value == type
                   ? Theme.of(context).colorScheme.onPrimary
                   : Theme.of(context).colorScheme.onSurface,
             ),
@@ -90,8 +90,8 @@ class ManageFoodBottomSheet extends GetView<DiaryController> {
           ),
           onSelected: (bool selected) {
             if (selected) {
-              controller.filteredMealType.value = type;
-              controller.filterMealsByType(type);
+              controller.foodManager.value.filteredMealType.value = type;
+              controller.foodManager.value.filterMealsByType(type);
             }
           },
         ));

@@ -46,14 +46,14 @@ class HomeController extends GetxController {
         ),
         itemLabel: 'Diary',
       ),
-      const BottomBarItem(
-        inActiveItem: Icon(FontAwesomeIcons.bullseye, color: Colors.blueGrey),
-        activeItem: Icon(
-          FontAwesomeIcons.bullseye,
-          color: Colors.purpleAccent,
-        ),
-        itemLabel: 'Zone',
-      ),
+      // const BottomBarItem(
+      //   inActiveItem: Icon(FontAwesomeIcons.bullseye, color: Colors.blueGrey),
+      //   activeItem: Icon(
+      //     FontAwesomeIcons.bullseye,
+      //     color: Colors.purpleAccent,
+      //   ),
+      //   itemLabel: 'Zone',
+      // ),
       const BottomBarItem(
         inActiveItem: Icon(
           FontAwesomeIcons.chartLine,
@@ -74,7 +74,7 @@ class HomeController extends GetxController {
           FontAwesomeIcons.userGear,
           color: Colors.orangeAccent,
         ),
-        itemLabel: 'Profile',
+        itemLabel: 'My Zone',
       ),
     ];
 
@@ -83,7 +83,7 @@ class HomeController extends GetxController {
     });
   }
 
-  final pages = <String>['/diary', '/zone', '/track', '/profile'];
+  final pages = <String>['/diary' '/track', '/profile'];
 
   void changePage(int index) {
     contentIndex.value = index;
@@ -96,14 +96,6 @@ class HomeController extends GetxController {
         settings: settings,
         page: () => const DiaryView(),
         binding: DiaryBinding(),
-      );
-    }
-
-    if (settings.name == '/zone') {
-      return GetPageRoute(
-        settings: settings,
-        page: () => const ZoneView(),
-        binding: ZoneBinding(),
       );
     }
 

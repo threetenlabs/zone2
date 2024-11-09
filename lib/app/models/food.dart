@@ -272,20 +272,20 @@ class Zone2Food {
     );
 
     var unit = nutrient.unitName.toLowerCase();
-    var value = nutrient.amount;
+    var value = (nutrient.amount * 10).round() / 10;
     var displayValue = value;
 
     // Convert mg to g (grams) if unitName is 'mg'
     if (unit == 'mg') {
-      value = (value / 1000).roundToDouble();
-      displayValue = (displayValue / 1000).roundToDouble();
+      value = ((value / 1000) * 10).round() / 10;
+      displayValue = ((displayValue / 1000) * 10).round() / 10;
       unit = 'g';
     }
 
     // Convert kj to kcal
     if (unit == 'kj') {
-      value = (value / 4.184).roundToDouble();
-      displayValue = (displayValue / 4.184).roundToDouble();
+      value = ((value / 4.184) * 10).round() / 10;
+      displayValue = ((displayValue / 4.184) * 10).round() / 10;
       unit = 'kcal';
     }
 
@@ -350,27 +350,27 @@ class Zone2Food {
       brand: brand,
       servingQuantity: servingQuantity,
       servingLabel: servingLabel,
-      totalCaloriesLabel: '${healthInfo.calories ?? 0.0} kcal',
-      totalCaloriesValue: healthInfo.calories ?? 0.0,
-      proteinLabel: '${healthInfo.protein ?? 0.0} g',
-      proteinValue: healthInfo.protein ?? 0.0,
-      totalCarbsLabel: '${healthInfo.carbs ?? 0.0} g',
-      totalCarbsValue: healthInfo.carbs ?? 0.0,
-      fiberLabel: '${healthInfo.fiber ?? 0.0} g',
-      fiberValue: healthInfo.fiber ?? 0.0,
-      sugarLabel: '${healthInfo.sugar ?? 0.0} g',
-      sugarValue: healthInfo.sugar ?? 0.0,
-      totalFatLabel: '${healthInfo.fat ?? 0.0} g',
-      totalFatValue: healthInfo.fat ?? 0.0,
-      saturatedLabel: '${healthInfo.fatSaturated ?? 0.0} g',
-      saturatedValue: healthInfo.fatSaturated ?? 0.0,
-      sodiumLabel: '${healthInfo.sodium ?? 0.0} g',
-      sodiumValue: healthInfo.sodium ?? 0.0,
-      cholesterolLabel: '${healthInfo.cholesterol ?? 0.0} g',
-      cholesterolValue: healthInfo.cholesterol ?? 0.0,
-      potassiumLabel: '${healthInfo.potassium ?? 0.0} g',
-      potassiumValue: healthInfo.potassium ?? 0.0,
-      mealTypeValue: healthInfo.zinc ?? 0.0,
+      totalCaloriesLabel: '${((healthInfo.calories ?? 0.0) * 10).round() / 10} kcal',
+      totalCaloriesValue: ((healthInfo.calories ?? 0.0) * 10).round() / 10,
+      proteinLabel: '${((healthInfo.protein ?? 0.0) * 10).round() / 10} g',
+      proteinValue: ((healthInfo.protein ?? 0.0) * 10).round() / 10,
+      totalCarbsLabel: '${((healthInfo.carbs ?? 0.0) * 10).round() / 10} g',
+      totalCarbsValue: ((healthInfo.carbs ?? 0.0) * 10).round() / 10,
+      fiberLabel: '${((healthInfo.fiber ?? 0.0) * 10).round() / 10} g',
+      fiberValue: ((healthInfo.fiber ?? 0.0) * 10).round() / 10,
+      sugarLabel: '${((healthInfo.sugar ?? 0.0) * 10).round() / 10} g',
+      sugarValue: ((healthInfo.sugar ?? 0.0) * 10).round() / 10,
+      totalFatLabel: '${((healthInfo.fat ?? 0.0) * 10).round() / 10} g',
+      totalFatValue: ((healthInfo.fat ?? 0.0) * 10).round() / 10,
+      saturatedLabel: '${((healthInfo.fatSaturated ?? 0.0) * 10).round() / 10} g',
+      saturatedValue: ((healthInfo.fatSaturated ?? 0.0) * 10).round() / 10,
+      sodiumLabel: '${((healthInfo.sodium ?? 0.0) * 10).round() / 10} g',
+      sodiumValue: ((healthInfo.sodium ?? 0.0) * 10).round() / 10,
+      cholesterolLabel: '${((healthInfo.cholesterol ?? 0.0) * 10).round() / 10} g',
+      cholesterolValue: ((healthInfo.cholesterol ?? 0.0) * 10).round() / 10,
+      potassiumLabel: '${((healthInfo.potassium ?? 0.0) * 10).round() / 10} g',
+      potassiumValue: ((healthInfo.potassium ?? 0.0) * 10).round() / 10,
+      mealTypeValue: ((healthInfo.zinc ?? 0.0) * 10).round() / 10,
       type: dataPoint.type,
       startTime: dataPoint.dateFrom,
       endTime: dataPoint.dateTo,
