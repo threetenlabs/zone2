@@ -542,21 +542,6 @@ class DiaryController extends GetxController {
     }
   }
 
-  MealType _parseMealType(String type) {
-    switch (type.toUpperCase()) {
-      case 'BREAKFAST':
-        return MealType.BREAKFAST;
-      case 'LUNCH':
-        return MealType.LUNCH;
-      case 'DINNER':
-        return MealType.DINNER;
-      case 'SNACK':
-        return MealType.SNACK;
-      default:
-        return MealType.UNKNOWN;
-    }
-  }
-
   void selectFoodFromVoice(String foodDescription) async {
     try {
       // Store the selected food description

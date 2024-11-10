@@ -11,17 +11,6 @@ class OpenAIService extends GetxService {
   final OpenAI openAI = Get.find<OpenAI>();
 
   @override
-  void onInit() {
-    super.onInit();
-  }
-
-  @override
-  void onReady() {
-    super.onReady();
-    // Called after onInit when the service is ready
-  }
-
-  @override
   void onClose() {
     // Clean up resources here
     super.onClose();

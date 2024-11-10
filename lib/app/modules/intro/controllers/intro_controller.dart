@@ -155,7 +155,7 @@ class IntroController extends GetxController {
 
   Future<bool> canBeDone() async {
     // TODO: Revisit this - IOS will always return null
-    return HealthService.to.hasPermissions.value ?? true;
+    return HealthService.to.hasPermissions.value;
   }
 
   Future<void> requestHealthPermissions() async {
