@@ -26,7 +26,7 @@ class ProfileController extends GetxController {
       update();
     });
 
-    settings.darkModeStream.listen((value) {
+    settings.darkMode.stream.listen((value) {
       logger.i('darkMode: $value');
       update();
     });

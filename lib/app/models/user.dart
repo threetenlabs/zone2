@@ -36,8 +36,8 @@ class ZoneSettings {
   final Timestamp journeyStartDate;
   final int dailyWaterGoalInOz;
   final int dailyZonePointsGoal;
-  final int dailyCalorieIntakeGoal;
-  final int dailyCaloriesBurnedGoal;
+  final double dailyCalorieIntakeGoal;
+  final double dailyCaloriesBurnedGoal;
   final int dailyStepsGoal;
   final String reasonForStartingJourney;
   final double initialWeightInLbs;
@@ -67,8 +67,8 @@ class ZoneSettings {
         journeyStartDate: data['journeyStartDate'] as Timestamp? ?? Timestamp.now(),
         dailyWaterGoalInOz: (data['dailyWaterGoalInOz'] as num?)?.toInt() ?? 100,
         dailyZonePointsGoal: (data['dailyZonePointsGoal'] as num?)?.toInt() ?? 100,
-        dailyCalorieIntakeGoal: (data['dailyCalorieIntakeGoal'] as num?)?.toInt() ?? 0,
-        dailyCaloriesBurnedGoal: (data['dailyCaloriesBurnedGoal'] as num?)?.toInt() ?? 0,
+        dailyCalorieIntakeGoal: (data['dailyCalorieIntakeGoal'] as num?)?.toDouble() ?? 0.0,
+        dailyCaloriesBurnedGoal: (data['dailyCaloriesBurnedGoal'] as num?)?.toDouble() ?? 0.0,
         dailyStepsGoal: (data['dailyStepsGoal'] as num?)?.toInt() ?? 10000,
         reasonForStartingJourney: data['reasonForStartingJourney'] as String? ?? '',
         initialWeightInLbs: (data['initialWeightInLbs'] as num?)?.toDouble() ?? 0.0,
