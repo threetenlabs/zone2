@@ -5,6 +5,7 @@ import 'package:get_storage/get_storage.dart';
 import 'package:logger/logger.dart';
 import 'package:openfoodfacts/openfoodfacts.dart';
 import 'package:zone2/app/models/food.dart';
+import 'package:zone2/app/utils/helper.dart';
 
 class FoodService extends GetxService {
   final logger = Get.find<Logger>();
@@ -66,7 +67,7 @@ class FoodService extends GetxService {
         const SortBy(
           option: SortOption.NOTHING,
         ),
-        const PageSize(size: 50),
+        const PageSize(size: 100),
       ],
       version: ProductQueryVersion.v3,
       language: OpenFoodFactsLanguage.ENGLISH,
@@ -80,6 +81,9 @@ class FoodService extends GetxService {
         configuration,
         uriHelper: uriHelperFoodProd,
       );
+
+      final searchResults = result.products?.map((product) => product.toJson()).toList();
+      printWrapped(searchResults.toString());
       // Filter out products that don't have a serving size
       final filteredResults =
           result.products?.where((product) => product.nutrimentDataPer == "serving").toList();
