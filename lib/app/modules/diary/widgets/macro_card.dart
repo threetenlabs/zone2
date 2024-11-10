@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:zone2/app/modules/diary/controllers/diary_controller.dart';
+import 'package:zone2/app/style/theme.dart';
 
 class MacroCard extends GetView<DiaryController> {
   const MacroCard({super.key});
@@ -14,49 +15,71 @@ class MacroCard extends GetView<DiaryController> {
         children: [
           SizedBox(
             height: 75, // Example height
-            child: _buildCalorieRow(),
+            child: _buildCalorieRow(context),
           ),
           SizedBox(
             height: 75, // Example height
-            child: _buildMacroRow(),
+            child: _buildMacroRow(context),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildCalorieRow() {
+  Widget _buildCalorieRow(BuildContext context) {
     return Obx(
       () => Row(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         mainAxisSize: MainAxisSize.max,
         children: [
+          _buildTargetColumn('Target',
+              controller.zone2User.value?.zoneSettings?.dailyCalorieIntakeGoal.round() ?? 2000),
+          Center(child: Text('+', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold))),
+          _buildTargetColumn('Consumed', controller.foodManager.value.totalCalories.value.round()),
+          Center(child: Text('-', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold))),
           _buildTargetColumn(
-              'Target', controller.zone2User.value?.zoneSettings?.dailyCalorieIntakeGoal ?? 2000),
-          _buildTargetColumn('Consumed', controller.foodManager.value.totalCalories.value),
-          _buildTargetColumn('Burned', controller.activityManager.value.totalCaloriesBurned.value),
+              'Burned', controller.activityManager.value.totalWorkoutCalories.value.round()),
+          Center(child: Text('=', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold))),
           _buildRemainingColumn(
               'Remaining',
-              (controller.zone2User.value?.zoneSettings?.dailyCalorieIntakeGoal ?? 2000) +
-                  controller.activityManager.value.totalCaloriesBurned.value -
-                  controller.foodManager.value.totalCalories.value),
+              ((controller.zone2User.value?.zoneSettings?.dailyCalorieIntakeGoal ?? 2000) -
+                      (controller.foodManager.value.totalCalories.value) +
+                      controller.activityManager.value.totalWorkoutCalories.value)
+                  .roundToDouble(),
+              context),
         ],
       ),
     );
   }
 
-  Widget _buildMacroRow() {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      mainAxisSize: MainAxisSize.max,
-      children: [
-        _buildMacroColumn('Protein', 0.5, Colors.blue, '50%'),
-        _buildMacroColumn('Carbs', 0.7, Colors.green, '70%'),
-        _buildMacroColumn('Fat', 0.3, Colors.red, '30%'),
-        _buildMacroColumn('Calories', 0.6, Colors.yellow, '60%'),
-      ],
+  Widget _buildMacroRow(BuildContext context) {
+    return Obx(
+      () => Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        mainAxisSize: MainAxisSize.max,
+        children: [
+          _buildMacroColumn(
+              'Protein',
+              controller.foodManager.value.totalProtein.value /
+                  controller.foodManager.value.totalProteinTarget.value,
+              MaterialTheme.coolBlue.value,
+              '${(controller.foodManager.value.totalProtein.value / controller.foodManager.value.totalProteinTarget.value * 100).toStringAsFixed(0)}%'),
+          _buildMacroColumn(
+              'Carbs',
+              controller.foodManager.value.totalCarbohydrates.value /
+                  controller.foodManager.value.totalCarbohydratesTarget.value,
+              MaterialTheme.coolOrange.value,
+              '${(controller.foodManager.value.totalCarbohydrates.value / controller.foodManager.value.totalCarbohydratesTarget.value * 100).toStringAsFixed(0)}%'),
+          _buildMacroColumn(
+              'Fat',
+              controller.foodManager.value.totalFat.value /
+                  controller.foodManager.value.totalFatTarget.value,
+              MaterialTheme.coolRed.value,
+              '${(controller.foodManager.value.totalFat.value / controller.foodManager.value.totalFatTarget.value * 100).toStringAsFixed(0)}%'),
+        ],
+      ),
     );
   }
 
@@ -68,19 +91,25 @@ class MacroCard extends GetView<DiaryController> {
       crossAxisAlignment: CrossAxisAlignment.center,
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Text(value.toStringAsFixed(1)),
-        Text(label),
+        Text(value.round().toString(), style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+        Text(label,
+            style: TextStyle(fontSize: 10, color: Colors.grey, fontWeight: FontWeight.w400)),
       ],
     );
   }
 
-  Widget _buildRemainingColumn(String label, double value) {
+  Widget _buildRemainingColumn(String label, double value, BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Text(value.toStringAsFixed(1)),
-        Text(label),
+        Text(value.round().toString(),
+            style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: Theme.of(context).colorScheme.primary)),
+        Text(label,
+            style: TextStyle(fontSize: 10, color: const Color.fromARGB(255, 130, 129, 129))),
       ],
     );
   }

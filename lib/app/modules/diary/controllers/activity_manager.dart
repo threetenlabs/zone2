@@ -20,7 +20,7 @@ class HealthActivityManager {
   final totalCaloriesBurned = 0.0.obs;
   final totalZonePoints = 0.obs;
   final multipleCalorieSources = false.obs;
-
+  final totalWorkoutCalories = 0.0.obs;
   final totalActiveZoneMinutes = 0.obs;
 
   // Convert zone minutes to RxMap
@@ -261,6 +261,9 @@ class HealthActivityManager {
       processedRanges.add(timeRange);
       return sum + record.numericValue;
     });
+
+    totalWorkoutCalories.value =
+        workoutRecords.fold(0.0, (sum, record) => sum + record.totalEnergyBurned);
   }
 
   /// Reset all stored values to their defaults

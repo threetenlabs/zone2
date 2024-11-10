@@ -16,11 +16,9 @@ class GetStoragePersistence {
   final String soundOnKey = 'soundsOnKey';
   final String isAboveMinimumSupportedVersionKey = 'isAboveMinimumSupportedVersionKey';
   final String darkModeKey = 'darkModeKey';
-  final String zone2StartingWeightKey = 'zone2StartingWeightKey';
-  final String zone2TargetWeightKey = 'zone2TargetWeightKey';
-  final String zone2MotivatingFactorKey = 'zone2MotivatingFactorKey';
-  final String zone2BirthdateKey = 'zone2BirthdateKey';
-  final String zone2GenderKey = 'zone2GenderKey';
+  final String zone2ProteinTargetKey = 'zone2ProteinTargetKey';
+  final String zone2CarbsTargetKey = 'zone2CarbsTargetKey';
+  final String zone2FatTargetKey = 'zone2FatTargetKey';
 
   bool getUserHasRemovedAds() {
     return box.read(userHasRemovedAdsKey) ?? false;
@@ -30,49 +28,41 @@ class GetStoragePersistence {
     await box.write(userHasRemovedAdsKey, value);
   }
 
-  bool getSoundsOn() {
-    return box.read(soundOnKey) ?? true;
-  }
-
-  Future<void> saveSoundsOn(bool value) async {
-    await box.write(soundOnKey, value);
-  }
-
-  Future<void> saveIsIntroductionFinished(bool value) async {
-    await box.write(isIntroductionFinished, value);
-  }
-
   Future<void> saveIsAboveMinimumSupportedVersion(bool value) async {
     await box.write(isAboveMinimumSupportedVersionKey, value);
+  }
+
+  bool getDarkMode() {
+    return box.read(darkModeKey) ??
+        PlatformDispatcher.instance.platformBrightness == Brightness.dark;
   }
 
   Future<void> saveDarkMode(bool value) async {
     await box.write(darkModeKey, value);
   }
 
-  Future<void> saveZone2StartingWeight(double value) async {
-    await box.write(zone2StartingWeightKey, value);
+  double getZone2ProteinTarget() {
+    return box.read(zone2ProteinTargetKey) ?? 0.0;
   }
 
-  Future<void> saveZone2TargetWeight(double value) async {
-    await box.write(zone2TargetWeightKey, value);
+  Future<void> saveZone2ProteinTarget(double value) async {
+    await box.write(zone2ProteinTargetKey, value);
   }
 
-  Future<void> saveZone2MotivatingFactor(String value) async {
-    await box.write(zone2MotivatingFactorKey, value);
+  double getZone2CarbsTarget() {
+    return box.read(zone2CarbsTargetKey) ?? 0.0;
   }
 
-  Future<void> saveZone2Birthdate(String value) async {
-    await box.write(zone2BirthdateKey, value);
+  Future<void> saveZone2CarbsTarget(double value) async {
+    await box.write(zone2CarbsTargetKey, value);
   }
 
-  Future<void> saveZone2Gender(String value) async {
-    await box.write(zone2GenderKey, value);
+  double getZone2FatTarget() {
+    return box.read(zone2FatTargetKey) ?? 0.0;
   }
 
-  bool getDarkMode() {
-    return box.read(darkModeKey) ??
-        PlatformDispatcher.instance.platformBrightness == Brightness.dark;
+  Future<void> saveZone2FatTarget(double value) async {
+    await box.write(zone2FatTargetKey, value);
   }
 
   void erase() {

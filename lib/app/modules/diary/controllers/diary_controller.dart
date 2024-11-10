@@ -156,16 +156,26 @@ class DiaryController extends GetxController {
     scannerController = MobileScannerController();
 
     scannerSubscription = scannerController.barcodes.listen(handleBarcode);
+    await HealthService.to.authorize();
     await getHealthDataForSelectedDay(true);
   }
 
   @override
-  void onReady() {
+  void onReady() async {
     super.onReady();
-    AuthService.to.zone2User.stream.listen((user) {
+    AuthService.to.zone2User.stream.listen((user) async {
       logger.i('zone2User: $user');
       zone2User.value = user;
+      // if (user != null) {
+      //   await checkHealthPermissions();
+      // }
     });
+  }
+
+  Future<void> checkHealthPermissions() async {
+    if (!HealthService.to.hasPermissions.value) {
+      await getHealthDataForSelectedDay(true);
+    }
   }
 
   Future<void> initSpeechState() async {
@@ -280,7 +290,7 @@ class DiaryController extends GetxController {
 
   Future<void> getHealthDataForSelectedDay(bool forceRefresh) async {
     try {
-      await BusyIndicatorService.to.showBusyIndicator('Getting health data...');
+      await BusyIndicatorService.to.showBusyIndicator('Retrieving health data...');
       await Future.wait([
         _retrieveWeightData(),
         _retrieveWaterData(),
