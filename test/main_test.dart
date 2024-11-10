@@ -1,4 +1,5 @@
 import 'package:health/health.dart';
+import 'package:zone2/app/models/user.dart';
 import 'package:zone2/app/modules/home/controllers/home_controller.dart';
 import 'package:zone2/app/modules/home/views/home_view.dart';
 import 'package:zone2/app/modules/diary/controllers/diary_controller.dart';
@@ -6,6 +7,7 @@ import 'package:zone2/app/services/auth_service.dart';
 import 'package:zone2/app/services/firebase_service.dart';
 import 'package:zone2/app/services/food_service.dart';
 import 'package:zone2/app/services/health_service.dart';
+import 'package:zone2/app/services/shared_preferences_service.dart';
 import 'package:zone2/app/style/palette.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -33,6 +35,11 @@ void main() {
     final firebaseServiceMock = FirebaseServiceMock();
     final authServiceMock = AuthServiceMock();
     final foodServiceMock = FoodServiceMock();
+    final sharedPreferencesServiceMock = SharedPreferencesServiceMock();
+
+    sharedPreferencesServiceMock.zone2ProteinTarget.value = 100.0;
+    sharedPreferencesServiceMock.zone2CarbsTarget.value = 100.0;
+    sharedPreferencesServiceMock.zone2FatTarget.value = 100.0;
 
     when(() => healthServiceMock.getWeightData(
             timeFrame: any(named: 'timeFrame'), seedDate: any(named: 'seedDate')))
@@ -121,6 +128,7 @@ void main() {
     when(() => healthServiceMock.convertWeightUnit(any(), any())).thenAnswer((_) async => 100.0);
     when(() => healthServiceMock.convertWaterUnit(any(), any())).thenAnswer((_) async => 1.0);
 
+    Get.put<SharedPreferencesService>(sharedPreferencesServiceMock);
     Get.put<FirebaseAuth>(firebaseAuthMock);
     Get.put<FirebaseFirestore>(firebaseFirestoreMock);
     Get.put<FirebaseService>(firebaseServiceMock);

@@ -102,7 +102,6 @@ class DiaryView extends GetView<DiaryController> {
       required Color iconColor,
       required VoidCallback onTap,
       required bool isChecked}) {
-    debugPrint('isChecked: $isChecked');
     return Card(
         margin: const EdgeInsets.symmetric(vertical: 8.0),
         child: ListTile(
