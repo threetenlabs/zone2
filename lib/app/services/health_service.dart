@@ -31,7 +31,7 @@ class HealthService extends GetxService {
   final logger = Get.find<Logger>();
   final isAuthorized = false.obs;
   final status = HealthConnectSdkStatus.sdkUnavailable.obs;
-  final hasPermissions = RxnBool(false);
+  final hasPermissions = false.obs;
   final memoryCache = MemoryCache();
 
   @override
@@ -194,14 +194,15 @@ class HealthService extends GetxService {
     final status = await Health().getHealthConnectSdkStatus();
     logger.i('Health Connect SDK Status: $status');
 
-    hasPermissions.value = await Health().hasPermissions(types, permissions: permissions);
+    hasPermissions.value = await Health().hasPermissions(types, permissions: permissions) ?? false;
 
     bool authorized = false;
-    if (hasPermissions.value == null || !hasPermissions.value!) {
+    if (!hasPermissions.value) {
       try {
         authorized = await Health().requestAuthorization(types, permissions: permissions);
         isAuthorized.value = authorized;
-        hasPermissions.value = await Health().hasPermissions(types, permissions: permissions);
+        hasPermissions.value =
+            await Health().hasPermissions(types, permissions: permissions) ?? false;
       } catch (error) {
         logger.e("Exception in authorize: $error");
       }

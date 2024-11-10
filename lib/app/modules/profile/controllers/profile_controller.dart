@@ -30,17 +30,6 @@ class ProfileController extends GetxController {
       logger.i('darkMode: $value');
       update();
     });
-
-    // if (authService.appUser.value.svgString.isEmpty) {
-    //   logger.i('No SVG String found, setting default Fluttermoji');
-    //   //fluttermojiController.setFluttermoji(fluttermojiNew: json.encode(defaultFluttermoji));
-    // } else {
-    //   logger.i('SVG String found, setting Fluttermoji from SVG');
-    //   //fluttermojiController.setFluttermoji(
-    //   //fluttermojiNew: json.encode(authService.bedlamUser.value.svgString));
-    // }
-
-    // logger.i('fluttermojiController: ${fluttermojiController.fluttermoji}');
   }
 
   void increment() => count.value++;
