@@ -25,6 +25,8 @@ class FoodManager {
   final totalCarbohydratesTarget = 0.0.obs;
   final totalProteinTarget = 0.0.obs;
 
+  final isFoodLogged = false.obs;
+
   FoodManager() {
     ever(filteredMealType, (type) {
       filterMealsByType(type);
@@ -55,6 +57,7 @@ class FoodManager {
       totalCarbohydrates.value += meal.totalCarbsValue;
       totalProtein.value += meal.proteinValue;
     }
+    isFoodLogged.value = totalCalories.value > 0.0;
   }
 
   /// Reset all stored values to their defaults

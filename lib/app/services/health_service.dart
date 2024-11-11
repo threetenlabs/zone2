@@ -213,8 +213,8 @@ class HealthService extends GetxService {
   Future<List<HealthDataPoint>> getWaterData(
       {required TimeFrame timeFrame, required DateTime seedDate, bool? forceRefresh}) async {
     final types = [HealthDataType.WATER];
-    final key =
-        'water_${DateTime(seedDate.year, seedDate.month, seedDate.day).toIso8601String()}_${timeFrame.name}';
+    final key = 'water_${seedDate.year}_${seedDate.month}_${seedDate.day}_${timeFrame.name}';
+
     TimeFrameResult result =
         await getDateRangeForTimeFrame(seedDate: seedDate, timeFrame: timeFrame);
 
@@ -228,15 +228,17 @@ class HealthService extends GetxService {
         types: types, startTime: result.startDateTime, endTime: result.endDateTime);
 
     // Store fetched data in cache
-    memoryCache.create(key, healthData, expiry: const Duration(minutes: 10));
+    if (healthData.isNotEmpty) {
+      memoryCache.create(key, healthData, expiry: const Duration(minutes: 10));
+    }
     return Health().removeDuplicates(healthData);
   }
 
   Future<List<HealthDataPoint>> getStepData(
       {required TimeFrame timeFrame, required DateTime seedDate, bool? forceRefresh}) async {
     final types = [HealthDataType.STEPS];
-    final key =
-        'steps_${DateTime(seedDate.year, seedDate.month, seedDate.day).toIso8601String()}_${timeFrame.name}';
+    final key = 'steps_${seedDate.year}_${seedDate.month}_${seedDate.day}_${timeFrame.name}';
+
     TimeFrameResult result =
         await getDateRangeForTimeFrame(seedDate: seedDate, timeFrame: timeFrame);
 
@@ -250,15 +252,17 @@ class HealthService extends GetxService {
         types: types, startTime: result.startDateTime, endTime: result.endDateTime);
 
     // Store fetched data in cache
-    memoryCache.create(key, healthData, expiry: const Duration(minutes: 10));
+    if (healthData.isNotEmpty) {
+      memoryCache.create(key, healthData, expiry: const Duration(minutes: 10));
+    }
     return Health().removeDuplicates(healthData);
   }
 
   Future<List<HealthDataPoint>> getWeightData(
       {required TimeFrame timeFrame, required DateTime seedDate, bool? forceRefresh}) async {
     final types = [HealthDataType.WEIGHT];
-    final key =
-        'weight_${DateTime(seedDate.year, seedDate.month, seedDate.day).toIso8601String()}_${timeFrame.name}';
+    final key = 'weight_${seedDate.year}_${seedDate.month}_${seedDate.day}_${timeFrame.name}';
+
     TimeFrameResult result =
         await getDateRangeForTimeFrame(seedDate: seedDate, timeFrame: timeFrame);
 
@@ -272,15 +276,16 @@ class HealthService extends GetxService {
         types: types, startTime: result.startDateTime, endTime: result.endDateTime);
 
     // Store fetched data in cache
-    memoryCache.create(key, healthData, expiry: const Duration(minutes: 10));
+    if (healthData.isNotEmpty) {
+      memoryCache.create(key, healthData, expiry: const Duration(minutes: 10));
+    }
     return Health().removeDuplicates(healthData);
   }
 
   Future<List<HealthDataPoint>> getMealData(
       {required TimeFrame timeFrame, required DateTime seedDate, bool? forceRefresh}) async {
     final types = [HealthDataType.NUTRITION];
-    final key =
-        'meal_${DateTime(seedDate.year, seedDate.month, seedDate.day).toIso8601String()}_${timeFrame.name}';
+    final key = 'meal_${seedDate.year}_${seedDate.month}_${seedDate.day}_${timeFrame.name}';
     TimeFrameResult result =
         await getDateRangeForTimeFrame(seedDate: seedDate, timeFrame: timeFrame);
 
@@ -294,8 +299,10 @@ class HealthService extends GetxService {
         types: types, startTime: result.startDateTime, endTime: result.endDateTime);
 
     // Store fetched data in cache
-    memoryCache.create(key, healthData, expiry: const Duration(minutes: 10));
-    return Health().removeDuplicates(healthData);
+    if (healthData.isNotEmpty) {
+      memoryCache.create(key, healthData, expiry: const Duration(minutes: 10));
+    }
+    return healthData;
   }
 
   Future<List<HealthDataPoint>> getActivityData(

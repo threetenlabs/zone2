@@ -336,7 +336,8 @@ class DiaryController extends GetxController {
       double waterIntakeInOunces =
           await healthService.convertWaterUnit(waterIntakeInLiters, WaterUnit.ounce);
       waterIntake.value = waterIntakeInOunces; // Update the water intake observable
-      isWaterLogged.value = waterIntake.value > waterGoal.value;
+      isWaterLogged.value = waterIntake.value > 0;
+
       logger.i('Water logged: $isWaterLogged.value');
     } else {
       logger.w('No water data found');
