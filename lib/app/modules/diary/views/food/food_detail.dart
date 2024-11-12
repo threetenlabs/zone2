@@ -180,7 +180,7 @@ class FoodDetailBottomSheet extends GetView<DiaryController> {
                                       onPressed: controller.foodServingQty.value != null
                                           ? () {
                                               controller.saveMealToHealth();
-                                              onBack?.call();
+                                              onBack.call();
                                             }
                                           : null,
                                       child: const Text('Add to Meal'),
