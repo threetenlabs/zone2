@@ -1,5 +1,4 @@
 import 'package:health/health.dart';
-import 'package:zone2/app/models/user.dart';
 import 'package:zone2/app/modules/home/controllers/home_controller.dart';
 import 'package:zone2/app/modules/home/views/home_view.dart';
 import 'package:zone2/app/modules/diary/controllers/diary_controller.dart';
