@@ -82,8 +82,8 @@ class FoodService extends GetxService {
         uriHelper: uriHelperFoodProd,
       );
 
-      final searchResults = result.products?.map((product) => product.toJson()).toList();
-      printWrapped(searchResults.toString());
+      // final searchResults = result.products?.map((product) => product.toJson()).toList();
+      // printWrapped(searchResults.toString());
       // Filter out products that don't have a serving size
       final filteredResults =
           result.products?.where((product) => product.nutrimentDataPer == "serving").toList();
