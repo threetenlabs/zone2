@@ -102,7 +102,12 @@ class ScanFoodBottomSheet extends GetView<DiaryController> {
       useSafeArea: true,
       context: context,
       builder: (context) {
-        return const FoodDetailBottomSheet();
+        return FoodDetailBottomSheet(
+          onBack: () {
+            Navigator.pop(context);
+            Navigator.pop(context);
+          },
+        );
       },
     );
   }

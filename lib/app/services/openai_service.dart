@@ -85,7 +85,7 @@ class OpenAIService extends GetxService {
 
       // Create the chat completion
       final chat = await OpenAI.instance.chat.create(
-        model: "gpt-3.5-turbo",
+        model: "gpt-4o-mini",
         messages: [
           OpenAIChatCompletionChoiceMessageModel(
             role: OpenAIChatMessageRole.system,

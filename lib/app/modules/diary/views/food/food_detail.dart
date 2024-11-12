@@ -10,7 +10,8 @@ enum ConversionType {
 }
 
 class FoodDetailBottomSheet extends GetView<DiaryController> {
-  const FoodDetailBottomSheet({super.key});
+  final VoidCallback onBack;
+  const FoodDetailBottomSheet({super.key, required this.onBack});
 
   @override
   Widget build(BuildContext context) {
@@ -179,8 +180,7 @@ class FoodDetailBottomSheet extends GetView<DiaryController> {
                                       onPressed: controller.foodServingQty.value != null
                                           ? () {
                                               controller.saveMealToHealth();
-                                              Navigator.pop(context);
-                                              Navigator.pop(context);
+                                              onBack.call();
                                             }
                                           : null,
                                       child: const Text('Add to Meal'),
