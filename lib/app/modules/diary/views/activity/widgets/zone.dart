@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
@@ -50,7 +52,7 @@ class ActiveZoneMinutesRadialChart extends GetView<DiaryController> {
                   Text('Target: ${controller.zone2User.value?.zoneSettings?.dailyZonePointsGoal}'),
                   Text('Earned: ${controller.activityManager.value.totalZonePoints}'),
                   Text(
-                      'Remaining: ${(controller.zone2User.value?.zoneSettings?.dailyZonePointsGoal ?? 0) - controller.activityManager.value.totalZonePoints.value}'),
+                      'Remaining: ${max(0, (controller.zone2User.value?.zoneSettings?.dailyZonePointsGoal ?? 0) - controller.activityManager.value.totalZonePoints.value)}'),
                 ],
               ),
             ),

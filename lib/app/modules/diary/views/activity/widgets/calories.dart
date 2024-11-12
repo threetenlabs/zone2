@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
@@ -32,7 +34,7 @@ class CaloriesBurnedChart extends GetView<DiaryController> {
                   Text(
                       'Burned: ${NumberFormat('#,###').format(controller.activityManager.value.totalCaloriesBurned.value)}'),
                   Text(
-                      'Remaining: ${NumberFormat('#,###').format((controller.zone2User.value?.zoneSettings?.dailyCaloriesBurnedGoal ?? 0) - controller.activityManager.value.totalCaloriesBurned.value)}'),
+                      'Remaining: ${NumberFormat('#,###').format(max(0, (controller.zone2User.value?.zoneSettings?.dailyCaloriesBurnedGoal ?? 0) - controller.activityManager.value.totalCaloriesBurned.value))}'),
                 ],
               ),
             ),
