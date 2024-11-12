@@ -262,9 +262,6 @@ class HealthActivityManager {
     // Sum up steps from regular records
     totalSteps.value = stepRecords.fold(0, (sum, record) => sum + record.numericValue.toInt());
 
-    // Add steps from workouts
-    totalSteps.value += workoutRecords.fold(0, (sum, record) => sum + record.totalSteps);
-
     // Track processed time ranges to avoid double counting
     Set<String> processedRanges = {};
 
