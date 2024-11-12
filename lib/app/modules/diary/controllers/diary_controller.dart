@@ -52,13 +52,15 @@ class FoodVoiceResult {
   static List<FoodVoiceResult> fromOpenAiCompletion(List<dynamic> items) {
     return items.map((item) {
       // Handle nulls for food items
-      final food = item['food'];
+      final food = item;
       return FoodVoiceResult(
         label: food?['label'] as String? ?? 'Unknown Food', // Default value for label
-        searchTerm: food?['searchTerm'] as String? ?? '', // Default to empty string
-        quantity: (food?['quantity'] as double?) ?? 0.0, // Default to 0.0
-        unit: food?['unit'] as String? ?? 'units', // Default unit
-        mealType: _parseMealType(food?['mealType'] as String? ?? 'UNKNOWN'), // Default to UNKNOWN
+        searchTerm: (food?['searchTerm'] as String?) ?? '', // Default to empty string
+        quantity: (food?['quantity'] is int)
+            ? (food?['quantity'] as int).toDouble()
+            : (food?['quantity'] as double? ?? 0.0), // Default to 0.0
+        unit: (food?['unit'] as String?) ?? 'units', // Default unit
+        mealType: _parseMealType((food?['mealType'] as String?) ?? 'UNKNOWN'), // Default to UNKNOWN
       );
     }).toList();
   }
@@ -183,6 +185,7 @@ class DiaryController extends GetxController {
       isAvailable.value = await speech.initialize(
         onError: (error) => _onSpeechError(error),
         onStatus: (status) => _onSpeechStatus(status),
+        finalTimeout: const Duration(milliseconds: 5000),
       );
 
       if (isAvailable.value) {
@@ -204,6 +207,8 @@ class DiaryController extends GetxController {
         onResult: _onSpeechResult,
         listenOptions: SpeechListenOptions(partialResults: true),
         localeId: currentLocaleId.value,
+        listenFor: const Duration(seconds: 10),
+        pauseFor: const Duration(seconds: 5),
       );
       isListening.value = true;
     } catch (e) {

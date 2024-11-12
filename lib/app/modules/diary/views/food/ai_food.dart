@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-
+import 'package:zone2/app/models/food.dart';
 import 'package:zone2/app/modules/diary/controllers/diary_controller.dart';
+import 'package:zone2/app/modules/diary/views/food/food_detail.dart';
 
 class AISearchBottomSheet extends GetView<DiaryController> {
   const AISearchBottomSheet({super.key});
@@ -22,11 +23,12 @@ class AISearchBottomSheet extends GetView<DiaryController> {
                   alignment: Alignment.topLeft,
                   child: IconButton(
                     icon: const Icon(Icons.close),
-                    onPressed: () => Navigator.pop(context), // Close the bottom sheet
+                    onPressed: () => Navigator.pop(context),
                   ),
                 ),
-                // Top section with suggestions
-                if (!controller.isListening.value && controller.matchedFoods.isEmpty)
+
+                // Examples section when no results
+                if (!controller.isListening.value && controller.voiceResults.isEmpty)
                   Expanded(
                     child: SingleChildScrollView(
                       child: Column(
@@ -93,63 +95,113 @@ class AISearchBottomSheet extends GetView<DiaryController> {
                     ),
                   ),
 
-                // Results section (when foods are matched)
+                // Results section
                 if (controller.voiceResults.isNotEmpty)
                   Expanded(
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: Colors.grey[100],
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Column(
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.all(16),
-                            child: Text(
-                              'Found Items',
-                              style: Theme.of(context).textTheme.titleLarge,
+                    child: ListView.builder(
+                      itemCount: controller.voiceResults.length,
+                      itemBuilder: (context, index) {
+                        final voiceResult = controller.voiceResults[index];
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            ListTile(
+                              title: Text(voiceResult.label),
+                              subtitle: Text('${voiceResult.quantity} ${voiceResult.unit}'),
+                              trailing: Text(voiceResult.mealType.toString().split('.').last),
+                              onTap: () => controller.selectFoodFromVoice(voiceResult.searchTerm),
                             ),
-                          ),
-                          // if (controller.recognizedWords.value.isNotEmpty)
-                          //   Padding(
-                          //     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                          //     child: Text(
-                          //       '"${controller.recognizedWords.value}"',
-                          //       style: TextStyle(
-                          //         color: Colors.grey[600],
-                          //         fontStyle: FontStyle.italic,
-                          //       ),
-                          //     ),
-                          //   ),
-                          Expanded(
-                            child: ListView.builder(
-                              itemCount: controller.voiceResults.length,
-                              itemBuilder: (context, index) {
-                                return Card(
-                                  margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                                  child: ListTile(
-                                    leading: const Icon(Icons.check_circle),
-                                    title: Text(controller.voiceResults[index].label),
-                                    trailing: IconButton(
-                                      icon: const Icon(Icons.add_circle_outline),
-                                      onPressed: () {
-                                        controller.selectFoodFromVoice(
-                                            controller.voiceResults[index].searchTerm);
-                                      },
-                                    ),
+                            // Horizontal search results
+                            Obx(() {
+                              final searchResults = controller.foodSearchResults.value;
+                              if (searchResults != null &&
+                                  controller.selectedVoiceFood == voiceResult.searchTerm) {
+                                return SizedBox(
+                                  height: 160,
+                                  child: ListView.builder(
+                                    scrollDirection: Axis.horizontal,
+                                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                                    itemCount: searchResults.foods.length,
+                                    itemBuilder: (context, foodIndex) {
+                                      final food = searchResults.foods[foodIndex];
+                                      return Padding(
+                                        padding: const EdgeInsets.only(right: 8),
+                                        child: InkWell(
+                                          onTap: () {
+                                            controller.selectedOpenFoodFactsFood.value = food;
+                                            controller.selectedZone2Food.value =
+                                                Zone2Food.fromOpenFoodFactsFood(food);
+                                            controller.selectedMealType.value =
+                                                voiceResult.mealType;
+                                            controller.foodServingController.text =
+                                                voiceResult.quantity.toString();
+
+                                            showModalBottomSheet(
+                                              context: context,
+                                              isScrollControlled: true,
+                                              builder: (_) => FoodDetailBottomSheet(
+                                                onBack: () {
+                                                  Navigator.pop(context);
+                                                },
+                                              ),
+                                            ).then((_) {
+                                              if (context.mounted && controller.voiceResults.isEmpty) {
+                                                Navigator.pop(context);
+                                              }
+                                            });
+                                          },
+                                          child: Card(
+                                            child: SizedBox(
+                                              width: 200,
+                                              child: Padding(
+                                                padding: const EdgeInsets.all(8.0),
+                                                child: Column(
+                                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                                  children: [
+                                                    Text(
+                                                      food.description,
+                                                      style: const TextStyle(
+                                                          fontWeight: FontWeight.bold),
+                                                      maxLines: 2,
+                                                      overflow: TextOverflow.ellipsis,
+                                                    ),
+                                                    const SizedBox(height: 4),
+                                                    Text(
+                                                      'Brand: ${food.brand}',
+                                                      style: Theme.of(context).textTheme.bodySmall,
+                                                    ),
+                                                    Text(
+                                                      'Serving: ${food.servingSize} ${food.servingSizeUnit}',
+                                                      style: Theme.of(context).textTheme.bodySmall,
+                                                    ),
+                                                    Text(
+                                                      'Calories: ${food.description}',
+                                                      style: Theme.of(context).textTheme.bodySmall,
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      );
+                                    },
                                   ),
                                 );
-                              },
-                            ),
-                          ),
-                        ],
-                      ),
+                              }
+                              return const SizedBox.shrink();
+                            }),
+                            const Divider(),
+                          ],
+                        );
+                      },
                     ),
                   ),
 
-                // Voice input button always at bottom
+                // Voice input button
                 Container(
                   padding: const EdgeInsets.symmetric(vertical: 24),
+                  width: double.infinity,
                   child: Column(
                     children: [
                       GestureDetector(
@@ -205,80 +257,6 @@ class AISearchBottomSheet extends GetView<DiaryController> {
     );
   }
 
-  Widget _buildSuggestionCard(BuildContext context,
-      {required String title,
-      required String example,
-      required VoidCallback onTap,
-      List<String>? results}) {
-    return Card(
-      elevation: 2,
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      child: InkWell(
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Icon(
-                    _getIconForMeal(title),
-                    color: Theme.of(context).primaryColor,
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    title,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Try saying:',
-                style: TextStyle(
-                  color: Colors.grey[600],
-                  fontSize: 12,
-                ),
-              ),
-              Text(
-                example,
-                style: const TextStyle(
-                  fontSize: 14,
-                  fontStyle: FontStyle.italic,
-                ),
-              ),
-              if (results != null) ...[
-                const SizedBox(height: 8),
-                Text(
-                  'Will extract:',
-                  style: TextStyle(
-                    color: Colors.grey[600],
-                    fontSize: 12,
-                  ),
-                ),
-                ...results.map(
-                  (item) => Padding(
-                    padding: const EdgeInsets.only(top: 4),
-                    child: Row(
-                      children: [
-                        const Icon(Icons.check_circle_outline, size: 16),
-                        const SizedBox(width: 8),
-                        Text(item),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ],
-          ),
-        ),
-      ),
-    );
-  }
 
   IconData _getIconForMeal(String meal) {
     switch (meal.toLowerCase()) {
