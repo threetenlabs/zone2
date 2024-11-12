@@ -1,9 +1,9 @@
 import 'package:health/health.dart';
 import 'package:get/get.dart';
 import 'package:logger/logger.dart';
-import 'package:memory_cache/memory_cache.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:zone2/app/models/food.dart';
+import 'package:zone2/app/services/health_data_cache_manager.dart';
 import 'package:zone2/app/services/notification_service.dart';
 import 'dart:math' as math;
 
@@ -32,7 +32,7 @@ class HealthService extends GetxService {
   final isAuthorized = false.obs;
   final status = HealthConnectSdkStatus.sdkUnavailable.obs;
   final hasPermissions = false.obs;
-  final memoryCache = MemoryCache();
+  final cacheManager = HealthDataCacheManager(prefix: 'health');
 
   @override
   Future<void> onInit() async {
@@ -219,7 +219,7 @@ class HealthService extends GetxService {
         await getDateRangeForTimeFrame(seedDate: seedDate, timeFrame: timeFrame);
 
     // Check for cached data
-    final cachedData = memoryCache.read<List<HealthDataPoint>>(key);
+    final cachedData = await cacheManager.getData(key);
     if (cachedData != null && !forceRefresh!) {
       return cachedData; // Return cached data if available
     }
@@ -229,7 +229,7 @@ class HealthService extends GetxService {
 
     // Store fetched data in cache
     if (healthData.isNotEmpty) {
-      memoryCache.create(key, healthData, expiry: const Duration(minutes: 10));
+      await cacheManager.cacheData(key, healthData, const Duration(minutes: 10));
     }
     return Health().removeDuplicates(healthData);
   }
@@ -243,7 +243,7 @@ class HealthService extends GetxService {
         await getDateRangeForTimeFrame(seedDate: seedDate, timeFrame: timeFrame);
 
     // Check for cached data
-    final cachedData = memoryCache.read<List<HealthDataPoint>>(key);
+    final cachedData = await cacheManager.getData(key);
     if (cachedData != null && !forceRefresh!) {
       return cachedData; // Return cached data if available
     }
@@ -253,7 +253,7 @@ class HealthService extends GetxService {
 
     // Store fetched data in cache
     if (healthData.isNotEmpty) {
-      memoryCache.create(key, healthData, expiry: const Duration(minutes: 10));
+      await cacheManager.cacheData(key, healthData, const Duration(minutes: 10));
     }
     return Health().removeDuplicates(healthData);
   }
@@ -267,7 +267,7 @@ class HealthService extends GetxService {
         await getDateRangeForTimeFrame(seedDate: seedDate, timeFrame: timeFrame);
 
     // Check for cached data
-    final cachedData = memoryCache.read<List<HealthDataPoint>>(key);
+    final cachedData = await cacheManager.getData(key);
     if (cachedData != null && !forceRefresh!) {
       return cachedData; // Return cached data if available
     }
@@ -277,7 +277,7 @@ class HealthService extends GetxService {
 
     // Store fetched data in cache
     if (healthData.isNotEmpty) {
-      memoryCache.create(key, healthData, expiry: const Duration(minutes: 10));
+      await cacheManager.cacheData(key, healthData, const Duration(minutes: 10));
     }
     return Health().removeDuplicates(healthData);
   }
@@ -290,7 +290,7 @@ class HealthService extends GetxService {
         await getDateRangeForTimeFrame(seedDate: seedDate, timeFrame: timeFrame);
 
     // Check for cached data
-    final cachedData = memoryCache.read<List<HealthDataPoint>>(key);
+    final cachedData = await cacheManager.getData(key);
     if (cachedData != null && !forceRefresh!) {
       return cachedData; // Return cached data if available
     }
@@ -300,7 +300,7 @@ class HealthService extends GetxService {
 
     // Store fetched data in cache
     if (healthData.isNotEmpty) {
-      memoryCache.create(key, healthData, expiry: const Duration(minutes: 10));
+      await cacheManager.cacheData(key, healthData, const Duration(minutes: 10));
     }
     return healthData;
   }
@@ -320,7 +320,7 @@ class HealthService extends GetxService {
         await getDateRangeForTimeFrame(seedDate: seedDate, timeFrame: timeFrame);
 
     // Check for cached data
-    final cachedData = memoryCache.read<List<HealthDataPoint>>(key);
+    final cachedData = await cacheManager.getData(key);
     if (cachedData != null && !forceRefresh!) {
       return cachedData; // Return cached data if available
     }
@@ -329,7 +329,9 @@ class HealthService extends GetxService {
         types: types, startTime: result.startDateTime, endTime: result.endDateTime);
 
     // Store fetched data in cache
-    memoryCache.create(key, healthData, expiry: const Duration(minutes: 10));
+    if (healthData.isNotEmpty) {
+      await cacheManager.cacheData(key, healthData, const Duration(minutes: 10));
+    }
     return Health().removeDuplicates(healthData);
   }
 
