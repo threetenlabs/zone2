@@ -20,13 +20,14 @@ class FoodCarousel extends GetView<DiaryController> {
               itemExtent: 330,
               shrinkExtent: 200,
               onTap: (index) {
-                controller.selectedZone2Food.value =
-                    Zone2Food.fromHealthDataPoint(controller.foodManager.value.filteredMeals[index]);
+                controller.selectedZone2Food.value = Zone2Food.fromHealthDataPoint(
+                    controller.foodManager.value.filteredMeals[index]);
                 controller.foodServingController.text =
                     controller.selectedZone2Food.value?.servingQuantity.toStringAsFixed(1) ?? '';
                 _showFoodDetail(context);
               },
-              children: List<Widget>.generate(controller.foodManager.value.filteredMeals.length, (int index) {
+              children: List<Widget>.generate(controller.foodManager.value.filteredMeals.length,
+                  (int index) {
                 final item = controller.foodManager.value.filteredMeals[index];
                 final nutritionHealthValue = item.value as NutritionHealthValue;
                 return FoodCarouselCard(

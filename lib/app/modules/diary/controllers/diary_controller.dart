@@ -582,4 +582,14 @@ class DiaryController extends GetxController {
       BusyIndicatorService.to.hideBusyIndicator();
     }
   }
+
+  void viewFoodFromSearch(OpenFoodFactsFood openFoodFactsFood) {
+    selectedOpenFoodFactsFood.value = openFoodFactsFood;
+    selectedZone2Food.value = Zone2Food.fromOpenFoodFactsFood(openFoodFactsFood);
+    foodServingController.text = '';
+    if (selectedZone2Food.value!.totalCaloriesValue <= 0) {
+      NotificationService.to.showWarning(
+          'No Calories', 'This food has no calories and cannot be added to your meal.');
+    }
+  }
 }

@@ -145,7 +145,8 @@ class AISearchBottomSheet extends GetView<DiaryController> {
                                                 },
                                               ),
                                             ).then((_) {
-                                              if (context.mounted && controller.voiceResults.isEmpty) {
+                                              controller.voiceResults.removeAt(index);
+                                              if (controller.voiceResults.isEmpty) {
                                                 Navigator.pop(context);
                                               }
                                             });
@@ -255,22 +256,6 @@ class AISearchBottomSheet extends GetView<DiaryController> {
         ),
       ),
     );
-  }
-
-
-  IconData _getIconForMeal(String meal) {
-    switch (meal.toLowerCase()) {
-      case 'breakfast':
-        return Icons.breakfast_dining;
-      case 'lunch':
-        return Icons.lunch_dining;
-      case 'dinner':
-        return Icons.dinner_dining;
-      case 'snack':
-        return Icons.apple;
-      default:
-        return Icons.restaurant;
-    }
   }
 
   Widget _buildQuickSuggestion(

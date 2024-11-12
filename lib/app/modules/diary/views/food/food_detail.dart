@@ -177,11 +177,13 @@ class FoodDetailBottomSheet extends GetView<DiaryController> {
                               const SizedBox(height: 16),
                               if (controller.selectedZone2Food.value?.startTime == null)
                                 Obx(() => ElevatedButton(
-                                      onPressed: controller.foodServingQty.value != null
+                                      onPressed: controller.foodServingQty.value != null &&
+                                              controller
+                                                      .selectedZone2Food.value!.totalCaloriesValue >
+                                                  0
                                           ? () {
                                               controller.saveMealToHealth();
-                                              Navigator.pop(context);
-                                              Navigator.pop(context);
+                                              onBack.call();
                                             }
                                           : null,
                                       child: const Text('Add to Meal'),

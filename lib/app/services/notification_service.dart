@@ -17,7 +17,15 @@ class NotificationService {
         title: title,
         message: message,
         iconAsset: iconAsset,
-        notificationType: NotificationType.custom));
+        notificationType: NotificationType.info));
+    if (!_isShowingNotification) {
+      _showNextNotification();
+    }
+  }
+
+  void showWarning(String title, String message) {
+    _notificationQueue.add(_NotificationRequest(
+        title: title, message: message, notificationType: NotificationType.warning));
     if (!_isShowingNotification) {
       _showNextNotification();
     }
@@ -54,7 +62,7 @@ class NotificationService {
             title: Text(request.title),
             description: Text(request.message),
             alignment: Alignment.topCenter,
-            autoCloseDuration: const Duration(milliseconds: 1400),
+            autoCloseDuration: const Duration(milliseconds: 2000),
             boxShadow: highModeShadow,
             applyBlurEffect: true,
             showProgressBar: false,
@@ -92,19 +100,30 @@ class NotificationService {
             //     toastDuration: const Duration(milliseconds: 6000),
             //     showProgressIndicator: false,
             //   ).show(Get.overlayContext!)
-            :
-            // Show the notification
-            toastification.show(
-                type: ToastificationType.info,
-                style: ToastificationStyle.flatColored,
-                title: Text(request.title),
-                description: Text(request.message),
-                alignment: Alignment.topCenter,
-                autoCloseDuration: const Duration(milliseconds: 1400),
-                boxShadow: highModeShadow,
-                applyBlurEffect: true,
-                showProgressBar: false,
-              );
+            : request.notificationType == NotificationType.warning
+                ? toastification.show(
+                    type: ToastificationType.warning,
+                    style: ToastificationStyle.flatColored,
+                    title: Text(request.title),
+                    description: Text(request.message),
+                    alignment: Alignment.topCenter,
+                    autoCloseDuration: const Duration(milliseconds: 3000),
+                    boxShadow: highModeShadow,
+                    applyBlurEffect: true,
+                    showProgressBar: false,
+                  )
+                // Show the notification
+                : toastification.show(
+                    type: ToastificationType.info,
+                    style: ToastificationStyle.fillColored,
+                    title: Text(request.title),
+                    description: Text(request.message),
+                    alignment: Alignment.topCenter,
+                    autoCloseDuration: const Duration(milliseconds: 1400),
+                    boxShadow: highModeShadow,
+                    applyBlurEffect: true,
+                    showProgressBar: false,
+                  );
     // ElegantNotification(
     //   notificationMargin: 50,
     //   title: Text(request.title,
@@ -136,4 +155,4 @@ class _NotificationRequest {
       {required this.title, required this.message, required this.notificationType, this.iconAsset});
 }
 
-enum NotificationType { custom, error, success }
+enum NotificationType { info, error, success, warning }
