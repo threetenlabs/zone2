@@ -54,7 +54,7 @@ class NotificationService {
             title: Text(request.title),
             description: Text(request.message),
             alignment: Alignment.topCenter,
-            autoCloseDuration: const Duration(milliseconds: 1700),
+            autoCloseDuration: const Duration(milliseconds: 1400),
             boxShadow: highModeShadow,
             applyBlurEffect: true,
             showProgressBar: false,
@@ -77,7 +77,7 @@ class NotificationService {
                 title: Text(request.title),
                 description: Text(request.message),
                 alignment: Alignment.topCenter,
-                autoCloseDuration: const Duration(milliseconds: 1700),
+                autoCloseDuration: const Duration(milliseconds: 1400),
                 boxShadow: highModeShadow,
                 applyBlurEffect: true,
                 showProgressBar: false,
@@ -100,7 +100,7 @@ class NotificationService {
                 title: Text(request.title),
                 description: Text(request.message),
                 alignment: Alignment.topCenter,
-                autoCloseDuration: const Duration(milliseconds: 1700),
+                autoCloseDuration: const Duration(milliseconds: 1400),
                 boxShadow: highModeShadow,
                 applyBlurEffect: true,
                 showProgressBar: false,
@@ -119,7 +119,7 @@ class NotificationService {
     //   showProgressIndicator: false,
     // ).show(Get.overlayContext!);
 
-    Future.delayed(const Duration(milliseconds: 6000), () {
+    Future.delayed(const Duration(milliseconds: 1500), () {
       _isShowingNotification = false;
       _showNextNotification();
     });

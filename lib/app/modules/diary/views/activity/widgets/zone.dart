@@ -32,73 +32,102 @@ class ActiveZoneMinutesRadialChart extends GetView<DiaryController> {
     ];
 
     return Obx(
-      () => SfCircularChart(
-        title: const ChartTitle(text: 'Zone Points'),
-        legend: Legend(
-          isVisible: true,
-          overflowMode: LegendItemOverflowMode.scroll,
-          position: LegendPosition.right,
-          legendItemBuilder: (String name, dynamic series, dynamic point, int index) {
-            return SizedBox(
-              height: 40,
-              width: 50,
+      () => Card(
+        child: Column(
+          children: [
+            Text(
+              'Zone Points',
+              style: Theme.of(context)
+                  .textTheme
+                  .titleLarge
+                  ?.copyWith(color: Theme.of(context).colorScheme.onSurface),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
               child: Row(
-                children: <Widget>[
-                  legendIcons[index],
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      "Z ${chartData[index].zoneNumber}",
-                      style: TextStyle(
-                        color: controller
-                            .activityManager.value.zoneConfigs[chartData[index].zoneNumber]?.color,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  Text('Target: ${controller.zone2User.value?.zoneSettings?.dailyZonePointsGoal}'),
+                  Text('Earned: ${controller.activityManager.value.totalZonePoints}'),
+                  Text(
+                      'Remaining: ${(controller.zone2User.value?.zoneSettings?.dailyZonePointsGoal ?? 0) - controller.activityManager.value.totalZonePoints.value}'),
                 ],
               ),
-            );
-          },
-        ),
-        series: <RadialBarSeries<_ChartData, String>>[
-          RadialBarSeries<_ChartData, String>(
-            dataSource: chartData,
-            maximumValue: 100,
-            radius: '90%',
-            gap: '2%',
-            innerRadius: '32%',
-            cornerStyle: CornerStyle.bothCurve,
-            xValueMapper: (_ChartData data, _) => data.zone,
-            yValueMapper: (_ChartData data, _) => data.minutes.toDouble(),
-            pointColorMapper: (_ChartData data, _) =>
-                controller.activityManager.value.zoneConfigs[data.zoneNumber]?.color ?? Colors.grey,
-            dataLabelSettings: const DataLabelSettings(isVisible: true),
-          ),
-        ],
-        annotations: <CircularChartAnnotation>[
-          CircularChartAnnotation(
-            widget: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                Text(
-                  '${controller.activityManager.value.totalZonePoints.toInt()}',
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
+            ),
+            SfCircularChart(
+              title: ChartTitle(
+                text: 'Zone Breakdown',
+                textStyle: TextStyle(fontSize: 10, color: Theme.of(context).colorScheme.onSurface),
+              ),
+              legend: Legend(
+                isVisible: true,
+                overflowMode: LegendItemOverflowMode.scroll,
+                position: LegendPosition.right,
+                legendItemBuilder: (String name, dynamic series, dynamic point, int index) {
+                  return SizedBox(
+                    height: 40,
+                    width: 50,
+                    child: Row(
+                      children: <Widget>[
+                        legendIcons[index],
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            "Z ${chartData[index].zoneNumber}",
+                            style: TextStyle(
+                              color: controller.activityManager.value
+                                  .zoneConfigs[chartData[index].zoneNumber]?.color,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
+              series: <RadialBarSeries<_ChartData, String>>[
+                RadialBarSeries<_ChartData, String>(
+                  dataSource: chartData,
+                  maximumValue: 100,
+                  radius: '90%',
+                  gap: '2%',
+                  innerRadius: '32%',
+                  cornerStyle: CornerStyle.bothCurve,
+                  xValueMapper: (_ChartData data, _) => data.zone,
+                  yValueMapper: (_ChartData data, _) => data.minutes.toDouble(),
+                  pointColorMapper: (_ChartData data, _) =>
+                      controller.activityManager.value.zoneConfigs[data.zoneNumber]?.color ??
+                      Colors.grey,
+                  dataLabelSettings: const DataLabelSettings(isVisible: true),
                 ),
-                const Text(
-                  'Zone Points',
-                  style: TextStyle(
-                    fontSize: 10,
-                    fontWeight: FontWeight.bold,
+              ],
+              annotations: <CircularChartAnnotation>[
+                CircularChartAnnotation(
+                  widget: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: <Widget>[
+                      Text(
+                        '${controller.activityManager.value.totalZonePoints.toInt()}',
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const Text(
+                        'Zone Points',
+                        style: TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
