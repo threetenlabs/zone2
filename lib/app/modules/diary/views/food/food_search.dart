@@ -49,7 +49,8 @@ class FoodSearchWidget extends GetWidget<DiaryController> {
                       subtitle: Text('Brand: ${openFoodFactsFood.brand}'),
                       onTap: () {
                         controller.selectedOpenFoodFactsFood.value = openFoodFactsFood;
-                        controller.selectedZone2Food.value = Zone2Food.fromOpenFoodFactsFood(openFoodFactsFood);
+                        controller.selectedZone2Food.value =
+                            Zone2Food.fromOpenFoodFactsFood(openFoodFactsFood);
                         controller.foodServingController.text = '';
                         _showFoodDetail(context);
                       }, // Show food details on tap
@@ -75,7 +76,12 @@ class FoodSearchWidget extends GetWidget<DiaryController> {
       useSafeArea: true,
       context: context,
       builder: (context) {
-        return const FoodDetailBottomSheet();
+        return FoodDetailBottomSheet(
+          onBack: () {
+            Navigator.pop(context);
+            Navigator.pop(context);
+          },
+        );
       },
     );
   }
