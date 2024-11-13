@@ -93,7 +93,7 @@ class FoodDetailBottomSheet extends GetView<DiaryController> {
                                                     .isNotEmpty ??
                                                 false
                                             ? controller.selectedZone2Food.value!.servingLabel
-                                            : 'Serving',
+                                            : 'Serving(s)',
                                         style: const TextStyle(fontSize: 16),
                                         textAlign: TextAlign.left,
                                       ),

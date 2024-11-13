@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:zone2/app/models/food.dart';
 import 'package:zone2/app/modules/diary/controllers/diary_controller.dart';
 import 'package:zone2/app/modules/diary/views/food/food_detail.dart';
 

@@ -124,6 +124,53 @@ class OpenFoodFactsFood {
       householdServingFullText: servingSizeStr,
     );
   }
+
+  factory OpenFoodFactsFood.fromUsdaFood(UsdaFood food) {
+    // Map nutrients to OpenFoodFactsNutriment format
+    List<OpenFoodFactsNutriment> nutrients = [];
+
+    // Helper function to find nutrient value
+    double getNutrientValue(String name) {
+      final nutrient = food.foodNutrients.firstWhere(
+        (n) => n.name.toLowerCase().contains(name.toLowerCase()),
+        orElse: () => UsdaFoodNutrient(name: '', amount: 0.0, unitName: ''),
+      );
+      return nutrient.amount;
+    }
+
+    nutrients.addAll([
+      OpenFoodFactsNutriment(
+          name: 'energyKCal', amount: getNutrientValue('Energy'), unitName: 'kcal'),
+      OpenFoodFactsNutriment(name: 'proteins', amount: getNutrientValue('Protein'), unitName: 'g'),
+      OpenFoodFactsNutriment(
+          name: 'fat', amount: getNutrientValue('Total lipid (fat)'), unitName: 'g'),
+      OpenFoodFactsNutriment(
+          name: 'carbohydrates',
+          amount: getNutrientValue('Carbohydrate, by difference'),
+          unitName: 'g'),
+      OpenFoodFactsNutriment(
+          name: 'sugars', amount: getNutrientValue('Sugars, Total'), unitName: 'g'),
+      OpenFoodFactsNutriment(
+          name: 'saturated-fat',
+          amount: getNutrientValue('Fatty acids, total saturated'),
+          unitName: 'g'),
+      OpenFoodFactsNutriment(name: 'sodium', amount: getNutrientValue('Sodium, Na'), unitName: 'g'),
+      OpenFoodFactsNutriment(
+          name: 'cholesterol', amount: getNutrientValue('Cholesterol'), unitName: 'mg'),
+      OpenFoodFactsNutriment(
+          name: 'potassium', amount: getNutrientValue('Potassium, K'), unitName: 'g'),
+    ]);
+
+    return OpenFoodFactsFood(
+      barcode: food.fdcId.toString(),
+      description: food.description,
+      nutriments: nutrients,
+      brand: food.brandOwner.isNotEmpty ? food.brandOwner : 'N/A',
+      servingSizeUnit: food.servingSizeUnit,
+      servingSize: food.servingSize,
+      householdServingFullText: food.householdServingFullText,
+    );
+  }
 }
 
 class OpenFoodFactsNutriment {
@@ -374,6 +421,140 @@ class Zone2Food {
       type: dataPoint.type,
       startTime: dataPoint.dateFrom,
       endTime: dataPoint.dateTo,
+    );
+  }
+}
+
+class UsdaFoodSearchResponse {
+  final FoodSearchCriteria foodSearchCriteria;
+  final int totalHits;
+  final int currentPage;
+  final int totalPages;
+  final List<UsdaFood> foods;
+
+  UsdaFoodSearchResponse({
+    required this.foodSearchCriteria,
+    required this.totalHits,
+    required this.currentPage,
+    required this.totalPages,
+    required this.foods,
+  });
+
+  factory UsdaFoodSearchResponse.fromJson(Map<String, dynamic> json) {
+    return UsdaFoodSearchResponse(
+      foodSearchCriteria:
+          FoodSearchCriteria.fromJson(json['foodSearchCriteria'] ?? {}), // Handle null
+      totalHits: json['totalHits'] ?? 0, // Default to 0 if null
+      currentPage: json['currentPage'] ?? 1, // Default to 1 if null
+      totalPages: json['totalPages'] ?? 1, // Default to 1 if null
+      foods: List<UsdaFood>.from(
+          json['foods']?.map((food) => UsdaFood.fromJson(food)) ?? []), // Handle null
+    );
+  }
+}
+
+class FoodSearchCriteria {
+  final String query;
+  final List<String> dataType;
+  final int pageSize;
+  final int pageNumber;
+  final String sortBy;
+  final String sortOrder;
+  final String brandOwner;
+  final List<String> tradeChannel;
+  final String startDate;
+  final String endDate;
+
+  FoodSearchCriteria({
+    required this.query,
+    required this.dataType,
+    required this.pageSize,
+    required this.pageNumber,
+    required this.sortBy,
+    required this.sortOrder,
+    required this.brandOwner,
+    required this.tradeChannel,
+    required this.startDate,
+    required this.endDate,
+  });
+
+  factory FoodSearchCriteria.fromJson(Map<String, dynamic> json) {
+    return FoodSearchCriteria(
+      query: json['query'] ?? '', // Default to empty string if null
+      dataType: List<String>.from(json['dataType'] ?? []), // Handle null
+      pageSize: json['pageSize'] ?? 10, // Default to 10 if null
+      pageNumber: json['pageNumber'] ?? 1, // Default to 1 if null
+      sortBy: json['sortBy'] ?? 'dataType.keyword', // Default to a specific value if null
+      sortOrder: json['sortOrder'] ?? 'asc', // Default to 'asc' if null
+      brandOwner: json['brandOwner'] ?? '', // Default to empty string if null
+      tradeChannel: List<String>.from(json['tradeChannel'] ?? []), // Handle null
+      startDate: json['startDate'] ?? '', // Default to empty string if null
+      endDate: json['endDate'] ?? '', // Default to empty string if null
+    );
+  }
+}
+
+class UsdaFood {
+  final int fdcId;
+  final String dataType;
+  final String description;
+  final List<UsdaFoodNutrient> foodNutrients;
+  final String publicationDate;
+  final String brandOwner;
+  final String servingSizeUnit;
+  final double servingSize;
+  final String householdServingFullText;
+
+  UsdaFood({
+    required this.fdcId,
+    required this.dataType,
+    required this.description,
+    required this.foodNutrients,
+    required this.publicationDate,
+    required this.brandOwner,
+    required this.servingSizeUnit,
+    required this.servingSize,
+    required this.householdServingFullText,
+  });
+
+  factory UsdaFood.fromJson(Map<String, dynamic> json) {
+    return UsdaFood(
+      fdcId: json['fdcId'] ?? 0, // Default to 0 if null
+      dataType: json['dataType'] ?? '', // Default to empty string if null
+      description: json['description'] ?? '', // Default to empty string if null
+      foodNutrients: List<UsdaFoodNutrient>.from(
+          json['foodNutrients']?.map((nutrient) => UsdaFoodNutrient.fromJson(nutrient)) ??
+              []), // Handle null
+      publicationDate: json['publicationDate'] ?? '', // Default to empty string if null
+      brandOwner: json['brandOwner'] ?? '', // Default to empty string if null
+      servingSizeUnit: json['servingSizeUnit'] ?? '', // Default to empty string if null
+      servingSize: json['servingSize'] ?? 0.0, // Default to 0.0 if null
+      householdServingFullText:
+          json['householdServingFullText'] ?? '', // Default to empty string if null
+    );
+  }
+}
+
+class UsdaFoodNutrient {
+  final String name;
+  final double amount;
+  final String unitName;
+
+  UsdaFoodNutrient({
+    required this.name,
+    required this.amount,
+    required this.unitName,
+  });
+
+  factory UsdaFoodNutrient.fromJson(Map<String, dynamic> json) {
+    return UsdaFoodNutrient(
+      name: json['nutrientName'],
+      amount: json['value'] != null
+          ? (json['value'] is int)
+              ? (json['value'] as int).toDouble()
+              : (json['value'] as double) // Handle int or double
+          : 0.0, // Default to 0.0 if null
+      unitName: json['unitName'],
     );
   }
 }
