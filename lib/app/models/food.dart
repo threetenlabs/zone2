@@ -28,7 +28,7 @@ class OpenFoodFactsFood {
   final String servingSizeUnit;
   final double servingSize;
   final String householdServingFullText;
-
+  final String dataType;
   OpenFoodFactsFood({
     required this.barcode,
     required this.description,
@@ -37,6 +37,7 @@ class OpenFoodFactsFood {
     required this.servingSizeUnit,
     required this.servingSize,
     required this.householdServingFullText,
+    this.dataType = '',
   });
 
   factory OpenFoodFactsFood.fromOpenFoodFacts(openfoodfacts.Product product) {
@@ -169,6 +170,7 @@ class OpenFoodFactsFood {
       servingSizeUnit: food.servingSizeUnit,
       servingSize: food.servingSize,
       householdServingFullText: food.householdServingFullText,
+      dataType: food.dataType,
     );
   }
 }

@@ -9,6 +9,7 @@ import 'package:openfoodfacts/openfoodfacts.dart';
 import 'package:http/http.dart' as http;
 import 'package:zone2/app/models/food.dart';
 import 'package:zone2/app/utils/env.dart';
+import 'package:fuzzy/fuzzy.dart';
 
 class FoodService extends GetxService {
   final logger = Get.find<Logger>();
@@ -69,28 +70,41 @@ class FoodService extends GetxService {
       final usdaFoods =
           usdaResults.foods.map((food) => OpenFoodFactsFood.fromUsdaFood(food)).toList();
 
-      final allFoods = [...usdaFoods, ...offResults.foods];
+      // Separate foundation foods
+      final foundationFoods = usdaFoods.where((food) => food.dataType == 'Foundation').toList();
 
-      // final fuse = Fuzzy(
-      //   allFoods,
-      //   options: FuzzyOptions(
-      //     keys: [
-      //       WeightedKey(
-      //         name: 'description',
-      //         getter: (food) => (food as OpenFoodFactsFood).description,
-      //         weight: 3,
-      //       ),
-      //       WeightedKey(
-      //         name: 'brand',
-      //         getter: (food) => (food as OpenFoodFactsFood).brand,
-      //         weight: 1,
-      //       ),
-      //     ],
-      //   ),
-      // );
+      // Get remaining foods
+      final otherFoods = [
+        ...usdaFoods.where((food) => food.dataType != 'Foundation'),
+        ...offResults.foods
+      ];
 
-      // final results = fuse.search(searchTerm);
-      // final sortedFoods = results.map((r) => r.item as OpenFoodFactsFood).toList();
+      // Create Fuzzy instance for sorting remaining foods
+      final fuse = Fuzzy(
+        otherFoods,
+        options: FuzzyOptions(
+          keys: [
+            WeightedKey(
+              name: 'description',
+              getter: (food) => (food as OpenFoodFactsFood).description,
+              weight: 0.7,
+            ),
+            WeightedKey(
+              name: 'brand',
+              getter: (food) => (food as OpenFoodFactsFood).brand,
+              weight: 0.3,
+            ),
+          ],
+          threshold: 0.4,
+        ),
+      );
+
+      // Sort remaining foods by fuzzy match score
+      final sortedOtherFoods =
+          fuse.search(searchTerm).map((result) => result.item as OpenFoodFactsFood).toList();
+
+      // Combine foundation foods with sorted remaining foods
+      final allFoods = [...foundationFoods, ...sortedOtherFoods];
 
       return FoodSearchResponse(
         totalHits: allFoods.length,
@@ -103,14 +117,17 @@ class FoodService extends GetxService {
   }
 
   Future<FoodSearchResponse> _searchOpenFoodFacts(String searchTerm) async {
-    ProductSearchQueryConfiguration configuration =
-        ProductSearchQueryConfiguration(parametersList: <Parameter>[
-      SearchTerms(terms: [searchTerm]),
-      const SortBy(
-        option: SortOption.PRODUCT_NAME,
-      ),
-      const PageSize(size: 100),
-    ], version: ProductQueryVersion.v3, language: OpenFoodFactsLanguage.ENGLISH);
+    ProductSearchQueryConfiguration configuration = ProductSearchQueryConfiguration(
+        parametersList: <Parameter>[
+          SearchTerms(terms: [searchTerm]),
+          const SortBy(
+            option: SortOption.PRODUCT_NAME,
+          ),
+          const PageSize(size: 50),
+        ],
+        version: ProductQueryVersion.v3,
+        language: OpenFoodFactsLanguage.ENGLISH,
+        fields: productFields);
 
     try {
       SearchResult result = await OpenFoodAPIClient.searchProducts(
