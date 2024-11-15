@@ -387,7 +387,7 @@ class HealthService extends GetxService {
 
   Future<bool> saveMealToHealth(MealType mealtype, Zone2Food meal) async {
     final now = DateTime.now();
-    final earlier = now.subtract(const Duration(minutes: 1));
+    final earlier = now.subtract(const Duration(seconds: 5));
     final qty = meal.servingQuantity;
 
     try {

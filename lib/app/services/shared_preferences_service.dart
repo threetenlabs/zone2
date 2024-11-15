@@ -18,6 +18,7 @@ class SharedPreferencesService {
   final zone2ProteinTarget = 0.0.obs;
   final zone2CarbsTarget = 0.0.obs;
   final zone2FatTarget = 0.0.obs;
+  final openAIKey = ''.obs;
 
   final GetStoragePersistence _persistence;
 
@@ -41,6 +42,9 @@ class SharedPreferencesService {
     _persistence.box.listenKey(_persistence.zone2FatTargetKey, (value) {
       zone2FatTarget.value = value ?? 0.0;
     });
+    _persistence.box.listenKey(_persistence.openAIKey, (value) {
+      openAIKey.value = value ?? '';
+    });
   }
 
   /// Loads the state from persistence.
@@ -52,6 +56,7 @@ class SharedPreferencesService {
     zone2ProteinTarget.value = _persistence.getZone2ProteinTarget();
     zone2CarbsTarget.value = _persistence.getZone2CarbsTarget();
     zone2FatTarget.value = _persistence.getZone2FatTarget();
+    openAIKey.value = _persistence.getOpenAIKey();
   }
 
   void resetPersistedSettings() {
@@ -80,6 +85,11 @@ class SharedPreferencesService {
 
   Future<void> setZone2FatTarget(double value) async {
     await _persistence.saveZone2FatTarget(value);
+  }
+
+  Future<void> setOpenAIKey(String value) async {
+    openAIKey.value = value;
+    await _persistence.saveOpenAIKey(value);
   }
 
   //On Logout delete all shared preferences

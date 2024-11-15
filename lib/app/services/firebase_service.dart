@@ -9,7 +9,6 @@ import 'package:logger/logger.dart';
 import 'package:zone2/app/models/user.dart';
 import 'package:zone2/app/services/services.dart';
 import 'package:zone2/app/utils/firebase.dart';
-import 'package:zone2/gen/assets.gen.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 
 class FirebaseService {

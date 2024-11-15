@@ -4,15 +4,24 @@ import 'package:get/get.dart';
 import 'package:logger/logger.dart';
 import 'package:openai_dart/openai_dart.dart';
 import 'package:zone2/app/services/notification_service.dart';
-import 'package:zone2/app/utils/env.dart';
+import 'package:zone2/app/services/shared_preferences_service.dart';
 
 class OpenAIService extends GetxService {
   static OpenAIService get to => Get.find();
   final logger = Get.find<Logger>();
 
   final client = OpenAIClient(
-    apiKey: Env.openaiApiKey,
+    apiKey: SharedPreferencesService.to.openAIKey.value,
   );
+
+  @override
+  void onInit() {
+    super.onInit();
+    client.apiKey = SharedPreferencesService.to.openAIKey.value;
+    SharedPreferencesService.to.openAIKey.listen((key) {
+      client.apiKey = key;
+    });
+  }
 
   @override
   void onClose() {
@@ -92,7 +101,19 @@ class OpenAIService extends GetxService {
         'foods': {'items': []}
       };
     } catch (e) {
-      logger.e('Error calling OpenAI: $e');
+      if (e is OpenAIClientException) {
+        logger.e('OpenAI Client Exception: ${e.message}');
+        if (e.code == 401) {
+          NotificationService.to
+              .showError('Error calling GPT-4 Vision', 'OpenAI API Key is invalid');
+        } else {
+          NotificationService.to
+              .showError('Error calling GPT-4 Vision', 'OpenAI Client Exception: ${e.message}');
+        }
+      } else {
+        logger.e('Error calling GPT-4 Vision: $e');
+        NotificationService.to.showError('Error extracting nutrition', 'Error calling AI Service');
+      }
       return {
         'foods': {'items': []}
       };
@@ -252,8 +273,19 @@ class OpenAIService extends GetxService {
           .showWarning('Error extracting nutrition', 'No valid tool calls in response');
       return null;
     } catch (e) {
-      logger.e('Error calling GPT-4 Vision: $e');
-      NotificationService.to.showError('Error extracting nutrition', 'Error calling AI Service');
+      if (e is OpenAIClientException) {
+        logger.e('OpenAI Client Exception: ${e.message}');
+        if (e.code == 401) {
+          NotificationService.to
+              .showError('Error calling GPT-4 Vision', 'OpenAI API Key is invalid');
+        } else {
+          NotificationService.to
+              .showError('Error calling GPT-4 Vision', 'OpenAI Client Exception: ${e.message}');
+        }
+      } else {
+        logger.e('Error calling GPT-4 Vision: $e');
+        NotificationService.to.showError('Error extracting nutrition', 'Error calling AI Service');
+      }
       return null;
     }
   }

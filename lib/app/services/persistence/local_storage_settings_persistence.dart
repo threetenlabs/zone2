@@ -19,6 +19,7 @@ class GetStoragePersistence {
   final String zone2ProteinTargetKey = 'zone2ProteinTargetKey';
   final String zone2CarbsTargetKey = 'zone2CarbsTargetKey';
   final String zone2FatTargetKey = 'zone2FatTargetKey';
+  final String openAIKey = 'openAIKey';
 
   bool getUserHasRemovedAds() {
     return box.read(userHasRemovedAdsKey) ?? false;
@@ -63,6 +64,14 @@ class GetStoragePersistence {
 
   Future<void> saveZone2FatTarget(double value) async {
     await box.write(zone2FatTargetKey, value);
+  }
+
+  String getOpenAIKey() {
+    return box.read(openAIKey) ?? '';
+  }
+
+  Future<void> saveOpenAIKey(String value) async {
+    await box.write(openAIKey, value);
   }
 
   void erase() {

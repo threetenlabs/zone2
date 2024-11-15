@@ -34,11 +34,11 @@ class Zone2User {
 
 class ZoneSettings {
   final Timestamp journeyStartDate;
-  final int dailyWaterGoalInOz;
-  final int dailyZonePointsGoal;
-  final double dailyCalorieIntakeGoal;
-  final double dailyCaloriesBurnedGoal;
-  final int dailyStepsGoal;
+  int dailyWaterGoalInOz;
+  int dailyZonePointsGoal;
+  double dailyCalorieIntakeGoal;
+  double dailyCaloriesBurnedGoal;
+  int dailyStepsGoal;
   final String reasonForStartingJourney;
   final double initialWeightInLbs;
   final double targetWeightInLbs;
