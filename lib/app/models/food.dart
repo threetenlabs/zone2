@@ -202,7 +202,7 @@ class OpenFoodFactsNutriment {
 /// This class represents a meal the application, a bridge between OpenFoodFactsFood and HealthDataPoint.
 class Zone2Food {
   /// The name of the meal.
-  final String name;
+  String name;
 
   /// The quantity of the serving.
   double servingQuantity;
@@ -211,25 +211,25 @@ class Zone2Food {
   final String brand;
 
   /// The label for the serving size of the meal.
-  final String servingLabel;
+  String servingLabel;
 
   /// The label for the total calories of the meal.
-  final String totalCaloriesLabel;
+  String totalCaloriesLabel;
 
   /// The value of the total calories of the meal.
-  final double totalCaloriesValue;
+  double totalCaloriesValue;
 
   /// The label for the protein content of the meal.
-  final String proteinLabel;
+  String proteinLabel;
 
   /// The value of the protein content of the meal.
-  final double proteinValue;
+  double proteinValue;
 
   /// The label for the total carbs of the meal.
-  final String totalCarbsLabel;
+  String totalCarbsLabel;
 
   /// The value of the total carbs of the meal.
-  final double totalCarbsValue;
+  double totalCarbsValue;
 
   /// The label for the fiber content of the meal.
   final String fiberLabel;
@@ -244,10 +244,10 @@ class Zone2Food {
   final double sugarValue;
 
   /// The label for the total fat of the meal.
-  final String totalFatLabel;
+  String totalFatLabel;
 
   /// The value of the total fat of the meal.
-  final double totalFatValue;
+  double totalFatValue;
 
   /// The label for the saturated fat of the meal.
   final String saturatedLabel;
@@ -256,10 +256,10 @@ class Zone2Food {
   final double saturatedValue;
 
   /// The label for the sodium content of the meal.
-  final String sodiumLabel;
+  String sodiumLabel;
 
   /// The value of the sodium content of the meal.
-  final double sodiumValue;
+  double sodiumValue;
 
   /// The label for the cholesterol content of the meal.
   final String cholesterolLabel;
@@ -423,6 +423,45 @@ class Zone2Food {
       type: dataPoint.type,
       startTime: dataPoint.dateFrom,
       endTime: dataPoint.dateTo,
+    );
+  }
+
+  factory Zone2Food.fromNutrientInformation(Map<String, dynamic> nutritionData) {
+    // Helper function to safely extract values from the nutrition data
+    double getValue(Map<String, dynamic> nutrient) {
+      return nutrient['value'] ?? 0.0;
+    }
+
+    String getLabel(Map<String, dynamic> nutrient) {
+      return '${nutrient['value'] ?? 0.0} ${nutrient['unit'] ?? ''}';
+    }
+
+    return Zone2Food(
+      name: '',
+      brand: '',
+      servingQuantity: 1, // Adjust as needed
+      servingLabel: 'Serving', // Adjust as needed
+      totalCaloriesLabel: getLabel(nutritionData['calories']),
+      totalCaloriesValue: getValue(nutritionData['calories']),
+      proteinLabel: getLabel(nutritionData['protein']),
+      proteinValue: getValue(nutritionData['protein']),
+      totalCarbsLabel: getLabel(nutritionData['carbohydrates']),
+      totalCarbsValue: getValue(nutritionData['carbohydrates']),
+      fiberLabel: '',
+      fiberValue: 0.0,
+      sugarLabel: '',
+      sugarValue: 0.0,
+      totalFatLabel: getLabel(nutritionData['totalFat']),
+      totalFatValue: getValue(nutritionData['totalFat']),
+      saturatedLabel: getLabel(nutritionData['saturatedFat']),
+      saturatedValue: getValue(nutritionData['saturatedFat']),
+      sodiumLabel: getLabel(nutritionData['sodium']),
+      sodiumValue: getValue(nutritionData['sodium']),
+      cholesterolLabel: '',
+      cholesterolValue: 0.0,
+      potassiumLabel: '',
+      potassiumValue: 0.0,
+      mealTypeValue: 0.0,
     );
   }
 }

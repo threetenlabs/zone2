@@ -57,5 +57,9 @@
 	<string>Zone 2 uses speech recognition to allow you to search for foods by voice</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>Zone 2 uses the microphone to allow you to search for foods by voice</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Zone 2 uses the camera to allow you to scan food labels</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Zone 2 uses the photo library to allow you to select images from your photo library</string>
 	</dict>
 </plist>

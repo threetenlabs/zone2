@@ -71,18 +71,10 @@ The following is a list of things you need to develop zone2 and how to install t
 
 ### <a name='DevelopmentSetup'></a>Development Setup
 
-Below is an example of how you can instruct your audience on installing and setting up your app. This template doesn't rely on any external dependencies or services.\_
-
 1. Clone the repo
 
    ```sh
-   git clone https://github.com/threetenlabs/bedlam-flutter
-   ```
-
-1. Upgrade flutter to the latest
-
-   ```sh
-   flutter upgrade
+   git clone https://github.com/threetenlabs/zone2
    ```
 
 1. Clean Install All Packages
@@ -92,12 +84,6 @@ Below is an example of how you can instruct your audience on installing and sett
    ```
 
 #### <a name='GeneralCommands'></a>General Commands
-
-1. Run Device Preview
-
-   ```sh
-   make preview
-   ```
 
 1. Run All Tests
 

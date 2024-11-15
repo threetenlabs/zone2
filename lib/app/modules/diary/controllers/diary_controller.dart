@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:logger/logger.dart';
 import 'package:health/health.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
@@ -16,6 +18,7 @@ import 'package:zone2/app/models/food.dart';
 import 'package:zone2/app/modules/diary/controllers/food_manager.dart';
 import 'package:zone2/app/modules/loading_service.dart';
 import 'package:zone2/app/services/auth_service.dart';
+import 'package:zone2/app/services/firebase_service.dart';
 import 'package:zone2/app/services/food_service.dart';
 import 'package:zone2/app/services/health_service.dart';
 import 'package:intl/intl.dart'; // Added for date formatting
@@ -142,7 +145,15 @@ class DiaryController extends GetxController {
   late MobileScannerController scannerController;
   StreamSubscription<Object?>? scannerSubscription;
 
-  ChartSeriesController? chartController;
+  final textRecognizer = TextRecognizer();
+  final ImagePicker _picker = ImagePicker();
+
+  // Add Calories
+  final addCalorieNameTextController = TextEditingController();
+  final addCalorieCaloriesTextController = TextEditingController();
+  final addCalorieProteinTextController = TextEditingController();
+  final addCalorieCarbohydratesTextController = TextEditingController();
+  final addCalorieTotalFatTextController = TextEditingController();
 
   @override
   void onInit() async {
@@ -386,7 +397,7 @@ class DiaryController extends GetxController {
 
   Future<void> saveMealToHealth() async {
     try {
-      final servingQty = double.tryParse(foodServingController.text) ?? 0.0;
+      final servingQty = double.tryParse(foodServingController.text) ?? 1.0;
       final mealType = HealthService.to.convertMealthTypeToDouble(selectedMealType.value);
       selectedZone2Food.value!.servingQuantity = servingQty;
       selectedZone2Food.value!.mealTypeValue = mealType;
@@ -591,5 +602,133 @@ class DiaryController extends GetxController {
       NotificationService.to.showWarning(
           'No Calories', 'This food has no calories and cannot be added to your meal.');
     }
+  }
+
+  Future<void> pickAndProcessImage() async {
+    try {
+      final XFile? imageFile = await _picker.pickImage(source: ImageSource.camera);
+      if (imageFile != null) {
+        // Convert image to base64
+        final bytes = await imageFile.readAsBytes();
+        // Show loading indicator
+        await BusyIndicatorService.to.showBusyIndicator('Analyzing image...');
+
+        // Creates a unique path for the image based on the user id and the current timestamp
+        final downloadUrl = await FirebaseService.to.uploadImage(bytes,
+            'ocr/${AuthService.to.firebaseUser.value?.uid}/${DateTime.now().millisecondsSinceEpoch}.png');
+
+        if (downloadUrl == null) {
+          return;
+        }
+
+        // Process with GPT-4 Vision
+        final result = await OpenAIService.to.extractNutritionFromImage(downloadUrl);
+
+        if (result == null) {
+          return;
+        }
+
+        final zone2Food = Zone2Food.fromNutrientInformation(result);
+        addCalorieNameTextController.text = zone2Food.name;
+        addCalorieCaloriesTextController.text = zone2Food.totalCaloriesValue.toString();
+        addCalorieProteinTextController.text = zone2Food.proteinValue.toString();
+        addCalorieCarbohydratesTextController.text = zone2Food.totalCarbsValue.toString();
+        addCalorieTotalFatTextController.text = zone2Food.totalFatValue.toString();
+        selectedZone2Food.value = zone2Food;
+        update();
+      }
+    } catch (e) {
+      logger.e('Error processing image: $e');
+      NotificationService.to.showError(
+        'Error',
+        'Failed to process image. Please try again.',
+      );
+    } finally {
+      BusyIndicatorService.to.hideBusyIndicator();
+    }
+  }
+
+  void updateNutrient(String fieldName, double value) {
+    if (selectedZone2Food.value == null) {
+      return;
+    }
+    // value = value.replaceAll(RegExp(r'\.+$'), ''); // Remove trailing periods
+    // final double valueDouble = double.tryParse(value) ?? 0;
+    logger.i('Updating nutrient: $fieldName to $value');
+
+    switch (fieldName) {
+      case 'calories':
+        selectedZone2Food.value!.totalCaloriesValue = value;
+        break;
+      case 'protein':
+        selectedZone2Food.value!.proteinValue = value;
+        break;
+      case 'carbohydrates':
+        selectedZone2Food.value!.totalCarbsValue = value;
+        break;
+      case 'totalFat':
+        selectedZone2Food.value!.totalFatValue = value;
+        break;
+      case 'sodium':
+        selectedZone2Food.value!.sodiumValue = value;
+        break;
+      default:
+        logger.w('Unknown nutrient field: $fieldName');
+        break;
+    }
+    update();
+  }
+
+  Future<void> saveNutritionToHealth() async {
+    // Implement your health saving logic here
+    try {
+      // Save to health
+      Get.back(); // Close the bottom sheet
+      NotificationService.to.showSuccess('Success', 'Nutrition facts saved successfully');
+    } catch (e) {
+      NotificationService.to.showError('Error', 'Failed to save nutrition facts');
+    }
+  }
+
+  void initializeZone2Food() {
+    selectedZone2Food.value = Zone2Food(
+      name: '',
+      brand: '',
+      totalCaloriesValue: 0,
+      proteinValue: 0,
+      totalCarbsValue: 0,
+      servingQuantity: 0,
+      servingLabel: '',
+      totalCaloriesLabel: '',
+      proteinLabel: '',
+      totalCarbsLabel: '',
+      fiberLabel: '',
+      sugarLabel: '',
+      totalFatLabel: '',
+      saturatedLabel: '',
+      sodiumLabel: '',
+      cholesterolLabel: '',
+      potassiumLabel: '',
+      mealTypeValue: 0,
+      fiberValue: 0,
+      sugarValue: 0,
+      totalFatValue: 0,
+      saturatedValue: 0,
+      sodiumValue: 0,
+      cholesterolValue: 0,
+      potassiumValue: 0,
+    );
+    addCalorieNameTextController.text = '';
+    addCalorieCaloriesTextController.text = '';
+    addCalorieProteinTextController.text = '';
+    addCalorieCarbohydratesTextController.text = '';
+    addCalorieTotalFatTextController.text = '';
+    update();
+  }
+
+  void updateFoodName(String value) {
+    // Update the name in the controller or model if needed
+    selectedZone2Food.value!.name = value;
+    update();
   }
 }

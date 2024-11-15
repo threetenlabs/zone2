@@ -2,6 +2,7 @@
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_remote_config/firebase_remote_config.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:zone2/app/services/shared_preferences_service.dart';
 import 'package:flutter/services.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -54,6 +55,9 @@ Future<void> main() async {
 
   // Firebase firestore is registered from the firebase firestore instance. Can be mocked in tests
   Get.put<FirebaseFirestore>(FirebaseFirestore.instance);
+
+  // Firebase storage is registered from the firebase storage instance. Can be mocked in tests
+  Get.put<FirebaseStorage>(FirebaseStorage.instance);
 
   // Firebase service is instantiated here to get the initial user if logged in to determine if onboarding is complete
   final firebaseService = FirebaseService();

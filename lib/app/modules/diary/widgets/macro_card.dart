@@ -10,18 +10,20 @@ class MacroCard extends GetView<DiaryController> {
   Widget build(BuildContext context) {
     return Card(
       elevation: 8,
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.start,
-        children: [
-          SizedBox(
-            height: 75, // Example height
-            child: _buildCalorieRow(context),
-          ),
-          SizedBox(
-            height: 75, // Example height
-            child: _buildMacroRow(context),
-          ),
-        ],
+      child: SingleChildScrollView(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            SizedBox(
+              height: 75, // Example height
+              child: _buildCalorieRow(context),
+            ),
+            SizedBox(
+              height: 75, // Example height
+              child: _buildMacroRow(context),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -61,23 +63,38 @@ class MacroCard extends GetView<DiaryController> {
         mainAxisSize: MainAxisSize.max,
         children: [
           _buildMacroColumn(
-              'Protein',
-              controller.foodManager.value.totalProtein.value /
-                  controller.foodManager.value.totalProteinTarget.value,
-              MaterialTheme.coolBlue.value,
-              '${(controller.foodManager.value.totalProtein.value / controller.foodManager.value.totalProteinTarget.value * 100).toStringAsFixed(0)}%'),
+            'Protein',
+            controller.foodManager.value.totalProteinTarget.value != 0
+                ? controller.foodManager.value.totalProtein.value /
+                    controller.foodManager.value.totalProteinTarget.value
+                : 0.0,
+            MaterialTheme.coolBlue.value,
+            controller.foodManager.value.totalProteinTarget.value != 0
+                ? '${(controller.foodManager.value.totalProtein.value / controller.foodManager.value.totalProteinTarget.value * 100).toStringAsFixed(0)}%'
+                : '0%',
+          ),
           _buildMacroColumn(
-              'Carbs',
-              controller.foodManager.value.totalCarbohydrates.value /
-                  controller.foodManager.value.totalCarbohydratesTarget.value,
-              MaterialTheme.coolOrange.value,
-              '${(controller.foodManager.value.totalCarbohydrates.value / controller.foodManager.value.totalCarbohydratesTarget.value * 100).toStringAsFixed(0)}%'),
+            'Carbs',
+            controller.foodManager.value.totalCarbohydratesTarget.value != 0
+                ? controller.foodManager.value.totalCarbohydrates.value /
+                    controller.foodManager.value.totalCarbohydratesTarget.value
+                : 0.0,
+            MaterialTheme.coolOrange.value,
+            controller.foodManager.value.totalCarbohydratesTarget.value != 0
+                ? '${(controller.foodManager.value.totalCarbohydrates.value / controller.foodManager.value.totalCarbohydratesTarget.value * 100).toStringAsFixed(0)}%'
+                : '0%',
+          ),
           _buildMacroColumn(
-              'Fat',
-              controller.foodManager.value.totalFat.value /
-                  controller.foodManager.value.totalFatTarget.value,
-              MaterialTheme.coolRed.value,
-              '${(controller.foodManager.value.totalFat.value / controller.foodManager.value.totalFatTarget.value * 100).toStringAsFixed(0)}%'),
+            'Fat',
+            controller.foodManager.value.totalFatTarget.value != 0
+                ? controller.foodManager.value.totalFat.value /
+                    controller.foodManager.value.totalFatTarget.value
+                : 0.0,
+            MaterialTheme.coolRed.value,
+            controller.foodManager.value.totalFatTarget.value != 0
+                ? '${(controller.foodManager.value.totalFat.value / controller.foodManager.value.totalFatTarget.value * 100).toStringAsFixed(0)}%'
+                : '0%',
+          ),
         ],
       ),
     );

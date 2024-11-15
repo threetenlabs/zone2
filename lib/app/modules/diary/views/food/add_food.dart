@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:zone2/app/models/food.dart';
 import 'package:zone2/app/modules/diary/controllers/diary_controller.dart';
+import 'package:zone2/app/modules/diary/views/food/add_calories.dart';
 import 'package:zone2/app/modules/diary/views/food/ai_food.dart';
 import 'package:zone2/app/modules/diary/views/food/food_search.dart';
 import 'package:zone2/app/modules/diary/views/food/scanner/scan_food_bottomsheet.dart';
@@ -26,37 +28,80 @@ class AddFoodBottomSheet extends GetView<DiaryController> {
                 ),
               ),
 
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              Column(
                 children: [
-                  ElevatedButton(
-                    onPressed: () => _showAIBottomSheet(context), // Call search method
-                    style: ElevatedButton.styleFrom(
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10), // Rounded corners
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: ElevatedButton.icon(
+                            icon: const Icon(Icons.search),
+                            onPressed: () => _showSearchBottomSheet(context),
+                            style: ElevatedButton.styleFrom(
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                            ),
+                            label: const Text('Search'),
+                          ),
+                        ),
                       ),
-                    ),
-                    child: const Text('AI Search'),
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: ElevatedButton.icon(
+                            icon: const Icon(Icons.barcode_reader),
+                            onPressed: () => _showScanFoodBottomSheet(context),
+                            style: ElevatedButton.styleFrom(
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                            ),
+                            label: const Text('Scan Barcode'),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                  // Search button
-                  ElevatedButton(
-                    onPressed: () => _showSearchBottomSheet(context), // Call search method
-                    style: ElevatedButton.styleFrom(
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10), // Rounded corners
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: ElevatedButton.icon(
+                            icon: const Icon(Icons.add_circle_outline),
+                            onPressed: () {
+                              controller.initializeZone2Food();
+                              _showAddCaloriesBottomSheet(context);
+                            },
+                            style: ElevatedButton.styleFrom(
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                            ),
+                            label: const Text('Add Calories'),
+                          ),
+                        ),
                       ),
-                    ),
-                    child: const Text('Search'),
-                  ),
-                  // Scan Barcode button
-                  ElevatedButton(
-                    onPressed: () => _showScanFoodBottomSheet(context),
-                    style: ElevatedButton.styleFrom(
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10), // Rounded corners
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: ElevatedButton.icon(
+                            icon: const Icon(Icons.speaker_notes_outlined),
+                            onPressed: () => _showAIBottomSheet(context),
+                            style: ElevatedButton.styleFrom(
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                            ),
+                            label: const Text('Tell Me'),
+                          ),
+                        ),
                       ),
-                    ),
-                    child: const Text('Scan Barcode'),
+                    ],
                   ),
                 ],
               ),
@@ -165,6 +210,19 @@ class AddFoodBottomSheet extends GetView<DiaryController> {
       useSafeArea: true,
       builder: (context) {
         return const ScanFoodBottomSheet(); // Use the new widget here
+      },
+    );
+  }
+
+  void _showAddCaloriesBottomSheet(BuildContext context) {
+    showModalBottomSheet(
+      barrierColor: Colors.transparent,
+      context: context,
+      enableDrag: false,
+      isScrollControlled: true, // Allow full screen
+      useSafeArea: true,
+      builder: (context) {
+        return const AddCaloriesBottomSheet(); // Use the new widget here
       },
     );
   }

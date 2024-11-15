@@ -228,7 +228,7 @@ class HealthService extends GetxService {
         types: types, startTime: result.startDateTime, endTime: result.endDateTime);
 
     // Store fetched data in cache
-    if (healthData.isNotEmpty) {
+    if (healthData.isNotEmpty || forceRefresh!) {
       await cacheManager.cacheData(key, healthData, const Duration(minutes: 10));
     }
     return Health().removeDuplicates(healthData);
@@ -252,7 +252,7 @@ class HealthService extends GetxService {
         types: types, startTime: result.startDateTime, endTime: result.endDateTime);
 
     // Store fetched data in cache
-    if (healthData.isNotEmpty) {
+    if (healthData.isNotEmpty || forceRefresh!) {
       await cacheManager.cacheData(key, healthData, const Duration(minutes: 10));
     }
     return Health().removeDuplicates(healthData);
@@ -276,7 +276,7 @@ class HealthService extends GetxService {
         types: types, startTime: result.startDateTime, endTime: result.endDateTime);
 
     // Store fetched data in cache
-    if (healthData.isNotEmpty) {
+    if (healthData.isNotEmpty || forceRefresh!) {
       await cacheManager.cacheData(key, healthData, const Duration(minutes: 10));
     }
     return Health().removeDuplicates(healthData);
@@ -299,7 +299,7 @@ class HealthService extends GetxService {
         types: types, startTime: result.startDateTime, endTime: result.endDateTime);
 
     // Store fetched data in cache
-    if (healthData.isNotEmpty) {
+    if (healthData.isNotEmpty || forceRefresh!) {
       await cacheManager.cacheData(key, healthData, const Duration(minutes: 10));
     }
     return healthData;
@@ -329,7 +329,7 @@ class HealthService extends GetxService {
         types: types, startTime: result.startDateTime, endTime: result.endDateTime);
 
     // Store fetched data in cache
-    if (healthData.isNotEmpty) {
+    if (healthData.isNotEmpty || forceRefresh!) {
       await cacheManager.cacheData(key, healthData, const Duration(minutes: 10));
     }
     return Health().removeDuplicates(healthData);
@@ -419,7 +419,7 @@ class HealthService extends GetxService {
 
   Future<void> deleteData(HealthDataType type, DateTime startTime, DateTime endTime) async {
     final result = await Health().delete(
-      type: HealthDataType.NUTRITION,
+      type: type,
       startTime: startTime,
       endTime: endTime,
     );
