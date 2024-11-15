@@ -30,12 +30,16 @@ class FoodCarouselCard extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              label,
-              style: const TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
-                color: Colors.black,
+            ConstrainedBox(
+              constraints: const BoxConstraints(maxHeight: 100),
+              child: Text(
+                label,
+                style: TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                  color: Theme.of(context).textTheme.titleLarge?.color,
+                  overflow: TextOverflow.fade,
+                ),
               ),
             ),
             const SizedBox(height: 8),

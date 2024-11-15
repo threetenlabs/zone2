@@ -5,11 +5,8 @@ import 'package:app_links/app_links.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:zone2/app/modules/diary/bindings/diary_binding.dart';
 import 'package:zone2/app/modules/diary/views/diary_view.dart';
-
 import 'package:zone2/app/modules/profile/bindings/profile_binding.dart';
 import 'package:zone2/app/modules/profile/views/profile_view.dart';
-import 'package:zone2/app/modules/zone/bindings/zone_binding.dart';
-import 'package:zone2/app/modules/zone/views/zone_view.dart';
 import 'package:zone2/app/modules/track/bindings/track_binding.dart';
 import 'package:zone2/app/modules/track/views/track_view.dart';
 import 'package:zone2/app/services/firebase_service.dart';
@@ -46,14 +43,14 @@ class HomeController extends GetxController {
         ),
         itemLabel: 'Diary',
       ),
-      const BottomBarItem(
-        inActiveItem: Icon(FontAwesomeIcons.bullseye, color: Colors.blueGrey),
-        activeItem: Icon(
-          FontAwesomeIcons.bullseye,
-          color: Colors.purpleAccent,
-        ),
-        itemLabel: 'Zone',
-      ),
+      // const BottomBarItem(
+      //   inActiveItem: Icon(FontAwesomeIcons.bullseye, color: Colors.blueGrey),
+      //   activeItem: Icon(
+      //     FontAwesomeIcons.bullseye,
+      //     color: Colors.purpleAccent,
+      //   ),
+      //   itemLabel: 'Zone',
+      // ),
       const BottomBarItem(
         inActiveItem: Icon(
           FontAwesomeIcons.chartLine,
@@ -74,7 +71,7 @@ class HomeController extends GetxController {
           FontAwesomeIcons.userGear,
           color: Colors.orangeAccent,
         ),
-        itemLabel: 'Profile',
+        itemLabel: 'My Zone',
       ),
     ];
 
@@ -83,7 +80,7 @@ class HomeController extends GetxController {
     });
   }
 
-  final pages = <String>['/diary', '/zone', '/track', '/profile'];
+  final pages = <String>['/diary' '/track', '/profile'];
 
   void changePage(int index) {
     contentIndex.value = index;
@@ -99,14 +96,6 @@ class HomeController extends GetxController {
       );
     }
 
-    if (settings.name == '/zone') {
-      return GetPageRoute(
-        settings: settings,
-        page: () => const ZoneView(),
-        binding: ZoneBinding(),
-      );
-    }
-
     if (settings.name == '/track') {
       return GetPageRoute(
         settings: settings,
@@ -115,7 +104,7 @@ class HomeController extends GetxController {
       );
     }
 
-    if (settings.name == '/profile') {
+    if (settings.name == '/my zone') {
       return GetPageRoute(
         settings: settings,
         page: () => const ProfileView(),

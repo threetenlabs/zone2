@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:logger/logger.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:zone2/app/models/food.dart';
+import 'package:zone2/app/services/health_data_cache_manager.dart';
 import 'package:zone2/app/services/notification_service.dart';
 import 'dart:math' as math;
 
@@ -11,11 +12,18 @@ enum WeightUnit { kilogram, pound }
 enum WaterUnit { ounce, liter }
 
 enum TimeFrame {
-  today,
-  thisWeek,
-  thisMonth,
-  lastSixMonths,
-  thisYear,
+  day,
+  week,
+  month,
+  sixMonths,
+  year,
+}
+
+class TimeFrameResult {
+  final DateTime startDateTime;
+  final DateTime endDateTime;
+
+  TimeFrameResult({required this.startDateTime, required this.endDateTime});
 }
 
 class HealthService extends GetxService {
@@ -23,8 +31,22 @@ class HealthService extends GetxService {
   final logger = Get.find<Logger>();
   final isAuthorized = false.obs;
   final status = HealthConnectSdkStatus.sdkUnavailable.obs;
-  final hasPermissions = RxnBool(false);
+  final hasPermissions = false.obs;
+  final cacheManager = HealthDataCacheManager(prefix: 'health');
 
+  @override
+  Future<void> onInit() async {
+    super.onInit();
+    await Health().configure();
+    await Health().getHealthConnectSdkStatus();
+  }
+
+  @override
+  Future<void> onClose() async {
+    super.onClose();
+  }
+
+  /// List of data types that require write permissions
   final List<HealthDataType> _writePermissionTypes = [
     HealthDataType.WEIGHT,
     HealthDataType.STEPS,
@@ -34,107 +56,7 @@ class HealthService extends GetxService {
     HealthDataType.NUTRITION,
   ];
 
-  /// List of data types available on iOS
-  final List<HealthDataType> dataTypesIOS = [
-    HealthDataType.ACTIVE_ENERGY_BURNED,
-    HealthDataType.AUDIOGRAM,
-    HealthDataType.BASAL_ENERGY_BURNED,
-    HealthDataType.BLOOD_GLUCOSE,
-    HealthDataType.BLOOD_OXYGEN,
-    HealthDataType.BLOOD_PRESSURE_DIASTOLIC,
-    HealthDataType.BLOOD_PRESSURE_SYSTOLIC,
-    HealthDataType.BODY_FAT_PERCENTAGE,
-    HealthDataType.BODY_MASS_INDEX,
-    HealthDataType.BODY_TEMPERATURE,
-    HealthDataType.DIETARY_CARBS_CONSUMED,
-    HealthDataType.DIETARY_CAFFEINE,
-    HealthDataType.DIETARY_ENERGY_CONSUMED,
-    HealthDataType.DIETARY_FATS_CONSUMED,
-    HealthDataType.DIETARY_PROTEIN_CONSUMED,
-    HealthDataType.ELECTRODERMAL_ACTIVITY,
-    HealthDataType.FORCED_EXPIRATORY_VOLUME,
-    HealthDataType.HEART_RATE,
-    HealthDataType.HEART_RATE_VARIABILITY_SDNN,
-    HealthDataType.HEIGHT,
-    HealthDataType.RESPIRATORY_RATE,
-    HealthDataType.PERIPHERAL_PERFUSION_INDEX,
-    HealthDataType.STEPS,
-    HealthDataType.WAIST_CIRCUMFERENCE,
-    HealthDataType.WEIGHT,
-    HealthDataType.FLIGHTS_CLIMBED,
-    HealthDataType.DISTANCE_WALKING_RUNNING,
-    HealthDataType.MINDFULNESS,
-    HealthDataType.SLEEP_AWAKE,
-    HealthDataType.SLEEP_ASLEEP,
-    HealthDataType.SLEEP_IN_BED,
-    HealthDataType.SLEEP_LIGHT,
-    HealthDataType.SLEEP_DEEP,
-    HealthDataType.SLEEP_REM,
-    HealthDataType.WATER,
-    HealthDataType.EXERCISE_TIME,
-    HealthDataType.WORKOUT,
-    HealthDataType.HEADACHE_NOT_PRESENT,
-    HealthDataType.HEADACHE_MILD,
-    HealthDataType.HEADACHE_MODERATE,
-    HealthDataType.HEADACHE_SEVERE,
-    HealthDataType.HEADACHE_UNSPECIFIED,
-
-    // note that a phone cannot write these ECG-based types - only read them
-    HealthDataType.ELECTROCARDIOGRAM,
-    HealthDataType.HIGH_HEART_RATE_EVENT,
-    HealthDataType.IRREGULAR_HEART_RATE_EVENT,
-    HealthDataType.LOW_HEART_RATE_EVENT,
-    HealthDataType.RESTING_HEART_RATE,
-    HealthDataType.WALKING_HEART_RATE,
-    HealthDataType.ATRIAL_FIBRILLATION_BURDEN,
-
-    HealthDataType.NUTRITION,
-    HealthDataType.GENDER,
-    HealthDataType.BLOOD_TYPE,
-    HealthDataType.BIRTH_DATE,
-    HealthDataType.MENSTRUATION_FLOW,
-  ];
-
-  /// List of data types available on Android.
-  ///
-  /// Note that these are only the ones supported on Android's Health Connect API.
-  /// Android's Health Connect has more types that we support in the [HealthDataType]
-  /// enumeration.
-  final List<HealthDataType> dataTypesAndroid = [
-    HealthDataType.ACTIVE_ENERGY_BURNED,
-    HealthDataType.BASAL_ENERGY_BURNED,
-    HealthDataType.BLOOD_GLUCOSE,
-    HealthDataType.BLOOD_OXYGEN,
-    HealthDataType.BLOOD_PRESSURE_DIASTOLIC,
-    HealthDataType.BLOOD_PRESSURE_SYSTOLIC,
-    HealthDataType.BODY_FAT_PERCENTAGE,
-    HealthDataType.HEIGHT,
-    HealthDataType.WEIGHT,
-    HealthDataType.BODY_MASS_INDEX,
-    HealthDataType.BODY_TEMPERATURE,
-    HealthDataType.HEART_RATE,
-    HealthDataType.HEART_RATE_VARIABILITY_RMSSD,
-    HealthDataType.STEPS,
-    HealthDataType.DISTANCE_DELTA,
-    HealthDataType.RESPIRATORY_RATE,
-    HealthDataType.SLEEP_ASLEEP,
-    HealthDataType.SLEEP_AWAKE_IN_BED,
-    HealthDataType.SLEEP_AWAKE,
-    HealthDataType.SLEEP_DEEP,
-    HealthDataType.SLEEP_LIGHT,
-    HealthDataType.SLEEP_OUT_OF_BED,
-    HealthDataType.SLEEP_REM,
-    HealthDataType.SLEEP_UNKNOWN,
-    HealthDataType.SLEEP_SESSION,
-    HealthDataType.WATER,
-    HealthDataType.WORKOUT,
-    HealthDataType.RESTING_HEART_RATE,
-    HealthDataType.FLIGHTS_CLIMBED,
-    HealthDataType.NUTRITION,
-    HealthDataType.TOTAL_CALORIES_BURNED,
-    HealthDataType.MENSTRUATION_FLOW,
-  ];
-
+  /// List of data types we need to request permissions for to support Zone2.
   final List<HealthDataType> dataTypesZone2 = [
     HealthDataType.ACTIVE_ENERGY_BURNED,
     HealthDataType.BODY_FAT_PERCENTAGE,
@@ -150,6 +72,8 @@ class HealthService extends GetxService {
     HealthDataType.TOTAL_CALORIES_BURNED,
   ];
 
+  /// Convert a MealType to a double value
+  /// Breakfast = 1.0, Lunch = 2.0, Dinner = 3.0, Snack = 4.0
   double convertMealthTypeToDouble(MealType type) {
     switch (type) {
       case MealType.BREAKFAST:
@@ -162,10 +86,12 @@ class HealthService extends GetxService {
         return 4.0;
       default:
         logger.e('Unsupported meal type: $type');
-        return 0.0;
+        return 1.0;
     }
   }
 
+  /// Convert a double value to a MealType
+  /// Breakfast = 1.0, Lunch = 2.0, Dinner = 3.0, Snack = 4.0
   MealType convertDoubleToMealType(double value) {
     switch (value) {
       case 1.0:
@@ -182,6 +108,8 @@ class HealthService extends GetxService {
     }
   }
 
+  /// Convert a weight value to a different unit
+  /// Pound = 2.20462, Kilogram = 1/2.20462
   Future<double> convertWeightUnit(dynamic weight, WeightUnit toUnit) async {
     double convertedWeight;
     if (toUnit == WeightUnit.pound) {
@@ -194,6 +122,8 @@ class HealthService extends GetxService {
     return convertedWeight;
   }
 
+  /// Convert a water value to a different unit
+  /// Ounce = 33.814, Liter = 1/33.814
   Future<double> convertWaterUnit(dynamic water, WaterUnit toUnit) async {
     double convertedWater;
     if (toUnit == WaterUnit.ounce) {
@@ -206,45 +136,47 @@ class HealthService extends GetxService {
     return convertedWater; // Ensure a return statement is present
   }
 
-  Future<DateTime> getStartTimeForTimeFrame(
-      {TimeFrame timeFrame = TimeFrame.today, DateTime? endTime}) async {
-    final nowPlus = endTime ?? DateTime.now().add(const Duration(hours: 1));
+  /// Get the date range for a given time frame
+  /// Day = Today, Week = Last Monday, Month = First of the current month, SixMonths = First of the month six months ago, Year = First of the year
+  Future<TimeFrameResult> getDateRangeForTimeFrame(
+      {required DateTime seedDate, TimeFrame timeFrame = TimeFrame.day}) async {
+    final sameDay = seedDate.year == DateTime.now().year &&
+        seedDate.month == DateTime.now().month &&
+        seedDate.day == DateTime.now().day;
+    final endTime = sameDay && timeFrame == TimeFrame.day
+        ? DateTime.now().add(const Duration(minutes: 5)) // Use seedDate instead of endTime
+        : DateTime(seedDate.year, seedDate.month, seedDate.day, 23, 59, 49);
+
     DateTime startTime;
 
     switch (timeFrame) {
-      case TimeFrame.today:
+      case TimeFrame.day:
         startTime =
-            DateTime(nowPlus.year, nowPlus.month, nowPlus.day, 0, 1, 0); // Midnight of today
+            DateTime(seedDate.year, seedDate.month, seedDate.day, 0, 1, 0); // Midnight of today
         break;
-      case TimeFrame.thisWeek:
+      case TimeFrame.week:
         final lastweek =
-            nowPlus.subtract(Duration(days: nowPlus.weekday - 1)); // Monday of the current week
+            seedDate.subtract(Duration(days: seedDate.weekday - 1)); // Monday of the current week
         startTime = DateTime(lastweek.year, lastweek.month, lastweek.day, 0, 1, 0);
-
         break;
-      case TimeFrame.thisMonth:
-        startTime = DateTime(nowPlus.year, nowPlus.month, 1, 0, 1, 0); // 1st of the current month
+      case TimeFrame.month:
+        startTime = DateTime(seedDate.year, seedDate.month, 1, 0, 1, 0); // 1st of the current month
         break;
-      case TimeFrame.lastSixMonths:
-        startTime = nowPlus.isBefore(DateTime(nowPlus.year, nowPlus.month - 6, nowPlus.day))
-            ? DateTime(nowPlus.year, nowPlus.month - 6, nowPlus.day, 0, 1, 0)
+      case TimeFrame.sixMonths:
+        startTime = seedDate.isBefore(DateTime(seedDate.year, seedDate.month - 6, seedDate.day))
+            ? DateTime(seedDate.year, seedDate.month - 6, seedDate.day, 0, 1, 0)
             : DateTime(
-                nowPlus.year, nowPlus.month - 6, 1, 0, 1, 0); // Adjust based on the current date
+                seedDate.year, seedDate.month - 6, 1, 0, 1, 0); // Adjust based on the current date
         break;
-      case TimeFrame.thisYear:
-        startTime = DateTime(nowPlus.year, 1, 1, 0, 1, 0); // Start of the current year
+      case TimeFrame.year:
+        startTime = DateTime(seedDate.year, 1, 1, 0, 1, 0); // Start of the current year
         break;
       default:
-        return DateTime.now(); // Return current time for unhandled cases
+        return TimeFrameResult(
+            startDateTime: DateTime.now(),
+            endDateTime: DateTime.now()); // Return current time for unhandled cases
     }
-    return startTime;
-  }
-
-  @override
-  Future<void> onInit() async {
-    super.onInit();
-    await Health().configure();
-    await Health().getHealthConnectSdkStatus();
+    return TimeFrameResult(startDateTime: startTime, endDateTime: endTime);
   }
 
   Future<bool> authorize() async {
@@ -262,14 +194,15 @@ class HealthService extends GetxService {
     final status = await Health().getHealthConnectSdkStatus();
     logger.i('Health Connect SDK Status: $status');
 
-    hasPermissions.value = await Health().hasPermissions(types, permissions: permissions);
+    hasPermissions.value = await Health().hasPermissions(types, permissions: permissions) ?? false;
 
     bool authorized = false;
-    if (hasPermissions.value == null || !hasPermissions.value!) {
+    if (!hasPermissions.value) {
       try {
         authorized = await Health().requestAuthorization(types, permissions: permissions);
         isAuthorized.value = authorized;
-        hasPermissions.value = await Health().hasPermissions(types, permissions: permissions);
+        hasPermissions.value =
+            await Health().hasPermissions(types, permissions: permissions) ?? false;
       } catch (error) {
         logger.e("Exception in authorize: $error");
       }
@@ -278,67 +211,128 @@ class HealthService extends GetxService {
   }
 
   Future<List<HealthDataPoint>> getWaterData(
-      {required TimeFrame timeFrame, DateTime? endTime}) async {
+      {required TimeFrame timeFrame, required DateTime seedDate, bool? forceRefresh}) async {
     final types = [HealthDataType.WATER];
-    DateTime startTime = await getStartTimeForTimeFrame(timeFrame: timeFrame, endTime: endTime);
+    final key = 'water_${seedDate.year}_${seedDate.month}_${seedDate.day}_${timeFrame.name}';
 
-    final nowPlus = endTime ?? DateTime.now().add(const Duration(hours: 1));
-    final healthData =
-        await Health().getHealthDataFromTypes(types: types, startTime: startTime, endTime: nowPlus);
+    TimeFrameResult result =
+        await getDateRangeForTimeFrame(seedDate: seedDate, timeFrame: timeFrame);
+
+    // Check for cached data
+    final cachedData = await cacheManager.getData(key);
+    if (cachedData != null && !forceRefresh!) {
+      return cachedData; // Return cached data if available
+    }
+
+    final healthData = await Health().getHealthDataFromTypes(
+        types: types, startTime: result.startDateTime, endTime: result.endDateTime);
+
+    // Store fetched data in cache
+    if (healthData.isNotEmpty || forceRefresh!) {
+      await cacheManager.cacheData(key, healthData, const Duration(minutes: 10));
+    }
     return Health().removeDuplicates(healthData);
   }
 
   Future<List<HealthDataPoint>> getStepData(
-      {required TimeFrame timeFrame, DateTime? endTime}) async {
+      {required TimeFrame timeFrame, required DateTime seedDate, bool? forceRefresh}) async {
     final types = [HealthDataType.STEPS];
-    DateTime startTime = await getStartTimeForTimeFrame(timeFrame: timeFrame, endTime: endTime);
-    final nowPlus = endTime ?? DateTime.now().add(const Duration(hours: 1));
-    final healthData =
-        await Health().getHealthDataFromTypes(types: types, startTime: startTime, endTime: nowPlus);
+    final key = 'steps_${seedDate.year}_${seedDate.month}_${seedDate.day}_${timeFrame.name}';
+
+    TimeFrameResult result =
+        await getDateRangeForTimeFrame(seedDate: seedDate, timeFrame: timeFrame);
+
+    // Check for cached data
+    final cachedData = await cacheManager.getData(key);
+    if (cachedData != null && !forceRefresh!) {
+      return cachedData; // Return cached data if available
+    }
+
+    final healthData = await Health().getHealthDataFromTypes(
+        types: types, startTime: result.startDateTime, endTime: result.endDateTime);
+
+    // Store fetched data in cache
+    if (healthData.isNotEmpty || forceRefresh!) {
+      await cacheManager.cacheData(key, healthData, const Duration(minutes: 10));
+    }
     return Health().removeDuplicates(healthData);
   }
 
   Future<List<HealthDataPoint>> getWeightData(
-      {required TimeFrame timeFrame, DateTime? endTime}) async {
+      {required TimeFrame timeFrame, required DateTime seedDate, bool? forceRefresh}) async {
     final types = [HealthDataType.WEIGHT];
-    DateTime startTime = await getStartTimeForTimeFrame(timeFrame: timeFrame, endTime: endTime);
-    final nowPlus = endTime ?? DateTime.now().add(const Duration(hours: 1));
-    final healthData =
-        await Health().getHealthDataFromTypes(types: types, startTime: startTime, endTime: nowPlus);
+    final key = 'weight_${seedDate.year}_${seedDate.month}_${seedDate.day}_${timeFrame.name}';
+
+    TimeFrameResult result =
+        await getDateRangeForTimeFrame(seedDate: seedDate, timeFrame: timeFrame);
+
+    // Check for cached data
+    final cachedData = await cacheManager.getData(key);
+    if (cachedData != null && !forceRefresh!) {
+      return cachedData; // Return cached data if available
+    }
+
+    final healthData = await Health().getHealthDataFromTypes(
+        types: types, startTime: result.startDateTime, endTime: result.endDateTime);
+
+    // Store fetched data in cache
+    if (healthData.isNotEmpty || forceRefresh!) {
+      await cacheManager.cacheData(key, healthData, const Duration(minutes: 10));
+    }
     return Health().removeDuplicates(healthData);
   }
 
   Future<List<HealthDataPoint>> getMealData(
-      {required TimeFrame timeFrame, DateTime? endTime}) async {
+      {required TimeFrame timeFrame, required DateTime seedDate, bool? forceRefresh}) async {
     final types = [HealthDataType.NUTRITION];
-    DateTime calculatedStartTime =
-        await getStartTimeForTimeFrame(timeFrame: timeFrame, endTime: endTime);
+    final key = 'meal_${seedDate.year}_${seedDate.month}_${seedDate.day}_${timeFrame.name}';
+    TimeFrameResult result =
+        await getDateRangeForTimeFrame(seedDate: seedDate, timeFrame: timeFrame);
 
-    final nowPlus = endTime ?? DateTime.now().add(const Duration(hours: 1));
+    // Check for cached data
+    final cachedData = await cacheManager.getData(key);
+    if (cachedData != null && !forceRefresh!) {
+      return cachedData; // Return cached data if available
+    }
 
-    final healthData = await Health()
-        .getHealthDataFromTypes(types: types, startTime: calculatedStartTime, endTime: nowPlus);
-    return Health().removeDuplicates(healthData);
+    final healthData = await Health().getHealthDataFromTypes(
+        types: types, startTime: result.startDateTime, endTime: result.endDateTime);
+
+    // Store fetched data in cache
+    if (healthData.isNotEmpty || forceRefresh!) {
+      await cacheManager.cacheData(key, healthData, const Duration(minutes: 10));
+    }
+    return healthData;
   }
 
   Future<List<HealthDataPoint>> getActivityData(
-      {required TimeFrame timeFrame, DateTime? endTime}) async {
+      {required TimeFrame timeFrame, required DateTime seedDate, bool? forceRefresh}) async {
     final types = [
       HealthDataType.TOTAL_CALORIES_BURNED,
       HealthDataType.HEART_RATE,
-      // HealthDataType.WORKOUT,
+      HealthDataType.WORKOUT,
       HealthDataType.STEPS
     ];
+    final key =
+        'activity_${DateTime(seedDate.year, seedDate.month, seedDate.day).toIso8601String()}_${timeFrame.name}';
 
-    DateTime calculatedStartTime =
-        await getStartTimeForTimeFrame(timeFrame: timeFrame, endTime: endTime);
+    TimeFrameResult result =
+        await getDateRangeForTimeFrame(seedDate: seedDate, timeFrame: timeFrame);
 
-    final nowPlus = endTime ?? DateTime.now().add(const Duration(hours: 1));
+    // Check for cached data
+    final cachedData = await cacheManager.getData(key);
+    if (cachedData != null && !forceRefresh!) {
+      return cachedData; // Return cached data if available
+    }
 
-    final healthData = await Health()
-        .getHealthDataFromTypes(types: types, startTime: calculatedStartTime, endTime: nowPlus);
+    final healthData = await Health().getHealthDataFromTypes(
+        types: types, startTime: result.startDateTime, endTime: result.endDateTime);
 
-    return healthData;
+    // Store fetched data in cache
+    if (healthData.isNotEmpty || forceRefresh!) {
+      await cacheManager.cacheData(key, healthData, const Duration(minutes: 10));
+    }
+    return Health().removeDuplicates(healthData);
   }
 
   Future<HealthConnectSdkStatus> getHealthConnectSdkStatus() async {
@@ -425,7 +419,7 @@ class HealthService extends GetxService {
 
   Future<void> deleteData(HealthDataType type, DateTime startTime, DateTime endTime) async {
     final result = await Health().delete(
-      type: HealthDataType.NUTRITION,
+      type: type,
       startTime: startTime,
       endTime: endTime,
     );

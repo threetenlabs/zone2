@@ -14,27 +14,32 @@ class SharedPreferencesService {
   final _isAboveMinimumSupportedVersion = true.obs;
 
   final _userHasRemovedAds = false.obs;
-  final _soundsOn = true.obs;
-  final _darkMode = false.obs;
-  final _isIntroductionFinished = true.obs;
+  final darkMode = false.obs;
+  final zone2ProteinTarget = 0.0.obs;
+  final zone2CarbsTarget = 0.0.obs;
+  final zone2FatTarget = 0.0.obs;
 
   final GetStoragePersistence _persistence;
 
   final StreamController<bool> _userRemovedAdsStreamController = StreamController<bool>.broadcast();
-  final StreamController<bool> _soundsOnStreamController = StreamController<bool>.broadcast();
-  final StreamController<bool> _darkModeStreamController = StreamController<bool>.broadcast();
 
   /// Creates a new instance of [SharedPreferencesService] backed by [persistence].
   SharedPreferencesService() : _persistence = GetStoragePersistence() {
     _persistence.box.listenKey(_persistence.userHasRemovedAdsKey, (value) {
       _userRemovedAdsStreamController.add(value ?? false);
     });
-    _persistence.box.listenKey(_persistence.soundOnKey, (value) {
-      _soundsOnStreamController.add(value ?? false);
-    });
     _persistence.box.listenKey(_persistence.darkModeKey, (value) {
       logger.i('Dark mode: $value');
-      _darkModeStreamController.add(value ?? false);
+      darkMode.value = value ?? false;
+    });
+    _persistence.box.listenKey(_persistence.zone2ProteinTargetKey, (value) {
+      zone2ProteinTarget.value = value ?? 0.0;
+    });
+    _persistence.box.listenKey(_persistence.zone2CarbsTargetKey, (value) {
+      zone2CarbsTarget.value = value ?? 0.0;
+    });
+    _persistence.box.listenKey(_persistence.zone2FatTargetKey, (value) {
+      zone2FatTarget.value = value ?? 0.0;
     });
   }
 
@@ -43,11 +48,10 @@ class SharedPreferencesService {
     // implementation goes here
 
     _userHasRemovedAds.value = _persistence.getUserHasRemovedAds() || _userHasRemovedAds.value;
-    // On the web, sound can only start after user interaction, so
-    // we need to prompt user.
-    _soundsOn.value = _persistence.getSoundsOn() || _soundsOn.value;
-
-    _darkMode.value = _persistence.getDarkMode() || _darkMode.value;
+    darkMode.value = _persistence.getDarkMode() || darkMode.value;
+    zone2ProteinTarget.value = _persistence.getZone2ProteinTarget();
+    zone2CarbsTarget.value = _persistence.getZone2CarbsTarget();
+    zone2FatTarget.value = _persistence.getZone2FatTarget();
   }
 
   void resetPersistedSettings() {
@@ -66,30 +70,17 @@ class SharedPreferencesService {
     await _persistence.saveUserHasRemovedAds(_userHasRemovedAds.value);
   }
 
-  bool get isSoundsOn => _getIsSoundsOn();
-
-  bool _getIsSoundsOn() {
-    return _persistence.getSoundsOn();
+  Future<void> setZone2ProteinTarget(double value) async {
+    await _persistence.saveZone2ProteinTarget(value);
   }
 
-  Future<void> setSoundsOn(bool value) async {
-    _soundsOn.value = value;
-    await _persistence.saveSoundsOn(_soundsOn.value);
+  Future<void> setZone2CarbsTarget(double value) async {
+    await _persistence.saveZone2CarbsTarget(value);
   }
 
-    bool get isIntroductionFinished => _getIsIntroductionFinished();
-
-  bool _getIsIntroductionFinished() {
-    return _persistence.box.read(_persistence.isIntroductionFinished) ?? false;
+  Future<void> setZone2FatTarget(double value) async {
+    await _persistence.saveZone2FatTarget(value);
   }
-
-  Future<void> setIsIntroductionFinished(bool value) async {
-    _isIntroductionFinished.value = value;
-    await _persistence.saveIsIntroductionFinished(value);
-  }
-
-  Stream<bool> get soundsOnStream => _soundsOnStreamController.stream;
-  Stream<bool> get darkModeStream => _darkModeStreamController.stream;
 
   //On Logout delete all shared preferences
   Future<void> deleteAll() async {
@@ -98,8 +89,8 @@ class SharedPreferencesService {
   }
 
   Future<void> toggleDarkMode() async {
-    _darkMode.value = !_darkMode.value;
-    await _persistence.saveDarkMode(_darkMode.value);
+    darkMode.value = !darkMode.value;
+    await _persistence.saveDarkMode(darkMode.value);
   }
 
   bool get isDarkMode => _getIsDarkMode();

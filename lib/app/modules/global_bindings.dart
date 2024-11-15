@@ -1,4 +1,3 @@
-import 'package:dart_openai/dart_openai.dart';
 import 'package:zone2/app/models/user.dart';
 import 'package:zone2/app/modules/loading_service.dart';
 import 'package:zone2/app/services/firebase_service.dart';
@@ -13,7 +12,6 @@ import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import 'package:super_tooltip/super_tooltip.dart';
 import 'package:timezone/data/latest.dart' as tz;
-import 'package:zone2/app/utils/env.dart';
 
 class GlobalBindings extends Bindings {
   final Palette palette;
@@ -26,12 +24,6 @@ class GlobalBindings extends Bindings {
   dependencies() {
     //This should remain first as many things will log to Analytics
     FirebaseAnalytics.instance.setAnalyticsCollectionEnabled(!kDebugMode);
-
-    // Set OpenAI API key and logging
-    // TODO: Move to server side
-    OpenAI.apiKey = Env.openaiApiKey;
-    OpenAI.showLogs = kDebugMode;
-
     // Initialize timezone data
     tz.initializeTimeZones();
 
@@ -55,7 +47,6 @@ class GlobalBindings extends Bindings {
     // Firebase service
     Get.put<FirebaseService>(firebaseService, permanent: true);
 
-    Get.put<OpenAI>(OpenAI.instance);
     Get.put<OpenAIService>(OpenAIService(), permanent: true);
 
     Get.put<BusyIndicatorService>(BusyIndicatorService(), permanent: true);

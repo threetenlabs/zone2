@@ -5,12 +5,10 @@ import 'package:zone2/app/models/user.dart';
 import 'package:zone2/app/routes/app_pages.dart';
 import 'package:zone2/app/services/firebase_service.dart';
 import 'package:zone2/app/services/health_service.dart';
-import 'package:zone2/app/services/shared_preferences_service.dart';
 import 'package:get/get.dart';
 import 'package:logger/logger.dart';
 
 class IntroController extends GetxController {
-  final SharedPreferencesService _sharedPreferencesService = SharedPreferencesService();
   final introLogger = Get.find<Logger>();
   final showNextButton = true.obs;
   final showBackButton = false.obs;
@@ -29,25 +27,13 @@ class IntroController extends GetxController {
   final zone2TargetWeight = 0.0.obs;
   final RxInt dailyWaterGoalInOz = 100.obs;
   final RxInt dailyZonePointsGoal = 100.obs;
-  final RxInt dailyCalorieIntakeGoal = 1700.obs;
-  final RxInt dailyCaloriesBurnedGoal = 0.obs;
+  final RxDouble dailyCalorieIntakeGoal = 1700.0.obs;
+  final RxDouble dailyCaloriesBurnedGoal = 0.0.obs;
   final RxInt dailyStepsGoal = 10000.obs;
 
   final suggestedWeightLossMessage =
       "We'll use your progress to predict when you'll hit your target as you follow your custom plan and adopting a healthy lifestyle. Your results cannot be guaranteed, but users typically lose 1-2 lb per week."
           .obs;
-
-  @override
-  void onInit() {
-    super.onInit();
-    //Don't show the introduction screen if the user has already seen it
-    if (_sharedPreferencesService.isIntroductionFinished) {
-      introLogger.i('Skipping Introduction Screen');
-      Future.delayed(Duration.zero, () {
-        Get.offNamed(Routes.home);
-      });
-    }
-  }
 
   Future<bool> isValidDate(String date) async {
     try {
@@ -138,12 +124,12 @@ class IntroController extends GetxController {
     showNextButton.value = await haveAllGoals();
   }
 
-  Future<void> setDailyCalorieIntakeGoal(int goal) async {
+  Future<void> setDailyCalorieIntakeGoal(double goal) async {
     dailyCalorieIntakeGoal.value = goal;
     showNextButton.value = await haveAllGoals();
   }
 
-  Future<void> setDailyCaloriesBurnedGoal(int goal) async {
+  Future<void> setDailyCaloriesBurnedGoal(double goal) async {
     dailyCaloriesBurnedGoal.value = goal;
     showNextButton.value = await haveAllGoals();
   }
@@ -169,7 +155,7 @@ class IntroController extends GetxController {
 
   Future<bool> canBeDone() async {
     // TODO: Revisit this - IOS will always return null
-    return HealthService.to.hasPermissions.value ?? true;
+    return HealthService.to.hasPermissions.value;
   }
 
   Future<void> requestHealthPermissions() async {
@@ -207,7 +193,6 @@ class IntroController extends GetxController {
 
   //create a method called onFinish that saves a boolean called introFinished to sharedPreferences
   void onFinish() {
-    _sharedPreferencesService.setIsIntroductionFinished(true);
     introLogger.i('Introduction Finished');
     FirebaseService.to.updateUserZoneSettings(ZoneSettings(
         journeyStartDate: Timestamp.now(),

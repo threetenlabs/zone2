@@ -3,6 +3,8 @@ import 'package:health/health.dart';
 import 'package:logger/logger.dart';
 import 'package:zone2/app/models/activity.dart';
 import 'package:get/get.dart';
+import 'package:zone2/app/models/user.dart';
+import 'package:zone2/app/services/auth_service.dart';
 
 /// Class to manage and process health activity data
 class HealthActivityManager {
@@ -20,8 +22,12 @@ class HealthActivityManager {
   final totalCaloriesBurned = 0.0.obs;
   final totalZonePoints = 0.obs;
   final multipleCalorieSources = false.obs;
-
+  final totalWorkoutCalories = 0.0.obs;
   final totalActiveZoneMinutes = 0.obs;
+
+  final zone2User = Rxn<Zone2User>();
+
+  final isActivityLogged = false.obs;
 
   // Convert zone minutes to RxMap
   final zoneMinutes = RxMap<int, int>({
@@ -72,6 +78,15 @@ class HealthActivityManager {
       icon: Icons.directions_bike,
     ),
   };
+
+  HealthActivityManager() {
+    AuthService.to.zone2User.stream.listen((user) {
+      if (user != null) {
+        zone2User.value = user;
+        _calculateTotals();
+      }
+    });
+  }
 
   /// Process activity data and store results
   void processActivityData({
@@ -247,9 +262,6 @@ class HealthActivityManager {
     // Sum up steps from regular records
     totalSteps.value = stepRecords.fold(0, (sum, record) => sum + record.numericValue.toInt());
 
-    // Add steps from workouts
-    totalSteps.value += workoutRecords.fold(0, (sum, record) => sum + record.totalSteps);
-
     // Track processed time ranges to avoid double counting
     Set<String> processedRanges = {};
 
@@ -261,6 +273,13 @@ class HealthActivityManager {
       processedRanges.add(timeRange);
       return sum + record.numericValue;
     });
+
+    totalWorkoutCalories.value =
+        workoutRecords.fold(0.0, (sum, record) => sum + record.totalEnergyBurned);
+
+    isActivityLogged.value = workoutRecords.isNotEmpty ||
+        totalSteps.value >= (zone2User.value?.zoneSettings?.dailyStepsGoal ?? 0) ||
+        totalCaloriesBurned.value > 0;
   }
 
   /// Reset all stored values to their defaults

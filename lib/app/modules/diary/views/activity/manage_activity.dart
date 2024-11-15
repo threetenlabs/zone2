@@ -29,32 +29,17 @@ class ManageActivityBottomSheet extends GetView<DiaryController> {
                 ),
               ),
               // Wrap the cards in Expanded + SingleChildScrollView
-              const Expanded(
+              Expanded(
                 child: SingleChildScrollView(
                   child: Column(
                     children: [
-                      Card(
-                        elevation: 8,
-                        child: Padding(
-                          padding: EdgeInsets.all(2.0),
-                          child: ActiveZoneMinutesRadialChart(),
-                        ),
-                      ),
+                      Text('Your Zone 2 Activity', style: Theme.of(context).textTheme.titleLarge),
                       SizedBox(height: 16),
-                      Card(
-                        elevation: 8,
-                        child: Padding(
-                          padding: EdgeInsets.all(2.0),
-                          child: CaloriesBurnedChart(),
-                        ),
-                      ),
-                      Card(
-                        elevation: 8,
-                        child: Padding(
-                          padding: EdgeInsets.all(2.0),
-                          child: StepsChart(),
-                        ),
-                      ),
+                      ActiveZoneMinutesRadialChart(),
+                      SizedBox(height: 16),
+                      CaloriesBurnedChart(),
+                      SizedBox(height: 16),
+                      StepsChart(),
                     ],
                   ),
                 ),

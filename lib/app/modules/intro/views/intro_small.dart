@@ -337,7 +337,7 @@ class IntroSmall extends GetWidget<IntroController> {
                   ),
                   keyboardType: TextInputType.number,
                   onChanged: (value) =>
-                      controller.setDailyCalorieIntakeGoal(int.tryParse(value) ?? 0),
+                      controller.setDailyCalorieIntakeGoal(double.tryParse(value) ?? 0),
                 ),
                 const SizedBox(height: 20),
                 TextField(
@@ -347,7 +347,7 @@ class IntroSmall extends GetWidget<IntroController> {
                   ),
                   keyboardType: TextInputType.number,
                   onChanged: (value) =>
-                      controller.setDailyCaloriesBurnedGoal(int.tryParse(value) ?? 0),
+                      controller.setDailyCaloriesBurnedGoal(double.tryParse(value) ?? 0),
                 ),
                 const SizedBox(height: 20),
                 TextField(

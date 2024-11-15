@@ -15,7 +15,6 @@ class DiaryView extends GetView<DiaryController> {
 
   @override
   Widget build(BuildContext context) {
-    controller.getHealthDataForSelectedDay();
     return Scaffold(
       body: SafeArea(
         maintainBottomViewPadding: true,
@@ -37,32 +36,38 @@ class DiaryView extends GetView<DiaryController> {
                       onTap: () => _showWeightBottomSheet(context),
                     ),
                   ),
-                  _buildDiaryCard(
-                    context,
-                    icon: Icons.fastfood,
-                    title: 'Track Meals',
-                    subtitle: 'Log your meals and snacks',
-                    iconColor: Theme.of(context).colorScheme.secondary,
-                    onTap: () => _showAddFoodBottomSheet(context),
-                    isChecked: controller.isWeightLogged.value,
-                  ),
-                  _buildDiaryCard(
-                    context,
-                    icon: Icons.run_circle,
-                    title: 'Monitor Activity',
-                    subtitle: 'Monitor your Zone Minutes',
-                    iconColor: Theme.of(context).colorScheme.tertiary,
-                    onTap: () => _showManageActivityBottomSheet(context),
-                    isChecked: controller.isWeightLogged.value,
+                  Obx(
+                    () => _buildDiaryCard(
+                      context,
+                      icon: Icons.fastfood,
+                      title: 'Track Meals',
+                      subtitle: 'Log your meals and snacks',
+                      iconColor: Theme.of(context).colorScheme.secondary,
+                      onTap: () => _showAddFoodBottomSheet(context),
+                      isChecked: controller.foodManager.value.isFoodLogged.value,
+                    ),
                   ),
                   Obx(
-                    () => _buildDiaryCard(context,
-                        icon: Icons.local_drink,
-                        title: 'Track Hydration',
-                        subtitle: 'Keep track of your water intake',
-                        iconColor: Theme.of(context).colorScheme.tertiary,
-                        onTap: () => _showWaterBottomSheet(context),
-                        isChecked: controller.isWaterLogged.value),
+                    () => _buildDiaryCard(
+                      context,
+                      icon: Icons.run_circle,
+                      title: 'Monitor Activity',
+                      subtitle: 'Monitor your Zone Minutes',
+                      iconColor: Theme.of(context).colorScheme.tertiary,
+                      onTap: () => _showManageActivityBottomSheet(context),
+                      isChecked: controller.activityManager.value.isActivityLogged.value,
+                    ),
+                  ),
+                  Obx(
+                    () => _buildDiaryCard(
+                      context,
+                      icon: Icons.local_drink,
+                      title: 'Track Hydration',
+                      subtitle: 'Keep track of your water intake',
+                      iconColor: Theme.of(context).colorScheme.tertiary,
+                      onTap: () => _showWaterBottomSheet(context),
+                      isChecked: controller.isWaterLogged.value,
+                    ),
                   ),
                 ],
               ),
@@ -105,7 +110,6 @@ class DiaryView extends GetView<DiaryController> {
       required Color iconColor,
       required VoidCallback onTap,
       required bool isChecked}) {
-    debugPrint('isChecked: $isChecked');
     return Card(
         margin: const EdgeInsets.symmetric(vertical: 8.0),
         child: ListTile(

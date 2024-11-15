@@ -1,8 +1,10 @@
 import 'dart:async';
 
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:get/get.dart';
+import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:logger/logger.dart';
 import 'package:health/health.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
@@ -10,8 +12,13 @@ import 'package:speech_to_text/speech_recognition_error.dart';
 import 'package:speech_to_text/speech_recognition_result.dart';
 import 'package:speech_to_text/speech_to_text.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
+import 'package:zone2/app/models/user.dart';
 import 'package:zone2/app/modules/diary/controllers/activity_manager.dart';
 import 'package:zone2/app/models/food.dart';
+import 'package:zone2/app/modules/diary/controllers/food_manager.dart';
+import 'package:zone2/app/modules/loading_service.dart';
+import 'package:zone2/app/services/auth_service.dart';
+import 'package:zone2/app/services/firebase_service.dart';
 import 'package:zone2/app/services/food_service.dart';
 import 'package:zone2/app/services/health_service.dart';
 import 'package:intl/intl.dart'; // Added for date formatting
@@ -103,16 +110,12 @@ class DiaryController extends GetxController {
   final searchPerformed = false.obs;
 
   // Meal tracking
+  final foodManager = FoodManager().obs;
   final selectedMealType = Rx<MealType>(MealType.BREAKFAST);
-  final filteredMealType = Rx<MealType>(MealType.UNKNOWN);
   final selectedOpenFoodFactsFood = Rxn<OpenFoodFactsFood>();
   final selectedZone2Food = Rxn<Zone2Food>();
-  final selectedPlatformHealthFood = Rxn<HealthDataPoint>();
   final foodServingQty = Rxn<double>();
   final foodServingController = TextEditingController(text: '');
-
-  final allMeals = RxList<HealthDataPoint>();
-  final filteredMeals = RxList<HealthDataPoint>();
 
   // Activity tracking
   final activityManager = HealthActivityManager().obs;
@@ -132,7 +135,7 @@ class DiaryController extends GetxController {
   final isTestMode = false.obs; // Toggle this for testing
 
   final voiceResults = RxList<FoodVoiceResult>();
-
+  final zone2User = Rxn<Zone2User>();
   String selectedVoiceFood = '';
   RxList<FoodVoiceResult> searchResults = RxList<FoodVoiceResult>();
 
@@ -142,7 +145,15 @@ class DiaryController extends GetxController {
   late MobileScannerController scannerController;
   StreamSubscription<Object?>? scannerSubscription;
 
-  ChartSeriesController? chartController;
+  final textRecognizer = TextRecognizer();
+  final ImagePicker _picker = ImagePicker();
+
+  // Add Calories
+  final addCalorieNameTextController = TextEditingController();
+  final addCalorieCaloriesTextController = TextEditingController();
+  final addCalorieProteinTextController = TextEditingController();
+  final addCalorieCarbohydratesTextController = TextEditingController();
+  final addCalorieTotalFatTextController = TextEditingController();
 
   @override
   void onInit() async {
@@ -158,6 +169,26 @@ class DiaryController extends GetxController {
     scannerController = MobileScannerController();
 
     scannerSubscription = scannerController.barcodes.listen(handleBarcode);
+    await HealthService.to.authorize();
+    await getHealthDataForSelectedDay(true);
+  }
+
+  @override
+  void onReady() async {
+    super.onReady();
+    AuthService.to.zone2User.stream.listen((user) async {
+      logger.i('zone2User: $user');
+      zone2User.value = user;
+      // if (user != null) {
+      //   await checkHealthPermissions();
+      // }
+    });
+  }
+
+  Future<void> checkHealthPermissions() async {
+    if (!HealthService.to.hasPermissions.value) {
+      await getHealthDataForSelectedDay(true);
+    }
   }
 
   Future<void> initSpeechState() async {
@@ -266,28 +297,36 @@ class DiaryController extends GetxController {
 
       // await healthService.deleteData(HealthDataType.WEIGHT, diaryDate.value, TimeFrame.today);
 
-      await getHealthDataForSelectedDay();
+      await getHealthDataForSelectedDay(true);
       // logger.i('Health data: $healthData');
     } catch (e) {
       logger.e('Error loading health data: $e');
     }
   }
 
-  // TODO: Each Health Data Type should be its own method, this should aggregate them all
-  Future<void> getHealthDataForSelectedDay() async {
-    // Retrieve weight data
-    final sameDay = diaryDate.value.year == DateTime.now().year &&
-        diaryDate.value.month == DateTime.now().month &&
-        diaryDate.value.day == DateTime.now().day;
-    final endTime = sameDay
-        ? null
-        : DateTime(diaryDate.value.year, diaryDate.value.month, diaryDate.value.day, 23, 59, 49);
-    final weightData =
-        await healthService.getWeightData(timeFrame: TimeFrame.today, endTime: endTime);
+  Future<void> getHealthDataForSelectedDay(bool forceRefresh) async {
+    try {
+      await BusyIndicatorService.to.showBusyIndicator('Retrieving health data...');
+      await Future.wait([
+        _retrieveWeightData(),
+        _retrieveWaterData(),
+        _retrieveMealData(),
+        _retrieveActivityData(),
+      ]);
+    } catch (e) {
+      logger.e('Error getting health data: $e');
+      FirebaseCrashlytics.instance.recordError(e, null, fatal: true);
+    } finally {
+      BusyIndicatorService.to.hideBusyIndicator();
+    }
+  }
+
+  Future<void> _retrieveWeightData({bool? forceRefresh = false}) async {
+    final weightData = await healthService.getWeightData(
+        timeFrame: TimeFrame.day, seedDate: diaryDate.value, forceRefresh: forceRefresh);
     weightData.sort((a, b) => b.dateTo.compareTo(a.dateTo));
 
     if (weightData.isNotEmpty) {
-      // logger.i('Weight data: ${weightData.first}');
       final weight = weightData.first.value as NumericHealthValue;
       final weightInKilograms = weight.numericValue.toDouble();
       final weightInPounds =
@@ -301,46 +340,37 @@ class DiaryController extends GetxController {
       logger.w('No weight data found');
       isWeightLogged.value = false;
     }
+  }
 
-    // Retrieve water data
-    final waterData =
-        await healthService.getWaterData(timeFrame: TimeFrame.today, endTime: endTime);
-    // Process water data as needed
+  Future<void> _retrieveWaterData({bool? forceRefresh = false}) async {
+    final waterData = await healthService.getWaterData(
+        timeFrame: TimeFrame.day, seedDate: diaryDate.value, forceRefresh: forceRefresh);
+
     if (waterData.isNotEmpty) {
-      // Example: Sum total water intake from the retrieved data
       double waterIntakeInLiters = waterData.fold(
           0, (sum, data) => sum + (data.value as NumericHealthValue).numericValue.toDouble());
       double waterIntakeInOunces =
           await healthService.convertWaterUnit(waterIntakeInLiters, WaterUnit.ounce);
       waterIntake.value = waterIntakeInOunces; // Update the water intake observable
-      // logger.i('Total water intake: $waterIntake oz');
-      isWaterLogged.value = waterIntake.value > waterGoal.value;
+      isWaterLogged.value = waterIntake.value > 0;
+
       logger.i('Water logged: $isWaterLogged.value');
     } else {
       logger.w('No water data found');
       isWaterLogged.value = false;
     }
-
-    allMeals.value = await healthService.getMealData(timeFrame: TimeFrame.today, endTime: endTime);
-
-    filterMealsByType(filteredMealType.value);
-
-    final allActivityData =
-        await healthService.getActivityData(timeFrame: TimeFrame.today, endTime: endTime);
-
-    activityManager.value.processActivityData(activityData: allActivityData, userAge: 48);
   }
 
-  Future<void> filterMealsByType(MealType type) async {
-    if (type == MealType.UNKNOWN) {
-      filteredMeals.value = allMeals;
-    } else {
-      filteredMeals.value = allMeals
-          .where((meal) =>
-              (meal.value as NutritionHealthValue).zinc ==
-              HealthService.to.convertMealthTypeToDouble(type))
-          .toList();
-    }
+  Future<void> _retrieveMealData({bool? forceRefresh = false}) async {
+    final foodDataPoints = await healthService.getMealData(
+        timeFrame: TimeFrame.day, seedDate: diaryDate.value, forceRefresh: forceRefresh);
+    foodManager.value.processFoodData(foodDataPoints);
+  }
+
+  Future<void> _retrieveActivityData({bool? forceRefresh = false}) async {
+    final allActivityData = await healthService.getActivityData(
+        timeFrame: TimeFrame.day, seedDate: diaryDate.value, forceRefresh: forceRefresh);
+    activityManager.value.processActivityData(activityData: allActivityData, userAge: 48);
   }
 
   Future<void> saveWeightToHealth() async {
@@ -367,15 +397,18 @@ class DiaryController extends GetxController {
 
   Future<void> saveMealToHealth() async {
     try {
-      final servingQty = double.tryParse(foodServingController.text) ?? 0.0;
+      final servingQty = double.tryParse(foodServingController.text) ?? 1.0;
+      final mealType = HealthService.to.convertMealthTypeToDouble(selectedMealType.value);
       selectedZone2Food.value!.servingQuantity = servingQty;
+      selectedZone2Food.value!.mealTypeValue = mealType;
+
       final success =
           await healthService.saveMealToHealth(selectedMealType.value, selectedZone2Food.value!);
       if (success) {
         // Send success notification
         NotificationService.to
             .showSuccess('Meal Saved', 'Your meal has been successfully saved to health data.');
-        await getHealthDataForSelectedDay();
+        await _retrieveMealData(forceRefresh: true);
       } else {
         NotificationService.to
             .showError('Meal Not Saved', 'Your meal was not saved to health data.');
@@ -419,13 +452,13 @@ class DiaryController extends GetxController {
       diaryDate.value = diaryDate.value.add(const Duration(days: 1));
       await resetTracking();
     }
-    await getHealthDataForSelectedDay();
+    await getHealthDataForSelectedDay(false);
   }
 
   Future<void> navigateToPreviousDay() async {
     diaryDate.value = diaryDate.value.subtract(const Duration(days: 1));
     await resetTracking();
-    await getHealthDataForSelectedDay();
+    await getHealthDataForSelectedDay(false);
   }
 
   Future<void> addWater(double ounces) async {
@@ -440,7 +473,7 @@ class DiaryController extends GetxController {
       NotificationService.to.showSuccess(
           'Water Saved', 'Your water intake has been successfully saved to health data.');
 
-      await getHealthDataForSelectedDay();
+      await _retrieveWaterData(forceRefresh: true);
     } catch (e) {
       logger.e('Error saving weight to Health: $e');
     }
@@ -448,13 +481,12 @@ class DiaryController extends GetxController {
 
   Future<void> searchFood(String query) async {
     searchPerformed.value = false;
-    await EasyLoading.show(
-      status: 'Searching for food...',
-      maskType: EasyLoadingMaskType.black,
+    await BusyIndicatorService.to.showBusyIndicator(
+      'Searching for food...',
     );
 
     foodSearchResults.value = await foodService.searchFood(query);
-    await EasyLoading.dismiss();
+    BusyIndicatorService.to.hideBusyIndicator();
     searchPerformed.value = true;
   }
 
@@ -462,7 +494,7 @@ class DiaryController extends GetxController {
     logger.i('finding food by barcode: $barcode');
 
     try {
-      await EasyLoading.show(status: 'Getting food...', maskType: EasyLoadingMaskType.black);
+      await BusyIndicatorService.to.showBusyIndicator('Getting food...');
       final result = await foodService.getFoodById(barcode);
       logger.i('Food: ${result.product?.productName}');
 
@@ -474,14 +506,14 @@ class DiaryController extends GetxController {
     } catch (e) {
       logger.e('Error finding food by barcode: $e');
     } finally {
-      await EasyLoading.dismiss();
+      BusyIndicatorService.to.hideBusyIndicator();
     }
   }
 
   Future<void> deleteFood() async {
     await healthService.deleteData(HealthDataType.NUTRITION, selectedZone2Food.value!.startTime!,
         selectedZone2Food.value!.endTime!);
-    await getHealthDataForSelectedDay();
+    await _retrieveMealData(forceRefresh: true);
   }
 
   Future<void> extractFoodItemsOpenAI(String text) async {
@@ -527,21 +559,6 @@ class DiaryController extends GetxController {
     }
   }
 
-  MealType _parseMealType(String type) {
-    switch (type.toUpperCase()) {
-      case 'BREAKFAST':
-        return MealType.BREAKFAST;
-      case 'LUNCH':
-        return MealType.LUNCH;
-      case 'DINNER':
-        return MealType.DINNER;
-      case 'SNACK':
-        return MealType.SNACK;
-      default:
-        return MealType.UNKNOWN;
-    }
-  }
-
   void selectFoodFromVoice(String foodDescription) async {
     try {
       // Store the selected food description
@@ -550,10 +567,7 @@ class DiaryController extends GetxController {
       // Reset search results before new search
       foodSearchResults.value = null;
 
-      await EasyLoading.show(
-        status: 'Searching for food...',
-        maskType: EasyLoadingMaskType.black,
-      );
+      await BusyIndicatorService.to.showBusyIndicator('Searching for food...');
 
       // Perform the search
       final results = await foodService.searchFood(foodDescription);
@@ -576,7 +590,145 @@ class DiaryController extends GetxController {
         snackPosition: SnackPosition.TOP,
       );
     } finally {
-      await EasyLoading.dismiss();
+      BusyIndicatorService.to.hideBusyIndicator();
     }
+  }
+
+  void viewFoodFromSearch(OpenFoodFactsFood openFoodFactsFood) {
+    selectedOpenFoodFactsFood.value = openFoodFactsFood;
+    selectedZone2Food.value = Zone2Food.fromOpenFoodFactsFood(openFoodFactsFood);
+    foodServingController.text = '';
+    if (selectedZone2Food.value!.totalCaloriesValue <= 0) {
+      NotificationService.to.showWarning(
+          'No Calories', 'This food has no calories and cannot be added to your meal.');
+    }
+  }
+
+  Future<void> pickAndProcessImage() async {
+    try {
+      final XFile? imageFile = await _picker.pickImage(source: ImageSource.camera);
+      if (imageFile != null) {
+        // Convert image to base64
+        final bytes = await imageFile.readAsBytes();
+        // Show loading indicator
+        await BusyIndicatorService.to.showBusyIndicator('Analyzing image...');
+
+        // Creates a unique path for the image based on the user id and the current timestamp
+        final downloadUrl = await FirebaseService.to.uploadImage(bytes,
+            'ocr/${AuthService.to.firebaseUser.value?.uid}/${DateTime.now().millisecondsSinceEpoch}.png');
+
+        if (downloadUrl == null) {
+          return;
+        }
+
+        // Process with GPT-4 Vision
+        final result = await OpenAIService.to.extractNutritionFromImage(downloadUrl);
+
+        if (result == null) {
+          return;
+        }
+
+        final zone2Food = Zone2Food.fromNutrientInformation(result);
+        addCalorieNameTextController.text = zone2Food.name;
+        addCalorieCaloriesTextController.text = zone2Food.totalCaloriesValue.toString();
+        addCalorieProteinTextController.text = zone2Food.proteinValue.toString();
+        addCalorieCarbohydratesTextController.text = zone2Food.totalCarbsValue.toString();
+        addCalorieTotalFatTextController.text = zone2Food.totalFatValue.toString();
+        selectedZone2Food.value = zone2Food;
+        update();
+      }
+    } catch (e) {
+      logger.e('Error processing image: $e');
+      NotificationService.to.showError(
+        'Error',
+        'Failed to process image. Please try again.',
+      );
+    } finally {
+      BusyIndicatorService.to.hideBusyIndicator();
+    }
+  }
+
+  void updateNutrient(String fieldName, double value) {
+    if (selectedZone2Food.value == null) {
+      return;
+    }
+    // value = value.replaceAll(RegExp(r'\.+$'), ''); // Remove trailing periods
+    // final double valueDouble = double.tryParse(value) ?? 0;
+    logger.i('Updating nutrient: $fieldName to $value');
+
+    switch (fieldName) {
+      case 'calories':
+        selectedZone2Food.value!.totalCaloriesValue = value;
+        break;
+      case 'protein':
+        selectedZone2Food.value!.proteinValue = value;
+        break;
+      case 'carbohydrates':
+        selectedZone2Food.value!.totalCarbsValue = value;
+        break;
+      case 'totalFat':
+        selectedZone2Food.value!.totalFatValue = value;
+        break;
+      case 'sodium':
+        selectedZone2Food.value!.sodiumValue = value;
+        break;
+      default:
+        logger.w('Unknown nutrient field: $fieldName');
+        break;
+    }
+    update();
+  }
+
+  Future<void> saveNutritionToHealth() async {
+    // Implement your health saving logic here
+    try {
+      // Save to health
+      Get.back(); // Close the bottom sheet
+      NotificationService.to.showSuccess('Success', 'Nutrition facts saved successfully');
+    } catch (e) {
+      NotificationService.to.showError('Error', 'Failed to save nutrition facts');
+    }
+  }
+
+  void initializeZone2Food() {
+    selectedZone2Food.value = Zone2Food(
+      name: '',
+      brand: '',
+      totalCaloriesValue: 0,
+      proteinValue: 0,
+      totalCarbsValue: 0,
+      servingQuantity: 0,
+      servingLabel: '',
+      totalCaloriesLabel: '',
+      proteinLabel: '',
+      totalCarbsLabel: '',
+      fiberLabel: '',
+      sugarLabel: '',
+      totalFatLabel: '',
+      saturatedLabel: '',
+      sodiumLabel: '',
+      cholesterolLabel: '',
+      potassiumLabel: '',
+      mealTypeValue: 0,
+      fiberValue: 0,
+      sugarValue: 0,
+      totalFatValue: 0,
+      saturatedValue: 0,
+      sodiumValue: 0,
+      cholesterolValue: 0,
+      potassiumValue: 0,
+    );
+    addCalorieNameTextController.text = '';
+    addCalorieCaloriesTextController.text = '';
+    addCalorieProteinTextController.text = '';
+    addCalorieCarbohydratesTextController.text = '';
+    addCalorieTotalFatTextController.text = '';
+    update();
+  }
+
+  void updateFoodName(String value) {
+    // Update the name in the controller or model if needed
+    selectedZone2Food.value!.name = value;
+    update();
   }
 }

@@ -6,6 +6,7 @@ import 'package:zone2/app/services/auth_service.dart';
 import 'package:zone2/app/services/firebase_service.dart';
 import 'package:zone2/app/services/food_service.dart';
 import 'package:zone2/app/services/health_service.dart';
+import 'package:zone2/app/services/shared_preferences_service.dart';
 import 'package:zone2/app/style/palette.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -19,7 +20,7 @@ import 'helper/mocks.dart';
 
 void main() {
   setUpAll(() {
-    registerFallbackValue(TimeFrame.today);
+    registerFallbackValue(TimeFrame.day);
     registerFallbackValue(WeightUnit.pound);
     registerFallbackValue(WaterUnit.ounce);
   });
@@ -33,8 +34,14 @@ void main() {
     final firebaseServiceMock = FirebaseServiceMock();
     final authServiceMock = AuthServiceMock();
     final foodServiceMock = FoodServiceMock();
+    final sharedPreferencesServiceMock = SharedPreferencesServiceMock();
 
-    when(() => healthServiceMock.getWeightData(timeFrame: any(named: 'timeFrame')))
+    sharedPreferencesServiceMock.zone2ProteinTarget.value = 100.0;
+    sharedPreferencesServiceMock.zone2CarbsTarget.value = 100.0;
+    sharedPreferencesServiceMock.zone2FatTarget.value = 100.0;
+
+    when(() => healthServiceMock.getWeightData(
+            timeFrame: any(named: 'timeFrame'), seedDate: any(named: 'seedDate')))
         .thenAnswer((_) async => [
               HealthDataPoint(
                 uuid: "b9f088c4-05ee-3058-b223-c2f8deab02af",
@@ -51,7 +58,8 @@ void main() {
               )
             ]);
 
-    when(() => healthServiceMock.getMealData(timeFrame: any(named: 'timeFrame')))
+    when(() => healthServiceMock.getMealData(
+            timeFrame: any(named: 'timeFrame'), seedDate: any(named: 'seedDate')))
         .thenAnswer((_) async => [
               HealthDataPoint(
                 uuid: "8285f360-2100-46bd-bc24-5eb84264ebcf",
@@ -80,7 +88,8 @@ void main() {
               )
             ]);
 
-    when(() => healthServiceMock.getActivityData(timeFrame: any(named: 'timeFrame')))
+    when(() => healthServiceMock.getActivityData(
+            timeFrame: any(named: 'timeFrame'), seedDate: any(named: 'seedDate')))
         .thenAnswer((_) async => [
               HealthDataPoint(
                 uuid: "b0401744-fae8-4979-9afc-cf4b34f5fa4b",
@@ -97,7 +106,8 @@ void main() {
               )
             ]);
 
-    when(() => healthServiceMock.getWaterData(timeFrame: any(named: 'timeFrame')))
+    when(() => healthServiceMock.getWaterData(
+            timeFrame: any(named: 'timeFrame'), seedDate: any(named: 'seedDate')))
         .thenAnswer((_) async => [
               HealthDataPoint(
                 uuid: "bbf478e8-d685-493a-ad57-14e7a99f1a52",
@@ -117,6 +127,7 @@ void main() {
     when(() => healthServiceMock.convertWeightUnit(any(), any())).thenAnswer((_) async => 100.0);
     when(() => healthServiceMock.convertWaterUnit(any(), any())).thenAnswer((_) async => 1.0);
 
+    Get.put<SharedPreferencesService>(sharedPreferencesServiceMock);
     Get.put<FirebaseAuth>(firebaseAuthMock);
     Get.put<FirebaseFirestore>(firebaseFirestoreMock);
     Get.put<FirebaseService>(firebaseServiceMock);

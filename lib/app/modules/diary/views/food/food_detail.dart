@@ -93,7 +93,7 @@ class FoodDetailBottomSheet extends GetView<DiaryController> {
                                                     .isNotEmpty ??
                                                 false
                                             ? controller.selectedZone2Food.value!.servingLabel
-                                            : 'Serving',
+                                            : 'Serving(s)',
                                         style: const TextStyle(fontSize: 16),
                                         textAlign: TextAlign.left,
                                       ),
@@ -177,7 +177,10 @@ class FoodDetailBottomSheet extends GetView<DiaryController> {
                               const SizedBox(height: 16),
                               if (controller.selectedZone2Food.value?.startTime == null)
                                 Obx(() => ElevatedButton(
-                                      onPressed: controller.foodServingQty.value != null
+                                      onPressed: controller.foodServingQty.value != null &&
+                                              controller
+                                                      .selectedZone2Food.value!.totalCaloriesValue >
+                                                  0
                                           ? () {
                                               controller.saveMealToHealth();
                                               onBack.call();

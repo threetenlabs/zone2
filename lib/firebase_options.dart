@@ -54,7 +54,7 @@ class DefaultFirebaseOptions {
     appId: '1:260007377833:android:48485da0a82d5283c562b8',
     messagingSenderId: '260007377833',
     projectId: 'zone2-prod',
-    storageBucket: 'zone2-prod.appspot.com',
+    storageBucket: 'zone2-prod.firebasestorage.app',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
@@ -62,7 +62,7 @@ class DefaultFirebaseOptions {
     appId: '1:260007377833:ios:3aa922d998605c50c562b8',
     messagingSenderId: '260007377833',
     projectId: 'zone2-prod',
-    storageBucket: 'zone2-prod.appspot.com',
+    storageBucket: 'zone2-prod.firebasestorage.app',
     androidClientId: '260007377833-5f6ouohq4n4uouit719lp106qbf7q9ce.apps.googleusercontent.com',
     iosClientId: '260007377833-un7fpgngv8cbpdh42rgbtuimganesasb.apps.googleusercontent.com',
     iosBundleId: 'com.threetenlabs.zone2',

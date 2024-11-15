@@ -7,6 +7,7 @@ jobs:
   ci-test:
     env:
       OPENAI_API_KEY: sk-proj-POAEff-8675309_u12RxTHJ_ThisIsNotARealKey
+      USDA_FOOD_API_KEY: ygfyVKsHpawwcThisIsNotARealKeyEither
     runs-on: ubuntu-latest
 
     steps:

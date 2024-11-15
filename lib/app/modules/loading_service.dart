@@ -7,7 +7,7 @@ class BusyIndicatorService {
   Future<void> showBusyIndicator(String status) async {
     await EasyLoading.show(
       status: status,
-      maskType: EasyLoadingMaskType.black,
+      maskType: EasyLoadingMaskType.clear,
     );
   }
 
