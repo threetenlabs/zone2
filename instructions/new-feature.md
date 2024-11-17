@@ -69,6 +69,8 @@ Use GetX controllers with:
   class MyController extends GetxController {
     final service = Get.find<MyService>();
     final data = <MyModel>[].obs;
+    final number = 0.obs;
+    final text = ''.obs;
 
     Future<void> loadData() async {
       try {
@@ -76,6 +78,14 @@ Use GetX controllers with:
       } catch (e) {
         logger.e('Error: $e');
       }
+    }
+
+    Future<void> incrementNumber() async {
+      number.value++;
+    }
+
+    Future<void> updateText(String newText) async {
+      text.value = newText;
     }
   }
 ```
@@ -98,14 +108,19 @@ Create views with:
             if (controller.data.isEmpty) {
               return LoadingWidget();
             } else {
-              return ListView.builder(
-                itemCount: controller.data.length,
-                itemBuilder: (context, index) {
+              return Column(
+                children: [
+                  Text(controller.text.value),
+                  ListView.builder(
+                    itemCount: controller.data.length,
+                    itemBuilder: (context, index) {
                   final item = controller.data[index];
                   return ListTile(
-                    title: Text(item.name),
-                  );
-                },
+                        title: Text(item.name),
+                      );
+                    },
+                  ),
+                ],
               );
             }
           }),
@@ -132,6 +147,23 @@ class MyWidget extends StatelessWidget {
     return Card(
       child: ListTile(
         title: Text(title),
+        onTap: onTap,
+      ),
+    );
+  }
+}
+```
+
+- Widgets can also be GetView<Controller>
+
+```
+class MyWidget extends GetView<MyController> {
+  final VoidCallback onTap;
+
+  Widget build(BuildContext context) {
+    return Card(
+      child: ListTile(
+        title: Text(controller.text.value),
         onTap: onTap,
       ),
     );
