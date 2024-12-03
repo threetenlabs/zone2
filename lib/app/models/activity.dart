@@ -17,7 +17,6 @@ class HeartRateRecord {
   });
 
   factory HeartRateRecord.fromJson(Map<String, dynamic> json) {
-    print(json);
     return HeartRateRecord(
       uuid: json['uuid'],
       numericValue: (json['value']['numericValue'] as num).toDouble(),

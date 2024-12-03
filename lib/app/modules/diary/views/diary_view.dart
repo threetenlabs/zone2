@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:get/get.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 import 'package:zone2/app/modules/diary/views/activity/manage_activity.dart';
 import 'package:zone2/app/modules/diary/views/food/manage_food.dart';
 import 'package:zone2/app/modules/diary/views/water/manage_water.dart';
@@ -26,47 +27,59 @@ class DiaryView extends GetView<DiaryController> {
                 padding: const EdgeInsets.all(8.0),
                 children: [
                   Obx(
-                    () => _buildDiaryCard(
-                      context,
-                      icon: Ionicons.scale,
-                      title: 'Record Weight',
-                      subtitle: 'Track your weight progress',
-                      iconColor: Theme.of(context).colorScheme.primary,
-                      isChecked: controller.isWeightLogged.value,
-                      onTap: () => _showWeightBottomSheet(context),
+                    () => Skeletonizer(
+                      enabled: controller.isLoadingHealthData.value,
+                      child: _buildDiaryCard(
+                        context,
+                        icon: Ionicons.scale,
+                        title: 'Record Weight',
+                        subtitle: 'Track your weight progress',
+                        iconColor: Theme.of(context).colorScheme.primary,
+                        isChecked: controller.isWeightLogged.value,
+                        onTap: () => _showWeightBottomSheet(context),
+                      ),
                     ),
                   ),
                   Obx(
-                    () => _buildDiaryCard(
-                      context,
-                      icon: Icons.fastfood,
-                      title: 'Track Meals',
-                      subtitle: 'Log your meals and snacks',
-                      iconColor: Theme.of(context).colorScheme.secondary,
-                      onTap: () => _showAddFoodBottomSheet(context),
-                      isChecked: controller.foodManager.value.isFoodLogged.value,
+                    () => Skeletonizer(
+                      enabled: controller.isLoadingHealthData.value,
+                      child: _buildDiaryCard(
+                        context,
+                        icon: Icons.fastfood,
+                        title: 'Track Meals',
+                        subtitle: 'Log your meals and snacks',
+                        iconColor: Theme.of(context).colorScheme.secondary,
+                        onTap: () => _showAddFoodBottomSheet(context),
+                        isChecked: controller.foodManager.value.isFoodLogged.value,
+                      ),
                     ),
                   ),
                   Obx(
-                    () => _buildDiaryCard(
-                      context,
-                      icon: Icons.run_circle,
-                      title: 'Monitor Activity',
-                      subtitle: 'Monitor your Zone Minutes',
-                      iconColor: Theme.of(context).colorScheme.tertiary,
-                      onTap: () => _showManageActivityBottomSheet(context),
-                      isChecked: controller.activityManager.value.isActivityLogged.value,
+                    () => Skeletonizer(
+                      enabled: controller.isLoadingHealthData.value,
+                      child: _buildDiaryCard(
+                        context,
+                        icon: Icons.run_circle,
+                        title: 'Monitor Activity',
+                        subtitle: 'Monitor your Zone Minutes',
+                        iconColor: Theme.of(context).colorScheme.tertiary,
+                        onTap: () => _showManageActivityBottomSheet(context),
+                        isChecked: controller.activityManager.value.isActivityLogged.value,
+                      ),
                     ),
                   ),
                   Obx(
-                    () => _buildDiaryCard(
-                      context,
-                      icon: Icons.local_drink,
-                      title: 'Track Hydration',
-                      subtitle: 'Keep track of your water intake',
-                      iconColor: Theme.of(context).colorScheme.tertiary,
-                      onTap: () => _showWaterBottomSheet(context),
-                      isChecked: controller.isWaterLogged.value,
+                    () => Skeletonizer(
+                      enabled: controller.isLoadingHealthData.value,
+                      child: _buildDiaryCard(
+                        context,
+                        icon: Icons.local_drink,
+                        title: 'Track Hydration',
+                        subtitle: 'Keep track of your water intake',
+                        iconColor: Theme.of(context).colorScheme.tertiary,
+                        onTap: () => _showWaterBottomSheet(context),
+                        isChecked: controller.isWaterLogged.value,
+                      ),
                     ),
                   ),
                 ],

@@ -152,8 +152,16 @@ class HealthActivityManager {
         record.dateFrom.minute,
       );
 
+      // logger.i('Processing minute: $minuteKey');
       // Skip if this minute has already been processed
-      if (processedMinutes.contains(minuteKey)) continue;
+      if (processedMinutes.contains(minuteKey)) {
+        logger.i('Skipping duplicate minute: $minuteKey');
+        continue;
+      }
+
+      if (minuteKey.hour >= 12 && minuteKey.hour < 1) {
+        logger.i('Processing record: $record');
+      }
 
       processedMinutes.add(minuteKey);
 

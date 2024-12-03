@@ -89,6 +89,7 @@ class DiaryController extends GetxController {
   final logger = Get.find<Logger>();
   final healthService = Get.find<HealthService>();
   final foodService = Get.find<FoodService>();
+  final isLoadingHealthData = false.obs;
 
   // Weight tracking
   final weightWhole = 70.obs;
@@ -177,19 +178,24 @@ class DiaryController extends GetxController {
   void onReady() async {
     super.onReady();
     zone2User.value = AuthService.to.zone2User.value;
-
+    final birthDateString = zone2User.value?.zoneSettings?.birthDate ?? DateTime.now().toString();
     // Parse the birthdate using the correct format
-    final birthDate = DateFormat('MM-dd-yyyy')
-        .parse(zone2User.value?.zoneSettings?.birthDate ?? DateTime.now().toString());
+    final birthDate = DateFormat('MM-dd-yyyy').parse(birthDateString);
 
     userAge.value = (DateTime.now().year - birthDate.year).toInt();
 
     AuthService.to.zone2User.stream.listen((user) async {
       logger.i('zone2User: $user');
       zone2User.value = user;
-      // if (user != null) {
-      //   await checkHealthPermissions();
-      // }
+      if (user != null) {
+        zone2User.value = AuthService.to.zone2User.value;
+        final birthDateString =
+            zone2User.value?.zoneSettings?.birthDate ?? DateTime.now().toString();
+        // Parse the birthdate using the correct format
+        final birthDate = DateFormat('MM-dd-yyyy').parse(birthDateString);
+
+        userAge.value = (DateTime.now().year - birthDate.year).toInt();
+      }
     });
   }
 
@@ -313,20 +319,20 @@ class DiaryController extends GetxController {
   }
 
   Future<void> getHealthDataForSelectedDay(bool forceRefresh) async {
-    try {
-      await BusyIndicatorService.to.showBusyIndicator('Retrieving health data...');
-      await Future.wait([
-        _retrieveWeightData(),
-        _retrieveWaterData(),
-        _retrieveMealData(),
-        _retrieveActivityData(),
-      ]);
-    } catch (e) {
+    isLoadingHealthData.value = true;
+    Future.wait([
+      _retrieveWeightData(),
+      _retrieveWaterData(),
+      _retrieveMealData(),
+      _retrieveActivityData(),
+    ]).then((_) {
+      // All tasks completed
+      isLoadingHealthData.value = false;
+    }).catchError((e) {
       logger.e('Error getting health data: $e');
       FirebaseCrashlytics.instance.recordError(e, null, fatal: true);
-    } finally {
-      BusyIndicatorService.to.hideBusyIndicator();
-    }
+      isLoadingHealthData.value = false; // Ensure this is set even on error
+    });
   }
 
   Future<void> _retrieveWeightData({bool? forceRefresh = false}) async {
@@ -401,7 +407,7 @@ class DiaryController extends GetxController {
           await healthService.convertWeightUnit(weightInPounds, WeightUnit.kilogram);
 
       // Call the HealthService to save the weight
-      await healthService.saveWeightToHealth(weightInKilograms);
+      await healthService.saveWeightToHealth(weightInKilograms, diaryDate.value);
 
       // Send success notification
       NotificationService.to
@@ -421,8 +427,8 @@ class DiaryController extends GetxController {
       selectedZone2Food.value!.servingQuantity = servingQty;
       selectedZone2Food.value!.mealTypeValue = mealType;
 
-      final success =
-          await healthService.saveMealToHealth(selectedMealType.value, selectedZone2Food.value!);
+      final success = await healthService.saveMealToHealth(
+          selectedMealType.value, selectedZone2Food.value!, diaryDate.value);
       if (success) {
         // Send success notification
         NotificationService.to
@@ -486,7 +492,7 @@ class DiaryController extends GetxController {
         await healthService.convertWaterUnit(waterIntakeInOunces, WaterUnit.liter);
     try {
       // Call the HealthService to save the weight
-      await healthService.saveWaterToHealth(waterIntakeInLiters);
+      await healthService.saveWaterToHealth(waterIntakeInLiters, diaryDate.value);
 
       // Send success notification
       NotificationService.to.showSuccess(
@@ -697,17 +703,6 @@ class DiaryController extends GetxController {
         break;
     }
     update();
-  }
-
-  Future<void> saveNutritionToHealth() async {
-    // Implement your health saving logic here
-    try {
-      // Save to health
-      Get.back(); // Close the bottom sheet
-      NotificationService.to.showSuccess('Success', 'Nutrition facts saved successfully');
-    } catch (e) {
-      NotificationService.to.showError('Error', 'Failed to save nutrition facts');
-    }
   }
 
   void initializeZone2Food() {

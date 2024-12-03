@@ -353,9 +353,9 @@ class HealthService extends GetxService {
     }
   }
 
-  Future<void> saveWeightToHealth(double weight) async {
+  Future<void> saveWeightToHealth(double weight, DateTime startTime) async {
     try {
-      final now = DateTime.now();
+      final now = startTime;
       final earlier = now.subtract(const Duration(minutes: 1));
       // Save the weight data point to Health
       await Health().writeHealthData(
@@ -373,9 +373,9 @@ class HealthService extends GetxService {
     }
   }
 
-  Future<void> saveWaterToHealth(double water) async {
+  Future<void> saveWaterToHealth(double water, DateTime startTime) async {
     try {
-      final now = DateTime.now();
+      final now = startTime;
       final earlier = now.subtract(const Duration(minutes: 1));
       // Save the weight data point to Health
       await Health().writeHealthData(
@@ -392,8 +392,8 @@ class HealthService extends GetxService {
     }
   }
 
-  Future<bool> saveMealToHealth(MealType mealtype, Zone2Food meal) async {
-    final now = DateTime.now();
+  Future<bool> saveMealToHealth(MealType mealtype, Zone2Food meal, DateTime startTime) async {
+    final now = startTime;
     final earlier = now.subtract(const Duration(seconds: 5));
     final qty = meal.servingQuantity;
 
