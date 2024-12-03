@@ -16,9 +16,7 @@ class GetStoragePersistence {
   final String soundOnKey = 'soundsOnKey';
   final String isAboveMinimumSupportedVersionKey = 'isAboveMinimumSupportedVersionKey';
   final String darkModeKey = 'darkModeKey';
-  final String zone2ProteinTargetKey = 'zone2ProteinTargetKey';
-  final String zone2CarbsTargetKey = 'zone2CarbsTargetKey';
-  final String zone2FatTargetKey = 'zone2FatTargetKey';
+
   final String openAIKey = 'openAIKey';
 
   bool getUserHasRemovedAds() {
@@ -40,30 +38,6 @@ class GetStoragePersistence {
 
   Future<void> saveDarkMode(bool value) async {
     await box.write(darkModeKey, value);
-  }
-
-  double getZone2ProteinTarget() {
-    return box.read(zone2ProteinTargetKey) ?? 0.0;
-  }
-
-  Future<void> saveZone2ProteinTarget(double value) async {
-    await box.write(zone2ProteinTargetKey, value);
-  }
-
-  double getZone2CarbsTarget() {
-    return box.read(zone2CarbsTargetKey) ?? 0.0;
-  }
-
-  Future<void> saveZone2CarbsTarget(double value) async {
-    await box.write(zone2CarbsTargetKey, value);
-  }
-
-  double getZone2FatTarget() {
-    return box.read(zone2FatTargetKey) ?? 0.0;
-  }
-
-  Future<void> saveZone2FatTarget(double value) async {
-    await box.write(zone2FatTargetKey, value);
   }
 
   String getOpenAIKey() {

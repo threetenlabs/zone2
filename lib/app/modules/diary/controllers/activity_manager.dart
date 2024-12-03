@@ -82,11 +82,9 @@ class HealthActivityManager {
   };
 
   HealthActivityManager() {
-    AuthService.to.zone2User.stream.listen((user) {
-      if (user != null) {
-        zone2User.value = user;
-        _calculateTotals();
-      }
+    AuthService.to.appUser.stream.listen((user) {
+      zone2User.value = user;
+      _calculateTotals();
     });
   }
 

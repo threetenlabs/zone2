@@ -28,7 +28,6 @@ class IntroController extends GetxController {
   final RxInt dailyWaterGoalInOz = 100.obs;
   final RxInt dailyZonePointsGoal = 100.obs;
   final RxDouble dailyCalorieIntakeGoal = 1700.0.obs;
-  final RxDouble dailyCaloriesBurnedGoal = 0.0.obs;
   final RxInt dailyStepsGoal = 10000.obs;
 
   final suggestedWeightLossMessage =
@@ -106,8 +105,7 @@ class IntroController extends GetxController {
     return await isValidBirthdate() &&
         zone2Gender.value != null &&
         weightController.text.isNotEmpty &&
-        heightFeet.value != 0 &&
-        heightInches.value != 0;
+        heightFeet.value != 0;
   }
 
   Future<bool> haveGoals() async {
@@ -129,11 +127,6 @@ class IntroController extends GetxController {
     showNextButton.value = await haveAllGoals();
   }
 
-  Future<void> setDailyCaloriesBurnedGoal(double goal) async {
-    dailyCaloriesBurnedGoal.value = goal;
-    showNextButton.value = await haveAllGoals();
-  }
-
   Future<void> setDailyStepsGoal(int goal) async {
     dailyStepsGoal.value = goal;
     showNextButton.value = await haveAllGoals();
@@ -143,7 +136,6 @@ class IntroController extends GetxController {
     return dailyWaterGoalInOz.value != 0 &&
         dailyZonePointsGoal.value != 0 &&
         dailyCalorieIntakeGoal.value != 0 &&
-        dailyCaloriesBurnedGoal.value != 0 &&
         dailyStepsGoal.value != 0;
   }
 
@@ -191,15 +183,41 @@ class IntroController extends GetxController {
     }
   }
 
+  /// Calculates daily macro targets in grams based on target calories
+  /// Returns a Map with protein, carbs, and fat targets
+  Map<String, double> calculateMacroTargets({
+    required double targetCalories,
+    double proteinPercentage = 0.30,
+    double carbsPercentage = 0.40,
+    double fatPercentage = 0.30,
+  }) {
+    // Calories per gram: Protein = 4, Carbs = 4, Fat = 9
+    final proteinGrams = (targetCalories * proteinPercentage) / 4;
+    final carbsGrams = (targetCalories * carbsPercentage) / 4;
+    final fatGrams = (targetCalories * fatPercentage) / 9;
+
+    return {
+      'protein': double.parse(proteinGrams.toStringAsFixed(1)),
+      'carbs': double.parse(carbsGrams.toStringAsFixed(1)),
+      'fat': double.parse(fatGrams.toStringAsFixed(1)),
+    };
+  }
+
   //create a method called onFinish that saves a boolean called introFinished to sharedPreferences
   void onFinish() {
     introLogger.i('Introduction Finished');
+    final dailyCalorieIntakeGoalValue = dailyCalorieIntakeGoal.value;
     FirebaseService.to.updateUserZoneSettings(ZoneSettings(
         journeyStartDate: Timestamp.now(),
         dailyWaterGoalInOz: dailyWaterGoalInOz.value,
         dailyZonePointsGoal: dailyZonePointsGoal.value,
-        dailyCalorieIntakeGoal: dailyCalorieIntakeGoal.value,
-        dailyCaloriesBurnedGoal: dailyCaloriesBurnedGoal.value,
+        dailyCalorieIntakeGoal: dailyCalorieIntakeGoalValue,
+        zone2ProteinTarget:
+            calculateMacroTargets(targetCalories: dailyCalorieIntakeGoalValue)['protein'] ?? 0.0,
+        zone2CarbsTarget:
+            calculateMacroTargets(targetCalories: dailyCalorieIntakeGoalValue)['carbs'] ?? 0.0,
+        zone2FatTarget:
+            calculateMacroTargets(targetCalories: dailyCalorieIntakeGoalValue)['fat'] ?? 0.0,
         dailyStepsGoal: dailyStepsGoal.value,
         reasonForStartingJourney: zone2Reason.value,
         initialWeightInLbs: double.parse(weightController.text),
@@ -238,7 +256,8 @@ class IntroController extends GetxController {
     // Calculate target weight for BMI range of 18.5 - 25
     double targetLowerBound = 0;
     double targetUpperBound = 0;
-    const double heightInMeters = (5 * 0.3048) + (10 * 0.0254); // 5'10" in meters
+    final double heightInMeters =
+        (heightFeet.value * 0.3048) + (heightInches.value * 0.0254); // 5'10" in meters
     const double bmiLowerBound = 18.5;
     const double bmiUpperBound = 25;
 
@@ -269,7 +288,8 @@ class IntroController extends GetxController {
       suggestedWeightLossLowerBound.value = targetLowerBound;
       suggestedWeightLossUpperBound.value = targetUpperBound;
     }
+    targetWeightController.text = suggestedWeightLossUpperBound.value.toStringAsFixed(0);
     suggestedWeightLossTarget.value =
-        "(Recommended: ${targetLowerBound.toStringAsFixed(0)} - ${targetUpperBound.toStringAsFixed(0)} lbs)";
+        "(Recommended: ${suggestedWeightLossLowerBound.toStringAsFixed(0)} - ${suggestedWeightLossUpperBound.toStringAsFixed(0)} lbs)";
   }
 }

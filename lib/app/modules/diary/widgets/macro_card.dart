@@ -39,7 +39,7 @@ class MacroCard extends GetView<DiaryController> {
         mainAxisSize: MainAxisSize.max,
         children: [
           _buildTargetColumn('Target',
-              controller.zone2User.value?.zoneSettings?.dailyCalorieIntakeGoal.round() ?? 2000),
+              controller.zone2User.value.zoneSettings?.dailyCalorieIntakeGoal.round() ?? 2000),
           Center(child: Text('+', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold))),
           _buildTargetColumn('Consumed', controller.foodManager.value.totalCalories.value.round()),
           Center(child: Text('-', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold))),

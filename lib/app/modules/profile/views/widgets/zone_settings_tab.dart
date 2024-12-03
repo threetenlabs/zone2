@@ -65,23 +65,6 @@ class ZoneSettingsTab extends GetWidget<ProfileController> {
           const SizedBox(height: 20),
           SpinBox(
             min: 0,
-            max: 5000,
-            value: controller.dailyCaloriesBurnedGoalController.text.isNotEmpty
-                ? double.parse(controller.dailyCaloriesBurnedGoalController.text)
-                : 0,
-            decimals: 0,
-            step: 1,
-            onChanged: (value) {
-              controller.setDailyCaloriesBurnedGoal(value);
-            },
-            decoration: const InputDecoration(
-              labelText: 'Daily Calories Burned Goal',
-              border: OutlineInputBorder(),
-            ),
-          ),
-          const SizedBox(height: 20),
-          SpinBox(
-            min: 0,
             max: 50000,
             value: controller.dailyStepsGoalController.text.isNotEmpty
                 ? double.parse(controller.dailyStepsGoalController.text)

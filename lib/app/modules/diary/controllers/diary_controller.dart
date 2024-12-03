@@ -136,7 +136,7 @@ class DiaryController extends GetxController {
   final isTestMode = false.obs; // Toggle this for testing
 
   final voiceResults = RxList<FoodVoiceResult>();
-  final zone2User = Rxn<Zone2User>();
+  final zone2User = AuthService.to.appUser;
   final userAge = Rxn<int>();
   String selectedVoiceFood = '';
   RxList<FoodVoiceResult> searchResults = RxList<FoodVoiceResult>();
@@ -177,26 +177,19 @@ class DiaryController extends GetxController {
   @override
   void onReady() async {
     super.onReady();
-    zone2User.value = AuthService.to.zone2User.value;
-    final birthDateString = zone2User.value?.zoneSettings?.birthDate ?? DateTime.now().toString();
+    setUser();
+    AuthService.to.appUser.stream.listen((user) async {
+      setUser();
+    });
+  }
+
+  Future<void> setUser() async {
+    zone2User.value = AuthService.to.appUser.value;
+    final birthDateString = zone2User.value.zoneSettings?.birthDate ?? DateTime.now().toString();
     // Parse the birthdate using the correct format
     final birthDate = DateFormat('MM-dd-yyyy').parse(birthDateString);
 
     userAge.value = (DateTime.now().year - birthDate.year).toInt();
-
-    AuthService.to.zone2User.stream.listen((user) async {
-      logger.i('zone2User: $user');
-      zone2User.value = user;
-      if (user != null) {
-        zone2User.value = AuthService.to.zone2User.value;
-        final birthDateString =
-            zone2User.value?.zoneSettings?.birthDate ?? DateTime.now().toString();
-        // Parse the birthdate using the correct format
-        final birthDate = DateFormat('MM-dd-yyyy').parse(birthDateString);
-
-        userAge.value = (DateTime.now().year - birthDate.year).toInt();
-      }
-    });
   }
 
   Future<void> checkHealthPermissions() async {

@@ -30,11 +30,7 @@ class CaloriesBurnedChart extends GetView<DiaryController> {
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
                   Text(
-                      'Target: ${NumberFormat('#,###').format(controller.zone2User.value?.zoneSettings?.dailyCaloriesBurnedGoal ?? 0)}'),
-                  Text(
                       'Burned: ${NumberFormat('#,###').format(controller.activityManager.value.totalCaloriesBurned.value)}'),
-                  Text(
-                      'Remaining: ${NumberFormat('#,###').format(max(0, (controller.zone2User.value?.zoneSettings?.dailyCaloriesBurnedGoal ?? 0) - controller.activityManager.value.totalCaloriesBurned.value))}'),
                 ],
               ),
             ),

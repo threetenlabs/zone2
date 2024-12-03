@@ -5,7 +5,6 @@ import 'package:zone2/app/models/food.dart';
 import 'package:zone2/app/models/user.dart';
 import 'package:zone2/app/services/auth_service.dart';
 import 'package:zone2/app/services/health_service.dart';
-import 'package:zone2/app/services/shared_preferences_service.dart';
 
 /// Class to manage and process food data
 class FoodManager {
@@ -31,21 +30,11 @@ class FoodManager {
     ever(filteredMealType, (type) {
       filterMealsByType(type);
     });
-    AuthService.to.zone2User.stream.listen((user) {
+    zone2User.value = AuthService.to.appUser.value;
+    checkForTargetMacros();
+    AuthService.to.appUser.stream.listen((user) {
       zone2User.value = user;
-      if (user != null) {
-        checkForTargetMacros();
-      }
-    });
-
-    SharedPreferencesService.to.zone2ProteinTarget.stream.listen((value) {
-      totalProteinTarget.value = value;
-    });
-    SharedPreferencesService.to.zone2CarbsTarget.stream.listen((value) {
-      totalCarbohydratesTarget.value = value;
-    });
-    SharedPreferencesService.to.zone2FatTarget.stream.listen((value) {
-      totalFatTarget.value = value;
+      checkForTargetMacros();
     });
   }
 
@@ -87,42 +76,12 @@ class FoodManager {
     filterMealsByType(filteredMealType.value);
   }
 
-  /// Calculates daily macro targets in grams based on target calories
-  /// Returns a Map with protein, carbs, and fat targets
-  Map<String, double> calculateMacroTargets({
-    required double targetCalories,
-    double proteinPercentage = 0.30,
-    double carbsPercentage = 0.40,
-    double fatPercentage = 0.30,
-  }) {
-    // Calories per gram: Protein = 4, Carbs = 4, Fat = 9
-    final proteinGrams = (targetCalories * proteinPercentage) / 4;
-    final carbsGrams = (targetCalories * carbsPercentage) / 4;
-    final fatGrams = (targetCalories * fatPercentage) / 9;
-
-    return {
-      'protein': double.parse(proteinGrams.toStringAsFixed(1)),
-      'carbs': double.parse(carbsGrams.toStringAsFixed(1)),
-      'fat': double.parse(fatGrams.toStringAsFixed(1)),
-    };
-  }
-
   Future<void> checkForTargetMacros() async {
-    if (SharedPreferencesService.to.zone2ProteinTarget.value == 0.0 ||
-        SharedPreferencesService.to.zone2CarbsTarget.value == 0.0 ||
-        SharedPreferencesService.to.zone2FatTarget.value == 0.0) {
-      logger.w('Macros not set, setting default values');
-
-      final targetMacros = calculateMacroTargets(
-          targetCalories: zone2User.value?.zoneSettings?.dailyCalorieIntakeGoal ?? 2000.0);
-      SharedPreferencesService.to.setZone2ProteinTarget(targetMacros['protein'] as double);
-      SharedPreferencesService.to.setZone2CarbsTarget(targetMacros['carbs'] as double);
-      SharedPreferencesService.to.setZone2FatTarget(targetMacros['fat'] as double);
-    } else {
-      totalProteinTarget.value = SharedPreferencesService.to.zone2ProteinTarget.value;
-      totalCarbohydratesTarget.value = SharedPreferencesService.to.zone2CarbsTarget.value;
-      totalFatTarget.value = SharedPreferencesService.to.zone2FatTarget.value;
-    }
+    if (zone2User.value != null) {
+      totalProteinTarget.value = zone2User.value?.zoneSettings?.zone2ProteinTarget ?? 0.0;
+      totalCarbohydratesTarget.value = zone2User.value?.zoneSettings?.zone2CarbsTarget ?? 0.0;
+      totalFatTarget.value = zone2User.value?.zoneSettings?.zone2FatTarget ?? 0.0;
+    } else {}
   }
 
   Future<void> filterMealsByType(MealType type) async {

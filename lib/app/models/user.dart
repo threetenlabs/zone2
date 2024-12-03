@@ -37,7 +37,6 @@ class ZoneSettings {
   int dailyWaterGoalInOz;
   int dailyZonePointsGoal;
   double dailyCalorieIntakeGoal;
-  double dailyCaloriesBurnedGoal;
   int dailyStepsGoal;
   final String reasonForStartingJourney;
   final double initialWeightInLbs;
@@ -46,13 +45,15 @@ class ZoneSettings {
   final int heightInFeet;
   final String birthDate;
   final String gender;
+  double zone2ProteinTarget;
+  double zone2CarbsTarget;
+  double zone2FatTarget;
 
   ZoneSettings(
       {required this.journeyStartDate,
       required this.dailyWaterGoalInOz,
       required this.dailyZonePointsGoal,
       required this.dailyCalorieIntakeGoal,
-      required this.dailyCaloriesBurnedGoal,
       required this.dailyStepsGoal,
       required this.reasonForStartingJourney,
       required this.initialWeightInLbs,
@@ -60,7 +61,10 @@ class ZoneSettings {
       required this.heightInInches,
       required this.heightInFeet,
       required this.birthDate,
-      required this.gender});
+      required this.gender,
+      required this.zone2ProteinTarget,
+      required this.zone2CarbsTarget,
+      required this.zone2FatTarget});
 
   factory ZoneSettings.fromJson(Map data) {
     return ZoneSettings(
@@ -68,7 +72,6 @@ class ZoneSettings {
         dailyWaterGoalInOz: (data['dailyWaterGoalInOz'] as num?)?.toInt() ?? 100,
         dailyZonePointsGoal: (data['dailyZonePointsGoal'] as num?)?.toInt() ?? 100,
         dailyCalorieIntakeGoal: (data['dailyCalorieIntakeGoal'] as num?)?.toDouble() ?? 0.0,
-        dailyCaloriesBurnedGoal: (data['dailyCaloriesBurnedGoal'] as num?)?.toDouble() ?? 0.0,
         dailyStepsGoal: (data['dailyStepsGoal'] as num?)?.toInt() ?? 10000,
         reasonForStartingJourney: data['reasonForStartingJourney'] as String? ?? '',
         initialWeightInLbs: (data['initialWeightInLbs'] as num?)?.toDouble() ?? 0.0,
@@ -76,7 +79,10 @@ class ZoneSettings {
         heightInInches: (data['heightInInches'] as num?)?.toDouble() ?? 0.0,
         heightInFeet: (data['heightInFeet'] as num?)?.toInt() ?? 0,
         birthDate: data['birthDate'] as String? ?? '',
-        gender: data['gender'] as String? ?? '');
+        gender: data['gender'] as String? ?? '',
+        zone2ProteinTarget: (data['zone2ProteinTarget'] as num?)?.toDouble() ?? 0.0,
+        zone2CarbsTarget: (data['zone2CarbsTarget'] as num?)?.toDouble() ?? 0.0,
+        zone2FatTarget: (data['zone2FatTarget'] as num?)?.toDouble() ?? 0.0);
   }
 
   Map<String, dynamic> toJson() => {
@@ -84,7 +90,6 @@ class ZoneSettings {
         "dailyWaterGoalInOz": dailyWaterGoalInOz,
         "dailyZonePointsGoal": dailyZonePointsGoal,
         "dailyCalorieIntakeGoal": dailyCalorieIntakeGoal,
-        "dailyCaloriesBurnedGoal": dailyCaloriesBurnedGoal,
         "dailyStepsGoal": dailyStepsGoal,
         "reasonForStartingJourney": reasonForStartingJourney,
         "initialWeightInLbs": initialWeightInLbs,
@@ -92,6 +97,9 @@ class ZoneSettings {
         "heightInInches": heightInInches,
         "heightInFeet": heightInFeet,
         "birthDate": birthDate,
-        "gender": gender
+        "gender": gender,
+        "zone2ProteinTarget": zone2ProteinTarget,
+        "zone2CarbsTarget": zone2CarbsTarget,
+        "zone2FatTarget": zone2FatTarget
       };
 }

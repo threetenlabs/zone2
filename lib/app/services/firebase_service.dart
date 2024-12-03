@@ -19,16 +19,10 @@ class FirebaseService {
   final CollectionReference userCollectionReference =
       FirebaseFirestore.instance.collection('users');
 
-  Future<void> updateUserOnboardingComplete() async {
-    await userCollectionReference
-        .doc(FirebaseAuth.instance.currentUser!.uid)
-        .update({'onboardingComplete': true});
-  }
-
   Future<void> updateUserZoneSettings(ZoneSettings zoneSettings) async {
     await userCollectionReference
         .doc(FirebaseAuth.instance.currentUser!.uid)
-        .update({'zoneSettings': zoneSettings.toJson()});
+        .update({'onboardingComplete': true, 'zoneSettings': zoneSettings.toJson()});
   }
 
   Future<Zone2User?> getUser() async {

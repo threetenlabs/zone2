@@ -21,14 +21,14 @@ class TrackController extends GetxController {
   @override
   void onInit() async {
     super.onInit();
-    zone2User.value = AuthService.to.zone2User.value;
-    
+    zone2User.value = AuthService.to.appUser.value;
+
     // Parse the birthdate using the correct format
-    final birthDate = DateFormat('MM-dd-yyyy').parse(
-        zone2User.value?.zoneSettings?.birthDate ?? DateTime.now().toString());
-    
+    final birthDate = DateFormat('MM-dd-yyyy')
+        .parse(zone2User.value?.zoneSettings?.birthDate ?? DateTime.now().toString());
+
     userAge.value = (DateTime.now().year - birthDate.year).toInt();
-    AuthService.to.zone2User.stream.listen((user) async {
+    AuthService.to.appUser.stream.listen((user) async {
       logger.i('zone2User: $user');
       zone2User.value = user;
     });

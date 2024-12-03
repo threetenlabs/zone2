@@ -40,8 +40,6 @@ class ProfileController extends GetxController {
         TextEditingController(text: zoneSettings?.dailyZonePointsGoal.toString() ?? '');
     dailyCalorieIntakeGoalController =
         TextEditingController(text: zoneSettings?.dailyCalorieIntakeGoal.toString() ?? '');
-    dailyCaloriesBurnedGoalController =
-        TextEditingController(text: zoneSettings?.dailyCaloriesBurnedGoal.toString() ?? '');
     dailyStepsGoalController =
         TextEditingController(text: zoneSettings?.dailyStepsGoal.toString() ?? '');
 
@@ -102,15 +100,6 @@ class ProfileController extends GetxController {
     }
   }
 
-  // Method to update daily calories burned goal
-  void setDailyCaloriesBurnedGoal(double goal) {
-    if (authService.appUser.value.zoneSettings != null) {
-      authService.appUser.value.zoneSettings!.dailyCaloriesBurnedGoal = goal;
-      dailyCaloriesBurnedGoalController.text = goal.toString();
-      markDirty();
-    }
-  }
-
   // Method to update daily steps goal
   void setDailyStepsGoal(int goal) {
     if (authService.appUser.value.zoneSettings != null) {
@@ -127,25 +116,30 @@ class ProfileController extends GetxController {
   }
 
   void loadSharedPreferences() {
-    zone2ProteinTarget.value = settings.zone2ProteinTarget.value;
-    zone2CarbsTarget.value = settings.zone2CarbsTarget.value;
-    zone2FatTarget.value = settings.zone2FatTarget.value;
     openApiKeyController.text = settings.openAIKey.value;
   }
 
   void setZone2ProteinTarget(double value) {
-    zone2ProteinTarget.value = value;
-    settings.setZone2ProteinTarget(value);
+    if (authService.appUser.value.zoneSettings != null) {
+      authService.appUser.value.zoneSettings!.zone2ProteinTarget = value;
+      zone2ProteinTarget.value = value;
+      markDirty();
+    }
   }
 
   void setZone2CarbsTarget(double value) {
-    zone2CarbsTarget.value = value;
-    settings.setZone2CarbsTarget(value);
+    if (authService.appUser.value.zoneSettings != null) {
+      authService.appUser.value.zoneSettings!.zone2CarbsTarget = value;
+      zone2CarbsTarget.value = value;
+      markDirty();
+    }
   }
 
   void setZone2FatTarget(double value) {
     zone2FatTarget.value = value;
-    settings.setZone2FatTarget(value);
+    authService.appUser.value.zoneSettings!.zone2FatTarget = value;
+    zone2FatTarget.value = value;
+    markDirty();
   }
 
   void saveOpenAIKey() {
