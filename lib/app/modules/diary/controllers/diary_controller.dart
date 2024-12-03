@@ -9,20 +9,20 @@ import 'package:logger/logger.dart';
 import 'package:health/health.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:speech_to_text/speech_recognition_error.dart';
-import 'package:speech_to_text/speech_recognition_result.dart';
 import 'package:speech_to_text/speech_to_text.dart';
-import 'package:zone2/app/models/user.dart';
 import 'package:zone2/app/modules/diary/controllers/activity_manager.dart';
 import 'package:zone2/app/models/food.dart';
 import 'package:zone2/app/modules/diary/controllers/food_manager.dart';
 import 'package:zone2/app/modules/loading_service.dart';
 import 'package:zone2/app/services/auth_service.dart';
+import 'package:zone2/app/services/barcode_service.dart';
 import 'package:zone2/app/services/firebase_service.dart';
 import 'package:zone2/app/services/food_service.dart';
 import 'package:zone2/app/services/health_service.dart';
 import 'package:intl/intl.dart'; // Added for date formatting
 import 'package:zone2/app/services/notification_service.dart';
 import 'package:zone2/app/services/openai_service.dart';
+import 'package:zone2/app/services/speech_service.dart';
 import 'package:zone2/app/utils/helper.dart';
 
 class FoodVoiceResult {
@@ -156,6 +156,8 @@ class DiaryController extends GetxController {
   final addCalorieCarbohydratesTextController = TextEditingController();
   final addCalorieTotalFatTextController = TextEditingController();
 
+  final SpeechService speechService = SpeechService();
+  final BarcodeService barcodeService = BarcodeService();
   @override
   void onInit() async {
     super.onInit();
@@ -165,13 +167,11 @@ class DiaryController extends GetxController {
     ever(healthService.isAuthorized, (isAuthorized) => authorizedChanged(isAuthorized));
     ever(diaryDate, (date) => updateDateLabel());
     updateDateLabel();
-    await initSpeechState();
 
-    scannerController = MobileScannerController();
-
-    scannerSubscription = scannerController.barcodes.listen(handleBarcode);
     await HealthService.to.authorize();
     await getHealthDataForSelectedDay(true);
+    await speechService.initSpeechState();
+    barcodeService.initializeScanner(handleBarcode);
   }
 
   @override
@@ -181,6 +181,12 @@ class DiaryController extends GetxController {
     AuthService.to.appUser.stream.listen((user) async {
       setUser();
     });
+  }
+
+  @override
+  void onClose() {
+    barcodeService.dispose();
+    super.onClose();
   }
 
   Future<void> setUser() async {
@@ -195,88 +201,6 @@ class DiaryController extends GetxController {
   Future<void> checkHealthPermissions() async {
     if (!HealthService.to.hasPermissions.value) {
       await getHealthDataForSelectedDay(true);
-    }
-  }
-
-  Future<void> initSpeechState() async {
-    try {
-      isAvailable.value = await speech.initialize(
-        onError: (error) => _onSpeechError(error),
-        onStatus: (status) => _onSpeechStatus(status),
-        finalTimeout: const Duration(milliseconds: 5000),
-      );
-
-      if (isAvailable.value) {
-        locales.value = await speech.locales();
-        systemLocale.value = await speech.systemLocale();
-        currentLocaleId.value = systemLocale.value?.localeId ?? '';
-      }
-    } catch (e) {
-      logger.e('Error initializing speech: $e');
-      isAvailable.value = false;
-    }
-  }
-
-  Future<void> startListening() async {
-    if (!isAvailable.value || isListening.value) return;
-
-    try {
-      await speech.listen(
-        onResult: _onSpeechResult,
-        listenOptions: SpeechListenOptions(partialResults: true),
-        localeId: currentLocaleId.value,
-        listenFor: const Duration(seconds: 10),
-        pauseFor: const Duration(seconds: 5),
-      );
-      isListening.value = true;
-    } catch (e) {
-      logger.e('Error starting speech recognition: $e');
-      isListening.value = false;
-    }
-  }
-
-  Future<void> stopListening() async {
-    if (!isListening.value) return;
-
-    try {
-      await speech.stop();
-      isListening.value = false;
-      extractFoodItemsOpenAI(recognizedWords.value);
-    } catch (e) {
-      logger.e('Error stopping speech recognition: $e');
-    }
-  }
-
-  Future<void> cancelListening() async {
-    if (!isListening.value) return;
-
-    try {
-      await speech.cancel();
-      isListening.value = false;
-    } catch (e) {
-      logger.e('Error canceling speech recognition: $e');
-    }
-  }
-
-  void switchLanguage(String newLocaleId) {
-    currentLocaleId.value = newLocaleId;
-  }
-
-  void _onSpeechResult(SpeechRecognitionResult result) {
-    recognizedWords.value = result.recognizedWords;
-  }
-
-  void _onSpeechError(SpeechRecognitionError error) {
-    hasError.value = true;
-    lastError.value = error;
-    logger.e('Speech recognition error: ${error.errorMsg}');
-  }
-
-  void _onSpeechStatus(String status) {
-    logger.i('Speech recognition status: $status');
-    if (status == 'done') {
-      isListening.value = false;
-      extractFoodItemsOpenAI(recognizedWords.value);
     }
   }
 

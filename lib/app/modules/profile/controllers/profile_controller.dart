@@ -32,16 +32,6 @@ class ProfileController extends GetxController {
   void onInit() async {
     logger.i('ProfileController onInit');
     super.onInit();
-    // Initialize TextEditingControllers for ZoneSettings
-    final zoneSettings = authService.appUser.value.zoneSettings;
-    dailyWaterGoalController =
-        TextEditingController(text: zoneSettings?.dailyWaterGoalInOz.toString() ?? '');
-    dailyZonePointsGoalController =
-        TextEditingController(text: zoneSettings?.dailyZonePointsGoal.toString() ?? '');
-    dailyCalorieIntakeGoalController =
-        TextEditingController(text: zoneSettings?.dailyCalorieIntakeGoal.toString() ?? '');
-    dailyStepsGoalController =
-        TextEditingController(text: zoneSettings?.dailyStepsGoal.toString() ?? '');
 
     ever(ThemeService.to.isDarkMode, (value) {
       logger.i('darkMode: $value');
@@ -56,7 +46,31 @@ class ProfileController extends GetxController {
     loadSharedPreferences();
   }
 
-  void increment() => count.value++;
+  @override
+  void onReady() async {
+    super.onReady();
+    setZoneSettings();
+    AuthService.to.appUser.stream.listen((user) async {
+      setZoneSettings();
+    });
+  }
+
+  Future<void> setZoneSettings() async {
+    // Initialize TextEditingControllers for ZoneSettings
+    final zoneSettings = authService.appUser.value.zoneSettings;
+    dailyWaterGoalController =
+        TextEditingController(text: zoneSettings?.dailyWaterGoalInOz.toString() ?? '');
+    dailyZonePointsGoalController =
+        TextEditingController(text: zoneSettings?.dailyZonePointsGoal.toString() ?? '');
+    dailyCalorieIntakeGoalController =
+        TextEditingController(text: zoneSettings?.dailyCalorieIntakeGoal.toString() ?? '');
+    dailyStepsGoalController =
+        TextEditingController(text: zoneSettings?.dailyStepsGoal.toString() ?? '');
+
+    zone2ProteinTarget.value = zoneSettings?.zone2ProteinTarget ?? 0.0;
+    zone2CarbsTarget.value = zoneSettings?.zone2CarbsTarget ?? 0.0;
+    zone2FatTarget.value = zoneSettings?.zone2FatTarget ?? 0.0;
+  }
 
   void markDirty() {
     isDirty.value = true;

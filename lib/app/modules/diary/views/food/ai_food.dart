@@ -206,9 +206,9 @@ class AISearchBottomSheet extends GetView<DiaryController> {
                   child: Column(
                     children: [
                       GestureDetector(
-                        onTapDown: (_) => controller.startListening(),
-                        onTapUp: (_) => controller.stopListening(),
-                        onTapCancel: () => controller.cancelListening(),
+                        onTapDown: (_) => controller.speechService.startListening(),
+                        onTapUp: (_) => controller.speechService.stopListening(),
+                        onTapCancel: () => controller.speechService.cancelListening(),
                         child: Stack(
                           alignment: Alignment.center,
                           children: [

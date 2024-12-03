@@ -5,7 +5,6 @@ import 'package:get/get.dart';
 
 import '../controllers/profile_controller.dart';
 import 'widgets/zone_settings_tab.dart';
-import 'widgets/macro_settings_tab.dart';
 
 class ProfileViewPortraitSmall extends GetWidget<ProfileController> {
   const ProfileViewPortraitSmall({super.key});
@@ -19,17 +18,15 @@ class ProfileViewPortraitSmall extends GetWidget<ProfileController> {
           automaticallyImplyLeading: false,
           bottom: const TabBar(
             tabs: [
-              Tab(text: 'Settings'),
               Tab(text: 'Zone Settings'),
-              Tab(text: 'Macro Settings'),
+              Tab(text: 'App Settings'),
             ],
           ),
         ),
         body: const TabBarView(
           children: [
-            SettingsTab(),
             ZoneSettingsTab(),
-            MacroSettingsTab(),
+            SettingsTab(),
           ],
         ),
       ),
