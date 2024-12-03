@@ -112,6 +112,7 @@ class DiaryView extends GetView<DiaryController> {
       required bool isChecked}) {
     return Card(
         margin: const EdgeInsets.symmetric(vertical: 8.0),
+        elevation: 4,
         child: ListTile(
           leading: Icon(icon, color: iconColor),
           title: Text(title),

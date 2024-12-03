@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:zone2/app/modules/profile/controllers/profile_controller.dart';
 import 'package:zone2/app/services/auth_service.dart';
 import 'package:zone2/app/services/shared_preferences_service.dart';
@@ -82,6 +83,20 @@ class SettingsTab extends GetView<ProfileController> {
               Icon(Icons.logout_outlined),
               Text('Sign Out'),
             ]),
+          ),
+          const Spacer(),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: FutureBuilder<PackageInfo>(
+              future: PackageInfo.fromPlatform(),
+              builder: (BuildContext context, AsyncSnapshot<PackageInfo> snapshot) {
+                if (snapshot.hasData) {
+                  return Text('Version: ${snapshot.data?.version}(${snapshot.data?.buildNumber})');
+                } else {
+                  return const CircularProgressIndicator();
+                }
+              },
+            ),
           ),
           if (kDebugMode)
             OutlinedButton.icon(

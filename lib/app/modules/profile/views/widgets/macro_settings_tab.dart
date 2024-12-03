@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:flutter_spinbox/flutter_spinbox.dart';
 import 'package:zone2/app/modules/profile/controllers/profile_controller.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class MacroSettingsTab extends GetWidget<ProfileController> {
   const MacroSettingsTab({super.key});
@@ -58,6 +59,14 @@ class MacroSettingsTab extends GetWidget<ProfileController> {
               labelText: 'Fat Target (g)',
               border: OutlineInputBorder(),
             ),
+          ),
+          const SizedBox(height: 20),
+          ElevatedButton(
+            onPressed: () async {
+              const url = 'https://tdeecalculator.net';
+              await launchUrl(Uri.parse(url), mode: LaunchMode.inAppBrowserView);
+            },
+            child: const Text('Open TDEE Calculator'),
           ),
         ],
       ),

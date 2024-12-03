@@ -17,12 +17,39 @@ class HeartRateRecord {
   });
 
   factory HeartRateRecord.fromJson(Map<String, dynamic> json) {
+    print(json);
     return HeartRateRecord(
       uuid: json['uuid'],
       numericValue: (json['value']['numericValue'] as num).toDouble(),
       unit: json['unit'],
       dateFrom: DateTime.parse(json['dateFrom']),
       dateTo: DateTime.parse(json['dateTo']),
+    );
+  }
+}
+
+class ZonePointRecord {
+  final String uuid;
+  final int zonePoints;
+  final DateTime dateFrom;
+  final DateTime dateTo;
+  final String sourceName;
+
+  ZonePointRecord({
+    required this.uuid,
+    required this.zonePoints,
+    required this.dateFrom,
+    required this.dateTo,
+    required this.sourceName,
+  });
+
+  factory ZonePointRecord.fromJson(Map<String, dynamic> json) {
+    return ZonePointRecord(
+      uuid: json['uuid'],
+      zonePoints: json['zonePoints'] as int,
+      dateFrom: DateTime.parse(json['dateFrom']),
+      dateTo: DateTime.parse(json['dateTo']),
+      sourceName: json['sourceName'],
     );
   }
 }

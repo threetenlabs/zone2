@@ -3,6 +3,7 @@ import 'package:syncfusion_flutter_charts/charts.dart';
 import 'package:zone2/app/modules/track/controllers/track_controller.dart';
 import 'package:get/get.dart';
 import 'package:zone2/app/services/health_service.dart'; // Import GetX for controller access
+import 'package:intl/intl.dart'; // Add this import
 
 // Define an enum for time frames
 
@@ -15,13 +16,13 @@ class WeightTab extends StatelessWidget {
       length: 4, // Number of tabs
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('Weight Over Time'),
+          automaticallyImplyLeading: false,
           bottom: const TabBar(
             tabs: [
-              Tab(text: '1W'),
-              Tab(text: '3M'),
+              Tab(text: 'Week'),
+              Tab(text: 'Month'),
               Tab(text: '6M'),
-              Tab(text: 'All'),
+              Tab(text: 'Journey'),
             ],
           ),
         ),
@@ -30,7 +31,7 @@ class WeightTab extends StatelessWidget {
             WeightGraph(timeFrame: TimeFrame.week),
             WeightGraph(timeFrame: TimeFrame.month),
             WeightGraph(timeFrame: TimeFrame.sixMonths),
-            WeightGraph(timeFrame: TimeFrame.year),
+            WeightGraph(timeFrame: TimeFrame.allTime),
           ],
         ),
       ),
@@ -47,6 +48,12 @@ class WeightGraph extends GetWidget<TrackController> {
   Widget build(BuildContext context) {
     // Map enum to string for fetching data
 
+    final timeframeTextMap = {
+      TimeFrame.week: 'This Week',
+      TimeFrame.month: 'This Month',
+      TimeFrame.sixMonths: 'Last 6 Months',
+      TimeFrame.allTime: 'Journey',
+    };
     Future<List<WeightData>> data =
         controller.getWeightData(timeFrame); // Use the controller to fetch data
 
@@ -57,14 +64,23 @@ class WeightGraph extends GetWidget<TrackController> {
           return const Center(child: CircularProgressIndicator()); // Loading indicator
         } else if (snapshot.hasError) {
           return Center(child: Text('Error: ${snapshot.error}')); // Error handling
+        } else if (snapshot.data == null || snapshot.data!.isEmpty || snapshot.data!.length < 2) {
+          return const Center(
+              child: Text('There are not enough entries')); // Display message if no data
         } else {
           return SfCartesianChart(
             primaryXAxis: const CategoryAxis(),
-            title: const ChartTitle(text: 'Weight Over Time'),
+            title: ChartTitle(text: "Weight Loss ${timeframeTextMap[timeFrame] ?? ''}"),
             series: <CartesianSeries>[
               LineSeries<WeightData, String>(
                 dataSource: snapshot.data!,
-                xValueMapper: (WeightData weight, _) => weight.date,
+                xValueMapper: (WeightData weight, _) {
+                  // Use DateFormat to parse and format the date
+                  final DateFormat inputFormat = DateFormat('M/d/yy');
+                  final DateFormat outputFormat = DateFormat('M/dd');
+                  DateTime date = inputFormat.parse(weight.date);
+                  return outputFormat.format(date);
+                },
                 yValueMapper: (WeightData weight, _) => weight.weight,
               ),
             ],

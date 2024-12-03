@@ -95,9 +95,9 @@ Future<void> main() async {
 
     if (useEmulator) {
       // Connect to local Functions emulator from emulator
-      FirebaseFunctions.instance.useFunctionsEmulator("192.168.86.28", 5001,
-          automaticHostMapping:
-              true); // use your local IP (ipconfig getifaddr en0) for android device
+      // FirebaseFunctions.instance.useFunctionsEmulator("192.168.86.28", 5001,
+      //     automaticHostMapping:
+      //         true); // use your local IP (ipconfig getifaddr en0) for android device
       // FirebaseFunctions.instance.useFunctionsEmulator("127.0.0.1", 5001, automaticHostMapping: true); // for android emulator
     }
   }
@@ -122,7 +122,7 @@ Future<void> main() async {
       debugShowCheckedModeBanner: true,
       themeMode: Get.isDarkMode ? ThemeMode.dark : ThemeMode.light,
       theme: MaterialTheme.light(),
-      darkTheme: MaterialTheme.darkHighContrast(),
+      darkTheme: MaterialTheme.dark(),
       initialRoute: Routes.introOrHome,
       getPages: AppPages.routes,
       builder: EasyLoading.init(),

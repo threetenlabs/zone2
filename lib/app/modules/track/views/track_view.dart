@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:zone2/app/modules/track/controllers/track_controller.dart';
 import 'package:zone2/app/modules/track/views/weight_tab.dart';
+import 'package:zone2/app/modules/track/views/zone_point_tab.dart';
+import 'package:zone2/app/modules/track/views/step_tab.dart';
 
 class TrackView extends GetView<TrackController> {
   const TrackView({super.key});
@@ -17,13 +19,13 @@ class TrackView extends GetView<TrackController> {
           bottom: const TabBar(
             tabs: [
               Tab(text: 'Weight'),
-              Tab(text: 'Food'),
-              Tab(text: 'Hydration'),
+              Tab(text: 'Calories'),
+              Tab(text: 'Steps'),
             ],
           ),
         ),
         body: const TabBarView(
-          children: [WeightTab(), WeightTab(), WeightTab()],
+          children: [WeightTab(), ZonePointsTab(), StepTab()],
         ),
       ),
     );

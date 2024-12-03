@@ -1,9 +1,9 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:logger/logger.dart';
 import 'package:health/health.dart';
@@ -11,7 +11,6 @@ import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:speech_to_text/speech_recognition_error.dart';
 import 'package:speech_to_text/speech_recognition_result.dart';
 import 'package:speech_to_text/speech_to_text.dart';
-import 'package:syncfusion_flutter_charts/charts.dart';
 import 'package:zone2/app/models/user.dart';
 import 'package:zone2/app/modules/diary/controllers/activity_manager.dart';
 import 'package:zone2/app/models/food.dart';
@@ -24,6 +23,7 @@ import 'package:zone2/app/services/health_service.dart';
 import 'package:intl/intl.dart'; // Added for date formatting
 import 'package:zone2/app/services/notification_service.dart';
 import 'package:zone2/app/services/openai_service.dart';
+import 'package:zone2/app/utils/helper.dart';
 
 class FoodVoiceResult {
   final String label;
@@ -136,6 +136,7 @@ class DiaryController extends GetxController {
 
   final voiceResults = RxList<FoodVoiceResult>();
   final zone2User = Rxn<Zone2User>();
+  final userAge = Rxn<int>();
   String selectedVoiceFood = '';
   RxList<FoodVoiceResult> searchResults = RxList<FoodVoiceResult>();
 
@@ -145,7 +146,6 @@ class DiaryController extends GetxController {
   late MobileScannerController scannerController;
   StreamSubscription<Object?>? scannerSubscription;
 
-  final textRecognizer = TextRecognizer();
   final ImagePicker _picker = ImagePicker();
 
   // Add Calories
@@ -176,6 +176,14 @@ class DiaryController extends GetxController {
   @override
   void onReady() async {
     super.onReady();
+    zone2User.value = AuthService.to.zone2User.value;
+
+    // Parse the birthdate using the correct format
+    final birthDate = DateFormat('MM-dd-yyyy')
+        .parse(zone2User.value?.zoneSettings?.birthDate ?? DateTime.now().toString());
+
+    userAge.value = (DateTime.now().year - birthDate.year).toInt();
+
     AuthService.to.zone2User.stream.listen((user) async {
       logger.i('zone2User: $user');
       zone2User.value = user;
@@ -365,12 +373,23 @@ class DiaryController extends GetxController {
     final foodDataPoints = await healthService.getMealData(
         timeFrame: TimeFrame.day, seedDate: diaryDate.value, forceRefresh: forceRefresh);
     foodManager.value.processFoodData(foodDataPoints);
+    update();
   }
 
   Future<void> _retrieveActivityData({bool? forceRefresh = false}) async {
+    final types = [
+      HealthDataType.TOTAL_CALORIES_BURNED,
+      HealthDataType.HEART_RATE,
+      HealthDataType.WORKOUT,
+      HealthDataType.STEPS
+    ];
     final allActivityData = await healthService.getActivityData(
-        timeFrame: TimeFrame.day, seedDate: diaryDate.value, forceRefresh: forceRefresh);
-    activityManager.value.processActivityData(activityData: allActivityData, userAge: 48);
+        timeFrame: TimeFrame.day,
+        seedDate: diaryDate.value,
+        types: types,
+        forceRefresh: forceRefresh);
+    activityManager.value
+        .processActivityData(activityData: allActivityData, userAge: userAge.value ?? 30);
   }
 
   Future<void> saveWeightToHealth() async {
@@ -497,7 +516,8 @@ class DiaryController extends GetxController {
       await BusyIndicatorService.to.showBusyIndicator('Getting food...');
       final result = await foodService.getFoodById(barcode);
       logger.i('Food: ${result.product?.productName}');
-
+      final product = jsonEncode(result.product?.toJson());
+      printWrapped(product);
       if (result.product != null) {
         selectedOpenFoodFactsFood.value = OpenFoodFactsFood.fromOpenFoodFacts(result.product!);
         selectedZone2Food.value = Zone2Food.fromOpenFoodFactsFood(selectedOpenFoodFactsFood.value!);

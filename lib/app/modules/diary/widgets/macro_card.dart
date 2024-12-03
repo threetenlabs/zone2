@@ -8,21 +8,24 @@ class MacroCard extends GetView<DiaryController> {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      elevation: 8,
-      child: SingleChildScrollView(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: [
-            SizedBox(
-              height: 75, // Example height
-              child: _buildCalorieRow(context),
-            ),
-            SizedBox(
-              height: 75, // Example height
-              child: _buildMacroRow(context),
-            ),
-          ],
+    return GetBuilder<DiaryController>(
+      init: controller,
+      builder: (c) => Card(
+        elevation: 8,
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              SizedBox(
+                height: 75, // Example height
+                child: _buildCalorieRow(context),
+              ),
+              SizedBox(
+                height: 75, // Example height
+                child: _buildMacroRow(context),
+              ),
+            ],
+          ),
         ),
       ),
     );

@@ -46,61 +46,108 @@ class OpenFoodFactsFood {
     final brand = product.brands ?? 'N/A';
     final nutriments = product.nutriments;
 
+    // Conversion factor from 100g to 1 oz (1 oz = 28.3495g)
+    const double gramsPerOunce = 28.3495;
+
+    // Determine if conversion is needed based on nutrition_data_per
+    final isPer100g = product.nutrimentDataPer == '100g';
+
     List<OpenFoodFactsNutriment> nutrients = [
       OpenFoodFactsNutriment(
           name: openfoodfacts.Nutrient.energyKCal.name,
           amount: nutriments?.getValue(
-                  openfoodfacts.Nutrient.energyKCal, openfoodfacts.PerSize.serving) ??
+                  openfoodfacts.Nutrient.energyKCal,
+                  isPer100g
+                      ? openfoodfacts.PerSize.oneHundredGrams
+                      : openfoodfacts.PerSize.serving) ??
               0.0,
           unitName: 'kcal'),
       OpenFoodFactsNutriment(
           name: openfoodfacts.Nutrient.proteins.name,
           amount: nutriments?.getValue(
-                  openfoodfacts.Nutrient.proteins, openfoodfacts.PerSize.serving) ??
+                  openfoodfacts.Nutrient.proteins,
+                  isPer100g
+                      ? openfoodfacts.PerSize.oneHundredGrams
+                      : openfoodfacts.PerSize.serving) ??
               0.0,
           unitName: 'g'),
       OpenFoodFactsNutriment(
           name: openfoodfacts.Nutrient.fat.name,
-          amount: nutriments?.getValue(openfoodfacts.Nutrient.fat, openfoodfacts.PerSize.serving) ??
+          amount: nutriments?.getValue(
+                  openfoodfacts.Nutrient.fat,
+                  isPer100g
+                      ? openfoodfacts.PerSize.oneHundredGrams
+                      : openfoodfacts.PerSize.serving) ??
               0.0,
           unitName: 'g'),
       OpenFoodFactsNutriment(
           name: openfoodfacts.Nutrient.carbohydrates.name,
           amount: nutriments?.getValue(
-                  openfoodfacts.Nutrient.carbohydrates, openfoodfacts.PerSize.serving) ??
+                  openfoodfacts.Nutrient.carbohydrates,
+                  isPer100g
+                      ? openfoodfacts.PerSize.oneHundredGrams
+                      : openfoodfacts.PerSize.serving) ??
               0.0,
           unitName: 'g'),
       OpenFoodFactsNutriment(
           name: openfoodfacts.Nutrient.sugars.name,
-          amount:
-              nutriments?.getValue(openfoodfacts.Nutrient.sugars, openfoodfacts.PerSize.serving) ??
-                  0.0,
+          amount: nutriments?.getValue(
+                  openfoodfacts.Nutrient.sugars,
+                  isPer100g
+                      ? openfoodfacts.PerSize.oneHundredGrams
+                      : openfoodfacts.PerSize.serving) ??
+              0.0,
           unitName: 'g'),
       OpenFoodFactsNutriment(
           name: openfoodfacts.Nutrient.saturatedFat.name,
           amount: nutriments?.getValue(
-                  openfoodfacts.Nutrient.saturatedFat, openfoodfacts.PerSize.serving) ??
+                  openfoodfacts.Nutrient.saturatedFat,
+                  isPer100g
+                      ? openfoodfacts.PerSize.oneHundredGrams
+                      : openfoodfacts.PerSize.serving) ??
               0.0,
           unitName: 'g'),
       OpenFoodFactsNutriment(
           name: openfoodfacts.Nutrient.sodium.name,
-          amount:
-              nutriments?.getValue(openfoodfacts.Nutrient.sodium, openfoodfacts.PerSize.serving) ??
-                  0.0,
+          amount: nutriments?.getValue(
+                  openfoodfacts.Nutrient.sodium,
+                  isPer100g
+                      ? openfoodfacts.PerSize.oneHundredGrams
+                      : openfoodfacts.PerSize.serving) ??
+              0.0,
           unitName: 'g'),
       OpenFoodFactsNutriment(
           name: openfoodfacts.Nutrient.cholesterol.name,
           amount: nutriments?.getValue(
-                  openfoodfacts.Nutrient.cholesterol, openfoodfacts.PerSize.serving) ??
+                  openfoodfacts.Nutrient.cholesterol,
+                  isPer100g
+                      ? openfoodfacts.PerSize.oneHundredGrams
+                      : openfoodfacts.PerSize.serving) ??
               0.0,
           unitName: 'mg'),
       OpenFoodFactsNutriment(
           name: openfoodfacts.Nutrient.potassium.name,
           amount: nutriments?.getValue(
-                  openfoodfacts.Nutrient.potassium, openfoodfacts.PerSize.serving) ??
+                  openfoodfacts.Nutrient.potassium,
+                  isPer100g
+                      ? openfoodfacts.PerSize.oneHundredGrams
+                      : openfoodfacts.PerSize.serving) ??
               0.0,
           unitName: 'g'),
     ];
+
+    // Convert nutrients to 1 oz serving size if nutrition_data_per is '100g'
+    if (isPer100g) {
+      nutrients = nutrients.map((nutrient) {
+        return OpenFoodFactsNutriment(
+          name: nutrient.name,
+          amount: (nutrient.amount / 100) * gramsPerOunce,
+          unitName: nutrient.unitName,
+        );
+      }).toList();
+      product.servingSize = '1 oz';
+      product.servingQuantity = 1.0;
+    }
 
     // Parse serving size
     String servingSizeStr = product.servingSize ?? '';

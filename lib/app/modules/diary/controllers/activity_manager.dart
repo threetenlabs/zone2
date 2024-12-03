@@ -16,7 +16,9 @@ class HealthActivityManager {
   final hourlyStepRecords = RxList<StepRecord>([]);
   final stepRecords = RxList<StepRecord>([]);
   final workoutRecords = RxList<WorkoutRecord>([]);
-
+  final dailyStepRecords = RxList<StepRecord>([]);
+  final dailyCalorieRecords = RxList<CalorieBurnedRecord>([]);
+  final dailyZonePointRecords = RxList<ZonePointRecord>([]);
   // Convert statistics to Rx
   final totalSteps = 0.obs;
   final totalCaloriesBurned = 0.0.obs;
@@ -117,6 +119,15 @@ class HealthActivityManager {
     // Process steps by hour
     _processStepsByHour();
 
+    // Process steps by day
+    _processStepsByDay();
+
+    // Process calories by day
+    _processCaloriesByDay();
+
+    // Process zone points by day
+    _processZonePointsByDay(userAge);
+
     // Calculate totals
     _calculateTotals();
   }
@@ -129,7 +140,23 @@ class HealthActivityManager {
     zoneMinutes.updateAll((key, value) => 0);
     totalZonePoints.value = 0;
 
+    // Track processed minutes to avoid duplicates
+    Set<DateTime> processedMinutes = {};
+
     for (var record in heartRateRecords) {
+      DateTime minuteKey = DateTime(
+        record.dateFrom.year,
+        record.dateFrom.month,
+        record.dateFrom.day,
+        record.dateFrom.hour,
+        record.dateFrom.minute,
+      );
+
+      // Skip if this minute has already been processed
+      if (processedMinutes.contains(minuteKey)) continue;
+
+      processedMinutes.add(minuteKey);
+
       int zone = _getCardioZone(record.numericValue, userAge);
 
       // Increment zone minutes
@@ -279,7 +306,7 @@ class HealthActivityManager {
 
     isActivityLogged.value = workoutRecords.isNotEmpty ||
         totalSteps.value >= (zone2User.value?.zoneSettings?.dailyStepsGoal ?? 0) ||
-        totalCaloriesBurned.value > 0;
+        totalWorkoutCalories.value > 0;
   }
 
   /// Reset all stored values to their defaults
@@ -293,6 +320,9 @@ class HealthActivityManager {
     zoneMinutes.updateAll((key, value) => 0);
     filteredZoneMinutes.value = {};
     totalActiveZoneMinutes.value = 0;
+    dailyZonePointRecords.clear();
+    dailyStepRecords.clear();
+    dailyCalorieRecords.clear();
   }
 
   /// Parses a list of JSON objects into HeartRateRecord instances.
@@ -340,18 +370,118 @@ class HealthActivityManager {
     return 0;
   }
 
-  // Getter methods
-  // List<HeartRateRecord> get heartRateRecords => heartRateRecords;
-  // List<CalorieBurnedRecord> get calorieRecords => calorieRecords;
-  // List<StepRecord> get stepRecords => _stepRecords;
-  // List<WorkoutRecord> get workoutRecords => _workoutRecords;
-  // int get steps => _totalSteps.value;
-  // double get caloriesBurned => _totalCaloriesBurned.value;
-  // Map<int, int> get zoneDurationMinutes => _zoneMinutes;
-  // Map<int, ZoneConfig> get zoneConfigs => _zoneConfigs;
-  // int get totalZonePoints => _totalZonePoints.value;
-  // bool get multipleCalorieSources => _multipleCalorieSources.value;
-  // // Bucket calories by hour
-  // List<CalorieBurnedRecord> get hourlyCalorieRecords => hourlyCalorieRecords;
-  // List<StepRecord> get hourlyStepRecords => _hourlyStepRecords;
+  // Add this new method to bucket steps by day
+  void _processStepsByDay() {
+    if (stepRecords.isEmpty) return;
+
+    // Create a map to store daily totals
+    Map<DateTime, int> dailyTotals = {};
+
+    // Sum up steps for each day
+    for (var record in stepRecords) {
+      DateTime dayKey = DateTime(
+        record.dateFrom.year,
+        record.dateFrom.month,
+        record.dateFrom.day,
+      );
+      dailyTotals[dayKey] = (dailyTotals[dayKey] ?? 0) + record.numericValue.toInt();
+    }
+
+    // Convert back to StepRecord list
+    // Assuming you want to store this in a new RxList
+    dailyStepRecords.value = RxList<StepRecord>(dailyTotals.entries.map((entry) {
+      return StepRecord(
+        numericValue: entry.value,
+        dateFrom: entry.key,
+        dateTo: entry.key.add(const Duration(days: 1)),
+        uuid: 'daily_${entry.key.toString()}',
+        unit: 'COUNT',
+      );
+    }).toList());
+  }
+
+  // Add this new method to bucket calories by day
+  void _processCaloriesByDay() {
+    if (workoutRecords.isEmpty) return;
+
+    // Create a map to store daily totals
+    Map<DateTime, double> dailyTotals = {};
+
+    // Sum up calories for each day
+    for (var record in workoutRecords) {
+      DateTime dayKey = DateTime(
+        record.dateFrom.year,
+        record.dateFrom.month,
+        record.dateFrom.day,
+      );
+      dailyTotals[dayKey] = (dailyTotals[dayKey] ?? 0) + record.totalEnergyBurned;
+    }
+
+    // Convert back to CalorieBurnedRecord list
+    // Assuming you want to store this in a new RxList
+    dailyCalorieRecords.value = RxList<CalorieBurnedRecord>(dailyTotals.entries.map((entry) {
+      return CalorieBurnedRecord(
+        numericValue: entry.value,
+        dateFrom: entry.key,
+        dateTo: entry.key.add(const Duration(days: 1)),
+        sourceName: 'daily',
+        uuid: 'daily_${entry.key.toString()}',
+        unit: 'KILOCALORIE',
+      );
+    }).toList());
+  }
+
+  void _processZonePointsByDay(int userAge) {
+    if (heartRateRecords.isEmpty) return;
+
+    // Create a map to store daily totals
+    Map<DateTime, int> dailyZonePoints = {};
+
+    // Track processed minutes to avoid duplicates
+    Set<DateTime> processedMinutes = {};
+
+    for (var record in heartRateRecords) {
+      DateTime minuteKey = DateTime(
+        record.dateFrom.year,
+        record.dateFrom.month,
+        record.dateFrom.day,
+        record.dateFrom.hour,
+        record.dateFrom.minute,
+      );
+
+      // Skip if this minute has already been processed
+      if (processedMinutes.contains(minuteKey)) continue;
+
+      processedMinutes.add(minuteKey);
+
+      int zone = _getCardioZone(record.numericValue, userAge);
+      if (zone < 2 || zone > 5) continue; // Only consider zones 2 to 5
+
+      DateTime dayKey = DateTime(
+        record.dateFrom.year,
+        record.dateFrom.month,
+        record.dateFrom.day,
+      );
+
+      // Ensure that each record is only counted once per day
+      if (!dailyZonePoints.containsKey(dayKey)) {
+        dailyZonePoints[dayKey] = 0;
+      }
+
+      // Add zone points for the current record
+      dailyZonePoints[dayKey] = (dailyZonePoints[dayKey] ?? 0) + _getZonePoints(zone);
+    }
+
+    final zonePoints = dailyZonePoints.entries.map((entry) {
+      return ZonePointRecord(
+        uuid: 'zone_${entry.key.toString()}',
+        zonePoints: entry.value,
+        dateFrom: entry.key,
+        dateTo: entry.key.add(const Duration(days: 1)),
+        sourceName: 'daily',
+      );
+    }).toList();
+
+    dailyZonePointRecords.value = RxList<ZonePointRecord>(zonePoints);
+  }
 }
