@@ -33,7 +33,7 @@ class StepTab extends GetView<TrackController> {
                   if (selected) {
                     controller.selectedTimeFrame.value = entry.value;
                     // Update the graph data based on the selected time frame
-                    controller.applyStepFilter();
+                    controller.applyFilter();
                   }
                 },
               );
@@ -89,7 +89,7 @@ class StepGraph extends GetView<TrackController> {
     }
 
     return Skeletonizer(
-      enabled: controller.activityDataLoading.value,
+      enabled: controller.activityManager.value.journeyActivityDataLoading.value,
       child: SfCartesianChart(
         title: ChartTitle(
           text: 'Your Step Activity',
@@ -110,7 +110,7 @@ class StepGraph extends GetView<TrackController> {
         ),
         series: <CartesianSeries>[
           ColumnSeries<StepRecord, DateTime>(
-            dataSource: controller.filteredStepData.value,
+            dataSource: controller.activityManager.value.filteredJourneyStepData.value,
             xValueMapper: (StepRecord record, _) => record.dateFrom,
             yValueMapper: (StepRecord record, _) => record.numericValue,
             name: 'Steps',

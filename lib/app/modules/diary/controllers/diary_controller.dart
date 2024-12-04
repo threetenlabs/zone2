@@ -93,12 +93,6 @@ class DiaryController extends GetxController {
   final foodService = Get.find<FoodService>();
   final isLoadingHealthData = false.obs;
 
-  // Weight tracking
-  final weightWhole = 70.obs;
-  final weightDecimal = 0.obs;
-  final healthData = RxList<HealthDataPoint>();
-  final isWeightLogged = false.obs; // Track if weight is logged
-
   // Date tracking
   final diaryDate = DateTime.now().obs;
   final diaryDateLabel = ''.obs; // Observable for date label
@@ -121,7 +115,7 @@ class DiaryController extends GetxController {
   final foodServingController = TextEditingController(text: '');
 
   // Activity tracking
-  final activityManager = HealthActivityManager().obs;
+  final activityManager = Get.put(HealthActivityManager()).obs;
 
   // AI Funzies
   final openAIKey = SharedPreferencesService.to.openAIKey;
@@ -148,7 +142,6 @@ class DiaryController extends GetxController {
   // Barcode scanning
   final Rxn<Barcode> barcode = Rxn<Barcode>();
   final Rxn<BarcodeCapture> capture = Rxn<BarcodeCapture>();
-
 
   final ImagePicker _picker = ImagePicker();
 
@@ -180,10 +173,13 @@ class DiaryController extends GetxController {
   @override
   void onReady() async {
     super.onReady();
-    setUser();
+    await setUser();
     AuthService.to.appUser.stream.listen((user) async {
       setUser();
     });
+    activityManager.value.setUser(zone2User.value);
+    activityManager.value.processJourneyWeightData();
+    activityManager.value.processAggregatedActivityData(userAge: userAge.value ?? 30);
 
     SharedPreferencesService.to.openAIKey.listen((key) {
       openAIKey.value = key;
@@ -198,11 +194,11 @@ class DiaryController extends GetxController {
 
   Future<void> setUser() async {
     zone2User.value = AuthService.to.appUser.value;
-    final birthDateString = zone2User.value.zoneSettings?.birthDate ?? DateTime.now().toString();
-    // Parse the birthdate using the correct format
-    final birthDate = DateFormat('MM-dd-yyyy').parse(birthDateString);
 
-    userAge.value = (DateTime.now().year - birthDate.year).toInt();
+    // Parse the birthdate using the correct format
+    final birthDate = getBirthdateFromZone2User(zone2User.value);
+
+    userAge.value = calculateAge(birthDate);
   }
 
   Future<void> checkHealthPermissions() async {
@@ -264,20 +260,7 @@ class DiaryController extends GetxController {
         timeFrame: TimeFrame.day, seedDate: diaryDate.value, forceRefresh: forceRefresh);
     weightData.sort((a, b) => b.dateTo.compareTo(a.dateTo));
 
-    if (weightData.isNotEmpty) {
-      final weight = weightData.first.value as NumericHealthValue;
-      final weightInKilograms = weight.numericValue.toDouble();
-      final weightInPounds =
-          await healthService.convertWeightUnit(weightInKilograms, WeightUnit.pound);
-
-      weightWhole.value = weightInPounds.toInt(); // Ensure weightWhole is an int
-      weightDecimal.value =
-          ((weightInPounds - weightWhole.value) * 10).round(); // Update to single digit
-      isWeightLogged.value = true;
-    } else {
-      logger.w('No weight data found');
-      isWeightLogged.value = false;
-    }
+    activityManager.value.processWeightForSelectedDay(weightData);
   }
 
   Future<void> _retrieveWaterData({bool? forceRefresh = false}) async {
@@ -319,8 +302,8 @@ class DiaryController extends GetxController {
 
   Future<void> saveWeightToHealth() async {
     try {
-      final weightInPounds =
-          weightWhole.value + (weightDecimal.value / 100); // Combine whole and decimal parts
+      final weightInPounds = activityManager.value.weightWhole.value +
+          (activityManager.value.weightDecimal.value / 100); // Combine whole and decimal parts
 
       final weightInKilograms =
           await healthService.convertWeightUnit(weightInPounds, WeightUnit.kilogram);
@@ -333,7 +316,7 @@ class DiaryController extends GetxController {
           .showSuccess('Weight Saved', 'Your weight has been successfully saved to health data.');
 
       // Update the weight logged state
-      isWeightLogged.value = true;
+      activityManager.value.isWeightLogged.value = true;
     } catch (e) {
       logger.e('Error saving weight to Health: $e');
     }
@@ -387,7 +370,6 @@ class DiaryController extends GetxController {
   }
 
   Future<void> resetTracking() async {
-    isWeightLogged.value = false;
     isWaterLogged.value = false;
   }
 

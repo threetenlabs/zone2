@@ -33,7 +33,7 @@ class ZonePointsTab extends GetView<TrackController> {
                   if (selected) {
                     controller.selectedTimeFrame.value = entry.value;
                     // Update the graph data based on the selected time frame
-                    controller.applyZonePointFilter();
+                    controller.applyFilter();
                   }
                 },
               );
@@ -87,7 +87,7 @@ class ZonePointsGraph extends GetWidget<TrackController> {
     }
 
     return Skeletonizer(
-      enabled: controller.activityDataLoading.value,
+      enabled: controller.activityManager.value.journeyActivityDataLoading.value,
       child: SfCartesianChart(
         title: ChartTitle(
           text: 'Your Zone Point Activity',
@@ -106,7 +106,7 @@ class ZonePointsGraph extends GetWidget<TrackController> {
         ),
         series: <CartesianSeries>[
           ColumnSeries<ZonePointRecord, DateTime>(
-            dataSource: controller.filteredZonePointData.value,
+            dataSource: controller.activityManager.value.filteredJourneyZonePointData.value,
             xValueMapper: (ZonePointRecord record, _) => record.dateFrom,
             yValueMapper: (ZonePointRecord record, _) => record.zonePoints,
             name: 'Zone Points',

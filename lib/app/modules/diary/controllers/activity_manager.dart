@@ -1,22 +1,27 @@
 import 'package:flutter/material.dart';
 import 'package:health/health.dart';
+import 'package:intl/intl.dart';
 import 'package:logger/logger.dart';
 import 'package:zone2/app/models/activity.dart';
 import 'package:get/get.dart';
 import 'package:zone2/app/models/user.dart';
 import 'package:zone2/app/services/auth_service.dart';
+import 'package:zone2/app/services/health_service.dart';
 
 /// Class to manage and process health activity data
 class HealthActivityManager {
   final logger = Get.find<Logger>();
   // Convert static lists to RxList
   final heartRateRecords = RxList<HeartRateRecord>([]);
-  // final calorieRecords = RxList<CalorieBurnedRecord>([]);
-  // final hourlyCalorieRecords = RxList<CalorieBurnedRecord>([]);
-  final hourlyZonePointRecords = RxList<ZonePointRecord>([]);
-  final hourlyStepRecords = RxList<StepRecord>([]);
   final stepRecords = RxList<StepRecord>([]);
   final workoutRecords = RxList<WorkoutRecord>([]);
+
+  final aggregateHeartRateRecords = RxList<HeartRateRecord>([]);
+  final aggregateStepRecords = RxList<StepRecord>([]);
+  final aggregateWorkoutRecords = RxList<WorkoutRecord>([]);
+
+  final hourlyZonePointRecords = RxList<ZonePointRecord>([]);
+  final hourlyStepRecords = RxList<StepRecord>([]);
 
   // Aggregate records by day and month
   final dailyStepRecords = RxList<StepRecord>([]);
@@ -28,11 +33,14 @@ class HealthActivityManager {
   final totalSteps = 0.obs;
   final totalCaloriesBurned = 0.0.obs;
   final totalZonePoints = 0.obs;
-  final multipleSourcesExist = false.obs;
+
   final totalWorkoutCalories = 0.0.obs;
   final totalActiveZoneMinutes = 0.obs;
 
   final zone2User = Rxn<Zone2User>();
+
+  final multipleSourcesExist = false.obs;
+  final multipleAggregateSourcesExist = false.obs;
 
   final isActivityLogged = false.obs;
 
@@ -86,11 +94,108 @@ class HealthActivityManager {
     ),
   };
 
+  // Weight tracking
+  final weightWhole = 70.obs;
+  final weightDecimal = 0.obs;
+  final healthData = RxList<HealthDataPoint>();
+  final isWeightLogged = false.obs; // Track if weight is logged
+  final journeyWeightData = RxList<WeightDataRecord>([]);
+  final journeyWeightDataLoading = false.obs;
+  final journeyActivityDataLoading = false.obs;
+
+  // Filtered Based on Time Frame in Track Controller
+  final filteredJourneyWeightData = RxList<WeightDataRecord>([]);
+  final filteredJourneyStepData = Rx<List<StepRecord>>([]);
+  final filteredJourneyZonePointData = Rx<List<ZonePointRecord>>([]);
+
   HealthActivityManager() {
     AuthService.to.appUser.stream.listen((user) {
       zone2User.value = user;
       _calculateTotals();
     });
+  }
+
+  void setUser(Zone2User user) {
+    zone2User.value = user;
+    _calculateTotals();
+  }
+
+  void processWeightForSelectedDay(List<HealthDataPoint> weightData) async {
+    if (weightData.isNotEmpty) {
+      final weight = weightData.first.value as NumericHealthValue;
+      final weightInKilograms = weight.numericValue.toDouble();
+      final weightInPounds =
+          await HealthService.to.convertWeightUnit(weightInKilograms, WeightUnit.pound);
+
+      weightWhole.value = weightInPounds.toInt(); // Ensure weightWhole is an int
+      weightDecimal.value =
+          ((weightInPounds - weightWhole.value) * 10).round(); // Update to single digit
+      isWeightLogged.value = true;
+    } else {
+      logger.w('No weight data found');
+      isWeightLogged.value = false;
+    }
+  }
+
+  Future<void> processJourneyWeightData() async {
+    journeyWeightDataLoading.value = true;
+    final startDate = zone2User.value!.zoneSettings?.journeyStartDate.toDate();
+    logger.i('startDate: $startDate');
+    final weightData = await HealthService.to.getWeightData(
+        timeFrame: TimeFrame.allTime, seedDate: DateTime.now(), startDate: startDate);
+
+    // Group by date and take the last entry for each date
+    Map<String, HealthDataPoint> latestEntries = {};
+    for (var dataPoint in weightData) {
+      String dateKey = DateFormat('M/d/yy').format(dataPoint.dateFrom);
+      if (!latestEntries.containsKey(dateKey) ||
+          latestEntries[dateKey]!.dateFrom.isBefore(dataPoint.dateFrom)) {
+        latestEntries[dateKey] = dataPoint;
+      }
+    }
+
+    // Convert the latest entries to WeightData, converting kg to lbs
+    final weightEntries = await Future.wait(latestEntries.values.map((dataPoint) async =>
+        WeightDataRecord(
+            DateFormat('M/d/yy').format(dataPoint.dateFrom),
+            // Await the conversion to ensure we get a double value
+            await HealthService.to.convertWeightUnit(
+                (dataPoint.value as NumericHealthValue).numericValue.toDouble(),
+                WeightUnit.pound))));
+    journeyWeightData.value = weightEntries;
+    journeyWeightDataLoading.value = false;
+  }
+
+  Future<void> applyJourneyWeightFilter(TimeFrame selectedTimeFrame) async {
+    DateTime now = DateTime.now();
+    DateTime startDate;
+
+    switch (selectedTimeFrame) {
+      case TimeFrame.week:
+        startDate = now.subtract(Duration(days: 7));
+        filteredJourneyWeightData.value = journeyWeightData.where((data) {
+          DateTime date = DateFormat('M/d/yy').parse(data.date);
+          return date.isAfter(startDate);
+        }).toList();
+        break;
+      case TimeFrame.month:
+        startDate = now.subtract(Duration(days: 30));
+        filteredJourneyWeightData.value = journeyWeightData.where((data) {
+          DateTime date = DateFormat('M/d/yy').parse(data.date);
+          return date.isAfter(startDate);
+        }).toList();
+        break;
+      case TimeFrame.sixMonths:
+        startDate = now.subtract(Duration(days: 180));
+        filteredJourneyWeightData.value = journeyWeightData.where((data) {
+          DateTime date = DateFormat('M/d/yy').parse(data.date);
+          return date.isAfter(startDate);
+        }).toList();
+        break;
+      case TimeFrame.allTime:
+      default:
+        filteredJourneyWeightData.value = journeyWeightData;
+    }
   }
 
   /// Process activity data and store results
@@ -123,24 +228,34 @@ class HealthActivityManager {
     _calculateTotals();
   }
 
-  void processAggregatedActivityData({
-    required List<HealthDataPoint> activityData,
+  Future<void> processAggregatedActivityData({
     required int userAge,
-  }) {
+  }) async {
     // Reset all stored values
-    _resetAllValues();
+    _resetAggregatedData();
+
+    journeyActivityDataLoading.value = true;
+    final types = [HealthDataType.HEART_RATE, HealthDataType.WORKOUT, HealthDataType.STEPS];
+    final startDate = zone2User.value!.zoneSettings?.journeyStartDate.toDate();
+    final allActivityData = await HealthService.to.getActivityData(
+        timeFrame: TimeFrame.allTime,
+        seedDate: DateTime.now(),
+        types: types,
+        forceRefresh: false,
+        startDate: startDate);
 
     // Parse records
-    heartRateRecords.value = _parseHeartRateData(
-        activityData.where((data) => data.type == HealthDataType.HEART_RATE).toList());
+    aggregateHeartRateRecords.value = _parseHeartRateData(
+        allActivityData.where((data) => data.type == HealthDataType.HEART_RATE).toList());
     // calorieRecords.value = parseCalorieData(
     //     activityData.where((data) => data.type == HealthDataType.TOTAL_CALORIES_BURNED).toList());
-    stepRecords.value =
-        _parseStepData(activityData.where((data) => data.type == HealthDataType.STEPS).toList());
-    workoutRecords.value = _parseWorkoutData(
-        activityData.where((data) => data.type == HealthDataType.WORKOUT).toList());
+    aggregateStepRecords.value =
+        _parseStepData(allActivityData.where((data) => data.type == HealthDataType.STEPS).toList());
+    aggregateWorkoutRecords.value = _parseWorkoutData(
+        allActivityData.where((data) => data.type == HealthDataType.WORKOUT).toList());
 
-    multipleSourcesExist.value = activityData.map((record) => record.sourceName).toSet().length > 1;
+    multipleAggregateSourcesExist.value =
+        allActivityData.map((record) => record.sourceName).toSet().length > 1;
 
     // Process steps by day
     _processStepsByDayAndMonth();
@@ -150,6 +265,118 @@ class HealthActivityManager {
 
     // Calculate totals
     _calculateTotals();
+    journeyActivityDataLoading.value = false;
+  }
+
+  void applyJourneyStepFilter(TimeFrame selectedTimeFrame) {
+    DateTime now = DateTime.now();
+    DateTime startDate;
+
+    switch (selectedTimeFrame) {
+      case TimeFrame.week:
+        startDate = now.subtract(Duration(days: 7));
+        break;
+      case TimeFrame.month:
+        startDate = now.subtract(Duration(days: 30));
+        break;
+      case TimeFrame.sixMonths:
+        startDate = now.subtract(Duration(days: 180));
+        break;
+      case TimeFrame.allTime:
+      default:
+        startDate = DateTime(2000); // Arbitrary early date for all-time data
+    }
+
+    final records = dailyStepRecords.where((record) {
+      return record.dateFrom.isAfter(startDate);
+    }).toList();
+
+    // Calculate average steps per day by month for 1/2 Year and Journey
+    filteredJourneyStepData.value =
+        selectedTimeFrame == TimeFrame.allTime ? _calculateMonthlyStepAverages(records) : records;
+  }
+
+  void applyJourneyZonePointFilter(TimeFrame selectedTimeFrame) {
+    DateTime now = DateTime.now();
+    DateTime startDate;
+
+    switch (selectedTimeFrame) {
+      case TimeFrame.week:
+        startDate = now.subtract(Duration(days: 7));
+        break;
+      case TimeFrame.month:
+        startDate = now.subtract(Duration(days: 30));
+        break;
+      case TimeFrame.sixMonths:
+        startDate = now.subtract(Duration(days: 180));
+        break;
+      case TimeFrame.allTime:
+      default:
+        startDate = DateTime(2000); // Arbitrary early date for all-time data
+    }
+
+    final records = dailyZonePointRecords.where((record) {
+      return record.dateFrom.isAfter(startDate);
+    }).toList();
+
+    // Calculate average steps per day by month for 1/2 Year and Journey
+    filteredJourneyZonePointData.value =
+        selectedTimeFrame == TimeFrame.allTime ? _calculateMonthlyZoneAverages(records) : records;
+  }
+
+  List<ZonePointRecord> _calculateMonthlyZoneAverages(List<ZonePointRecord> records) {
+    // Implement logic to calculate average steps per day by month
+    Map<DateTime, List<ZonePointRecord>> groupedByMonth = {};
+    for (var record in records) {
+      DateTime monthKey = DateTime(record.dateFrom.year, record.dateFrom.month);
+      if (!groupedByMonth.containsKey(monthKey)) {
+        groupedByMonth[monthKey] = [];
+      }
+      groupedByMonth[monthKey]!.add(record);
+    }
+
+    List<ZonePointRecord> averageRecords = [];
+    groupedByMonth.forEach((month, records) {
+      double totalSteps = records.fold(0, (sum, record) => sum + record.zonePoints);
+      double averageSteps = totalSteps / records.length;
+      averageRecords.add(ZonePointRecord(
+        dateFrom: month,
+        zonePoints: averageSteps.toInt(),
+        uuid: "month_${month.toString()}",
+        sourceName: 'Zone Points',
+        dateTo: month.add(const Duration(days: 1)),
+      ));
+    });
+
+    return averageRecords;
+  }
+
+  List<StepRecord> _calculateMonthlyStepAverages(List<StepRecord> records) {
+    // Implement logic to calculate average steps per day by month
+    // This is a placeholder implementation
+    Map<DateTime, List<StepRecord>> groupedByMonth = {};
+    for (var record in records) {
+      DateTime monthKey = DateTime(record.dateFrom.year, record.dateFrom.month);
+      if (!groupedByMonth.containsKey(monthKey)) {
+        groupedByMonth[monthKey] = [];
+      }
+      groupedByMonth[monthKey]!.add(record);
+    }
+
+    List<StepRecord> averageRecords = [];
+    groupedByMonth.forEach((month, records) {
+      double totalSteps = records.fold(0, (sum, record) => sum + record.numericValue);
+      double averageSteps = totalSteps / records.length;
+      averageRecords.add(StepRecord(
+        dateFrom: month,
+        numericValue: averageSteps.toInt(),
+        uuid: "month_${month.toString()}",
+        unit: 'COUNT',
+        dateTo: month.add(const Duration(days: 1)),
+      ));
+    });
+
+    return averageRecords;
   }
 
   /// Process heart rate data to identify zones
@@ -290,18 +517,6 @@ class HealthActivityManager {
     // Sum up steps from regular records
     totalSteps.value = stepRecords.fold(0, (sum, record) => sum + record.numericValue.toInt());
 
-    // Track processed time ranges to avoid double counting
-    // Set<String> processedRanges = {};
-
-    // Only use calories from regular records, with deduplication
-    // totalCaloriesBurned.value = calorieRecords.fold(0.0, (sum, record) {
-    //   String timeRange = '${record.dateFrom}-${record.dateTo}';
-    //   if (processedRanges.contains(timeRange)) return sum;
-
-    //   processedRanges.add(timeRange);
-    //   return sum + record.numericValue;
-    // });
-
     totalWorkoutCalories.value =
         workoutRecords.fold(0.0, (sum, record) => sum + record.totalEnergyBurned);
 
@@ -321,10 +536,18 @@ class HealthActivityManager {
     zoneMinutes.updateAll((key, value) => 0);
     filteredZoneMinutes.value = {};
     totalActiveZoneMinutes.value = 0;
+
+    isWeightLogged.value = false;
+  }
+
+  void _resetAggregatedData() {
     dailyZonePointRecords.clear();
     dailyStepRecords.clear();
     monthlyStepRecords.clear();
     monthlyZonePointRecords.clear();
+    aggregateHeartRateRecords.clear();
+    aggregateStepRecords.clear();
+    aggregateWorkoutRecords.clear();
   }
 
   /// Parses a list of JSON objects into HeartRateRecord instances.
@@ -367,14 +590,14 @@ class HealthActivityManager {
 
   // Add this new method to bucket steps by day and month
   void _processStepsByDayAndMonth() {
-    if (stepRecords.isEmpty) return;
+    if (aggregateStepRecords.isEmpty) return;
 
     // Create maps to store daily and monthly totals
     Map<DateTime, int> dailyTotals = {};
     Map<DateTime, int> monthlyTotals = {};
 
     // Sum up steps for each day and month
-    for (var record in stepRecords) {
+    for (var record in aggregateStepRecords) {
       DateTime dayKey = DateTime(record.dateFrom.year, record.dateFrom.month, record.dateFrom.day);
       DateTime monthKey = DateTime(record.dateFrom.year, record.dateFrom.month);
 
@@ -405,39 +628,8 @@ class HealthActivityManager {
     }).toList());
   }
 
-  // // Add this new method to bucket calories by day
-  // void _processCaloriesByDay() {
-  //   if (workoutRecords.isEmpty) return;
-
-  //   // Create a map to store daily totals
-  //   Map<DateTime, double> dailyTotals = {};
-
-  //   // Sum up calories for each day
-  //   for (var record in workoutRecords) {
-  //     DateTime dayKey = DateTime(
-  //       record.dateFrom.year,
-  //       record.dateFrom.month,
-  //       record.dateFrom.day,
-  //     );
-  //     dailyTotals[dayKey] = (dailyTotals[dayKey] ?? 0) + record.totalEnergyBurned;
-  //   }
-
-  //   // Convert back to CalorieBurnedRecord list
-  //   // Assuming you want to store this in a new RxList
-  //   dailyCalorieRecords.value = RxList<CalorieBurnedRecord>(dailyTotals.entries.map((entry) {
-  //     return CalorieBurnedRecord(
-  //       numericValue: entry.value,
-  //       dateFrom: entry.key,
-  //       dateTo: entry.key.add(const Duration(days: 1)),
-  //       sourceName: 'daily',
-  //       uuid: 'daily_${entry.key.toString()}',
-  //       unit: 'KILOCALORIE',
-  //     );
-  //   }).toList());
-  // }
-
   void _processZonePointsByDayAndMonth(int userAge) {
-    if (heartRateRecords.isEmpty) return;
+    if (aggregateHeartRateRecords.isEmpty) return;
 
     // Create maps to store daily and monthly totals
     Map<DateTime, int> dailyZonePoints = {};
@@ -446,7 +638,7 @@ class HealthActivityManager {
     // Track processed minutes to avoid duplicates
     Set<DateTime> processedMinutes = {};
 
-    for (var record in heartRateRecords) {
+    for (var record in aggregateHeartRateRecords) {
       DateTime minuteKey = DateTime(
         record.dateFrom.year,
         record.dateFrom.month,

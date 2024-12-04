@@ -19,23 +19,25 @@ class ManageWeightBottomSheet extends GetView<DiaryController> {
             children: [
               Obx(
                 () => NumberPicker(
-                  value: controller.weightWhole.value,
+                  value: controller.activityManager.value.weightWhole.value,
                   minValue: 70,
                   maxValue: 550,
-                  onChanged: controller.isWeightLogged.value
+                  onChanged: controller.activityManager.value.isWeightLogged.value
                       ? (value) {} // Empty function when weight is logged
-                      : (value) => controller.weightWhole.value = value, // Update whole pounds
+                      : (value) => controller.activityManager.value.weightWhole.value =
+                          value, // Update whole pounds
                 ),
               ),
               const Text('.', style: TextStyle(fontSize: 24)), // Decimal point
               Obx(
                 () => NumberPicker(
-                  value: controller.weightDecimal.value,
+                  value: controller.activityManager.value.weightDecimal.value,
                   minValue: 0,
                   maxValue: 9,
-                  onChanged: controller.isWeightLogged.value
+                  onChanged: controller.activityManager.value.isWeightLogged.value
                       ? (value) {} // Empty function when weight is logged
-                      : (value) => controller.weightDecimal.value = value, // Update decimal
+                      : (value) => controller.activityManager.value.weightDecimal.value =
+                          value, // Update decimal
                 ),
               ),
             ],
@@ -43,7 +45,7 @@ class ManageWeightBottomSheet extends GetView<DiaryController> {
           const SizedBox(height: 16),
           Obx(
             () => FilledButton.icon(
-              onPressed: controller.isWeightLogged.value
+              onPressed: controller.activityManager.value.isWeightLogged.value
                   ? null
                   : () async {
                       await controller.saveWeightToHealth(); // Call saveWeightToHealth

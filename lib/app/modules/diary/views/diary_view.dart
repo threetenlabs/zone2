@@ -35,7 +35,7 @@ class DiaryView extends GetView<DiaryController> {
                         title: 'Record Weight',
                         subtitle: 'Track your weight progress',
                         iconColor: Theme.of(context).colorScheme.primary,
-                        isChecked: controller.isWeightLogged.value,
+                        isChecked: controller.activityManager.value.isWeightLogged.value,
                         onTap: () => _showWeightBottomSheet(context),
                       ),
                     ),

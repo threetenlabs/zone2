@@ -33,7 +33,7 @@ class WeightTab extends GetView<TrackController> {
                   onSelected: (bool selected) {
                     if (selected) {
                       controller.selectedTimeFrame.value = entry.value;
-                      controller.applyWeightFilter();
+                      controller.applyFilter();
                     }
                   },
                 );
@@ -57,13 +57,13 @@ class WeightGraph extends GetView<TrackController> {
     return GetBuilder<TrackController>(
       builder: (_) {
         return Skeletonizer(
-          enabled: controller.weightDataLoading.value,
+          enabled: controller.activityManager.value.journeyWeightDataLoading.value,
           child: SfCartesianChart(
             primaryXAxis: const CategoryAxis(),
             title: const ChartTitle(text: "Weight Loss Journey"),
             series: <CartesianSeries>[
               LineSeries<WeightDataRecord, String>(
-                dataSource: controller.filteredWeightData.value,
+                dataSource: controller.activityManager.value.filteredJourneyWeightData,
                 xValueMapper: (WeightDataRecord weight, _) {
                   final DateFormat inputFormat = DateFormat('M/d/yy');
                   final DateFormat outputFormat = DateFormat('M/dd');
