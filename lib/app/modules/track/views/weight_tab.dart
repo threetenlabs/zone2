@@ -33,7 +33,7 @@ class WeightTab extends GetView<TrackController> {
                   onSelected: (bool selected) {
                     if (selected) {
                       controller.selectedTimeFrame.value = entry.value;
-                      controller.getFilteredWeightData();
+                      controller.applyWeightFilter();
                     }
                   },
                 );

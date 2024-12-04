@@ -77,7 +77,7 @@ class TrackController extends GetxController {
                 WeightUnit.pound))));
     userWeightData.value = weightEntries;
     weightDataLoading.value = false;
-    getFilteredWeightData();
+    applyWeightFilter();
     update();
   }
 
@@ -99,7 +99,7 @@ class TrackController extends GetxController {
     update();
   }
 
-  void getFilteredWeightData() {
+  void applyWeightFilter() {
     DateTime now = DateTime.now();
     DateTime startDate;
 
