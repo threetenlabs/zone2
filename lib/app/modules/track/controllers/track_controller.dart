@@ -15,7 +15,9 @@ class TrackController extends GetxController {
   final zone2User = Rxn<Zone2User>();
   final userAge = Rxn<int>();
   final userWeightData = Rx<List<WeightData>>([]);
+  final filteredWeightData = Rx<List<WeightData>>([]);
   final weightDataLoading = RxBool(false);
+  final selectedTimeFrame = TimeFrame.week.obs;
 
   // Activity tracking
   final activityManager = HealthActivityManager().obs;
@@ -84,5 +86,54 @@ class TrackController extends GetxController {
         startDate: startDate);
     activityManager.value
         .processAggregatedActivityData(activityData: allActivityData, userAge: userAge.value ?? 30);
+  }
+
+  void getFilteredWeightData() {
+    DateTime now = DateTime.now();
+    DateTime startDate;
+
+    switch (selectedTimeFrame.value) {
+      case TimeFrame.week:
+        startDate = now.subtract(Duration(days: 7));
+        filteredWeightData.value = userWeightData.value.where((data) {
+          DateTime date = DateFormat('M/d/yy').parse(data.date);
+          return date.isAfter(startDate);
+        }).toList();
+        break;
+      case TimeFrame.month:
+        startDate = now.subtract(Duration(days: 30));
+        filteredWeightData.value = userWeightData.value.where((data) {
+          DateTime date = DateFormat('M/d/yy').parse(data.date);
+          return date.isAfter(startDate);
+        }).toList();
+        break;
+      case TimeFrame.sixMonths:
+        startDate = now.subtract(Duration(days: 180));
+        filteredWeightData.value = userWeightData.value.where((data) {
+          DateTime date = DateFormat('M/d/yy').parse(data.date);
+          return date.isAfter(startDate);
+        }).toList();
+        break;
+      case TimeFrame.allTime:
+      default:
+        filteredWeightData.value = userWeightData.value;
+    }
+  }
+
+  List<WeightData> getTrendLineData() {
+    if (userWeightData.value.isEmpty) return [];
+    final journeyStartDate = zone2User.value!.zoneSettings?.journeyStartDate.toDate().toString();
+    DateTime startDate = DateTime.parse(journeyStartDate ?? DateTime.now().toString());
+    DateTime weightStartDate = DateFormat('M/d/yy').parse(userWeightData.value.first.date);
+    DateTime endDate = DateFormat('M/d/yy').parse(userWeightData.value.last.date);
+
+    DateTime trendStartDate = startDate.isBefore(weightStartDate) ? weightStartDate : startDate;
+    double startWeight = userWeightData.value.first.weight;
+    double targetWeight = 190.0;
+
+    return [
+      WeightData(DateFormat('M/d/yy').format(trendStartDate), startWeight),
+      WeightData(DateFormat('M/d/yy').format(endDate), targetWeight),
+    ];
   }
 }
