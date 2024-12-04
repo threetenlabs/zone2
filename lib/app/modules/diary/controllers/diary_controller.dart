@@ -301,7 +301,6 @@ class DiaryController extends GetxController {
 
   Future<void> _retrieveActivityData({bool? forceRefresh = false}) async {
     final types = [
-      HealthDataType.TOTAL_CALORIES_BURNED,
       HealthDataType.HEART_RATE,
       HealthDataType.WORKOUT,
       HealthDataType.STEPS
@@ -312,7 +311,7 @@ class DiaryController extends GetxController {
         types: types,
         forceRefresh: forceRefresh);
     activityManager.value
-        .processActivityData(activityData: allActivityData, userAge: userAge.value ?? 30);
+        .processDailyActivityData(activityData: allActivityData, userAge: userAge.value ?? 30);
   }
 
   Future<void> saveWeightToHealth() async {

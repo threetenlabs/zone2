@@ -15,18 +15,18 @@ class ProfileController extends GetxController {
   final openApiKeyVisible = false.obs;
   final TextEditingController openApiKeyController = TextEditingController();
 
-  late final TextEditingController dailyWaterGoalController;
-  late final TextEditingController dailyZonePointsGoalController;
-  late final TextEditingController dailyCalorieIntakeGoalController;
-  late final TextEditingController dailyCaloriesBurnedGoalController;
-  late final TextEditingController dailyStepsGoalController;
+
 
   final settings = SharedPreferencesService.to;
   final isDirty = false.obs;
 
-  var zone2ProteinTarget = 0.0.obs;
-  var zone2CarbsTarget = 0.0.obs;
-  var zone2FatTarget = 0.0.obs;
+  final dailyWaterGoal = 0.obs;
+  final dailyZonePointsGoal = 0.obs;
+  final dailyCalorieIntakeGoal = 0.0.obs;
+  final dailyStepsGoal = 0.obs;
+  final zone2ProteinTarget = 0.0.obs;
+  final zone2CarbsTarget = 0.0.obs;
+  final zone2FatTarget = 0.0.obs;
 
   @override
   void onInit() async {
@@ -56,20 +56,17 @@ class ProfileController extends GetxController {
   }
 
   Future<void> setZoneSettings() async {
-    // Initialize TextEditingControllers for ZoneSettings
+    // Initialize TextEditingControllers with values from ZoneSettings
     final zoneSettings = authService.appUser.value.zoneSettings;
-    dailyWaterGoalController =
-        TextEditingController(text: zoneSettings?.dailyWaterGoalInOz.toString() ?? '');
-    dailyZonePointsGoalController =
-        TextEditingController(text: zoneSettings?.dailyZonePointsGoal.toString() ?? '');
-    dailyCalorieIntakeGoalController =
-        TextEditingController(text: zoneSettings?.dailyCalorieIntakeGoal.toString() ?? '');
-    dailyStepsGoalController =
-        TextEditingController(text: zoneSettings?.dailyStepsGoal.toString() ?? '');
+    dailyWaterGoal.value = zoneSettings?.dailyWaterGoalInOz ?? 0;
+    dailyZonePointsGoal.value = zoneSettings?.dailyZonePointsGoal ?? 0;
+    dailyCalorieIntakeGoal.value = zoneSettings?.dailyCalorieIntakeGoal ?? 0;
+    dailyStepsGoal.value = zoneSettings?.dailyStepsGoal ?? 0;
 
     zone2ProteinTarget.value = zoneSettings?.zone2ProteinTarget ?? 0.0;
     zone2CarbsTarget.value = zoneSettings?.zone2CarbsTarget ?? 0.0;
     zone2FatTarget.value = zoneSettings?.zone2FatTarget ?? 0.0;
+    isDirty.value = false;
   }
 
   void markDirty() {
@@ -91,7 +88,7 @@ class ProfileController extends GetxController {
   void setDailyWaterGoal(int goal) {
     if (authService.appUser.value.zoneSettings != null) {
       authService.appUser.value.zoneSettings!.dailyWaterGoalInOz = goal;
-      dailyWaterGoalController.text = goal.toString();
+      dailyWaterGoal.value = goal;
       markDirty();
     }
   }
@@ -100,7 +97,7 @@ class ProfileController extends GetxController {
   void setDailyZonePointsGoal(int goal) {
     if (authService.appUser.value.zoneSettings != null) {
       authService.appUser.value.zoneSettings!.dailyZonePointsGoal = goal;
-      dailyZonePointsGoalController.text = goal.toString();
+        dailyZonePointsGoal.value = goal;
       markDirty();
     }
   }
@@ -109,7 +106,7 @@ class ProfileController extends GetxController {
   void setDailyCalorieIntakeGoal(double goal) {
     if (authService.appUser.value.zoneSettings != null) {
       authService.appUser.value.zoneSettings!.dailyCalorieIntakeGoal = goal;
-      dailyCalorieIntakeGoalController.text = goal.toString();
+      dailyCalorieIntakeGoal.value = goal;
       markDirty();
     }
   }
@@ -118,7 +115,7 @@ class ProfileController extends GetxController {
   void setDailyStepsGoal(int goal) {
     if (authService.appUser.value.zoneSettings != null) {
       authService.appUser.value.zoneSettings!.dailyStepsGoal = goal;
-      dailyStepsGoalController.text = goal.toString();
+      dailyStepsGoal.value = goal;
       markDirty();
     }
   }

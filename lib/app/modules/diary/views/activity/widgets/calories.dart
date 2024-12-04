@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
@@ -36,7 +34,7 @@ class CaloriesBurnedChart extends GetView<DiaryController> {
             ),
             SfCartesianChart(
               title: ChartTitle(
-                text: 'Hourly Calorie Breakdown',
+                text: 'Hourly Zone Point Breakdown',
                 textStyle: TextStyle(fontSize: 10, color: Theme.of(context).colorScheme.onSurface),
               ),
               primaryXAxis: DateTimeAxis(
@@ -62,11 +60,11 @@ class CaloriesBurnedChart extends GetView<DiaryController> {
                 numberFormat: NumberFormat.compact(),
               ),
               series: <CartesianSeries>[
-                ColumnSeries<CalorieBurnedRecord, DateTime>(
-                  dataSource: controller.activityManager.value.hourlyCalorieRecords,
-                  xValueMapper: (CalorieBurnedRecord record, _) => record.dateFrom,
-                  yValueMapper: (CalorieBurnedRecord record, _) => record.numericValue,
-                  name: 'Calories Burned',
+                ColumnSeries<ZonePointRecord, DateTime>(
+                  dataSource: controller.activityManager.value.hourlyZonePointRecords,
+                  xValueMapper: (ZonePointRecord record, _) => record.dateFrom,
+                  yValueMapper: (ZonePointRecord record, _) => record.zonePoints,
+                  name: 'Zone Points',
                   color: MaterialTheme.coolRed.value,
                   width: 0.6,
                   spacing: 0.2,

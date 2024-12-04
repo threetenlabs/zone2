@@ -19,7 +19,7 @@ class TrackView extends GetView<TrackController> {
           bottom: const TabBar(
             tabs: [
               Tab(text: 'Weight'),
-              Tab(text: 'Calories'),
+              Tab(text: 'Zone Points'),
               Tab(text: 'Steps'),
             ],
           ),

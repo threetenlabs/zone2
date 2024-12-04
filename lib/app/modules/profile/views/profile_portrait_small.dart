@@ -12,7 +12,7 @@ class ProfileViewPortraitSmall extends GetWidget<ProfileController> {
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
-      length: 3,
+      length: 2,
       child: Scaffold(
         appBar: AppBar(
           automaticallyImplyLeading: false,

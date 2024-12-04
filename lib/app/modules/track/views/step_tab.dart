@@ -50,19 +50,33 @@ class StepGraph extends GetWidget<TrackController> {
   Widget build(BuildContext context) {
     // Map enum to string for fetching data
 
+    final records = timeFrame == TimeFrame.month || timeFrame == TimeFrame.week
+        ? controller.activityManager.value.dailyStepRecords
+        : controller.activityManager.value.monthlyStepRecords;
+    final dateFormat = timeFrame == TimeFrame.month || timeFrame == TimeFrame.week
+        ? DateFormat('d')
+        : DateFormat('MMMM');
+
+    final intervalType = timeFrame == TimeFrame.month || timeFrame == TimeFrame.week
+        ? DateTimeIntervalType.days
+        : DateTimeIntervalType.months;
+
+    final interval = timeFrame == TimeFrame.month || timeFrame == TimeFrame.week ? 2.0 : 1.0;
     return SfCartesianChart(
       title: ChartTitle(
         text: 'Daily Steps',
         textStyle: TextStyle(fontSize: 10, color: Theme.of(context).colorScheme.onSurface),
       ),
       primaryXAxis: DateTimeAxis(
-        intervalType: DateTimeIntervalType.days,
-        interval: 3,
-        dateFormat: DateFormat('d'),
+        intervalType: intervalType,
+        interval: interval,
+        dateFormat: dateFormat,
         majorGridLines: const MajorGridLines(width: 0),
         labelIntersectAction: AxisLabelIntersectAction.none,
-        desiredIntervals: 15,
-        maximumLabels: 15,
+        autoScrollingMode: AutoScrollingMode.start,
+        // desiredIntervals: timeFrame == TimeFrame.month || timeFrame == TimeFrame.week ? 2 : 1,
+        // maximumLabels: timeFrame == TimeFrame.month || timeFrame == TimeFrame.week ? 15 : 3,
+        labelAlignment: LabelAlignment.center,
         // axisLabelFormatter: (AxisLabelRenderDetails args) {
         //   DateTime date = DateTime.fromMillisecondsSinceEpoch(args.value.toInt());
         //   if (date.hour % 2 == 0) {
@@ -79,7 +93,7 @@ class StepGraph extends GetWidget<TrackController> {
       ),
       series: <CartesianSeries>[
         ColumnSeries<StepRecord, DateTime>(
-          dataSource: controller.activityManager.value.dailyStepRecords,
+          dataSource: records,
           xValueMapper: (StepRecord record, _) => record.dateFrom,
           yValueMapper: (StepRecord record, _) => record.numericValue,
           name: 'Steps',

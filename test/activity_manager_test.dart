@@ -22,7 +22,6 @@ void main() {
   group('HealthActivityManager', () {
     test('should initialize with empty records', () {
       expect(activityManager.heartRateRecords, isEmpty);
-      expect(activityManager.calorieRecords, isEmpty);
       expect(activityManager.stepRecords, isEmpty);
       expect(activityManager.workoutRecords, isEmpty);
     });
@@ -67,10 +66,9 @@ void main() {
         ),
       ];
 
-      activityManager.processActivityData(activityData: activityData, userAge: 30);
+      activityManager.processDailyActivityData(activityData: activityData, userAge: 30);
 
       expect(activityManager.heartRateRecords.length, 1);
-      expect(activityManager.calorieRecords.length, 1);
       expect(activityManager.stepRecords.length, 1);
       expect(activityManager.totalSteps.value, 1000);
       expect(activityManager.totalCaloriesBurned.value, 200.0);
@@ -92,7 +90,7 @@ void main() {
         ),
       ];
 
-      activityManager.processActivityData(activityData: heartRateData, userAge: 30);
+      activityManager.processDailyActivityData(activityData: heartRateData, userAge: 30);
 
       expect(activityManager.zoneMinutes[3], greaterThan(0)); // Assuming 150 BPM falls in Zone 3
     });

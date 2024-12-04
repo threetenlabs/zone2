@@ -13,7 +13,6 @@ import 'package:zone2/app/style/theme.dart';
 import 'package:zone2/app/style/palette.dart';
 import 'package:zone2/firebase_options.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:toastification/toastification.dart';

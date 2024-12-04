@@ -48,7 +48,7 @@ class MacroCard extends GetView<DiaryController> {
           Center(child: Text('=', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold))),
           _buildRemainingColumn(
               'Remaining',
-              ((controller.zone2User.value?.zoneSettings?.dailyCalorieIntakeGoal ?? 2000) -
+              ((controller.zone2User.value.zoneSettings?.dailyCalorieIntakeGoal ?? 2000) -
                       (controller.foodManager.value.totalCalories.value) +
                       controller.activityManager.value.totalWorkoutCalories.value)
                   .roundToDouble(),

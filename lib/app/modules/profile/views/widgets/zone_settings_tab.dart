@@ -13,130 +13,169 @@ class ZoneSettingsTab extends GetWidget<ProfileController> {
       padding: const EdgeInsets.all(16.0),
       child: ListView(
         children: [
-          SpinBox(
-            min: 0,
-            max: 200,
-            value: controller.dailyWaterGoalController.text.isNotEmpty
-                ? double.parse(controller.dailyWaterGoalController.text)
-                : 0,
-            decimals: 0,
-            step: 1,
-            onChanged: (value) {
-              controller.setDailyWaterGoal(value.toInt());
-            },
-            decoration: const InputDecoration(
-              labelText: 'Daily Water Goal (oz)',
-              border: OutlineInputBorder(),
-            ),
+          Row(
+            children: [
+              Expanded(
+                child: Obx(
+                  () => SpinBox(
+                    min: 0,
+                    max: 200,
+                    value: controller.dailyWaterGoal.value.toDouble(),
+                    decimals: 0,
+                    step: 1,
+                    onChanged: (value) {
+                      controller.setDailyWaterGoal(value.toInt());
+                    },
+                    decoration: const InputDecoration(
+                      labelText: 'Daily Water Goal (oz)',
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 20),
+              Expanded(
+                child: Obx(
+                  () => SpinBox(
+                    min: 0,
+                    max: 500,
+                    value: controller.zone2FatTarget.value,
+                    decimals: 0,
+                    step: 1,
+                    acceleration: 1.5,
+                    onChanged: (value) {
+                      controller.setZone2FatTarget(value);
+                    },
+                    decoration: const InputDecoration(
+                      labelText: 'Fat Target (g)',
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 20),
-          SpinBox(
-            min: 0,
-            max: 200,
-            value: controller.dailyZonePointsGoalController.text.isNotEmpty
-                ? double.parse(controller.dailyZonePointsGoalController.text)
-                : 0,
-            decimals: 0,
-            step: 1,
-            onChanged: (value) {
-              controller.setDailyZonePointsGoal(value.toInt());
-            },
-            decoration: const InputDecoration(
-              labelText: 'Daily Zone Points Goal',
-              border: OutlineInputBorder(),
-            ),
+          Row(
+            children: [
+              Expanded(
+                child: Obx(
+                  () => SpinBox(
+                    min: 0,
+                    max: 5000,
+                    value: controller.dailyCalorieIntakeGoal.value,
+                    decimals: 0,
+                    step: 1,
+                    onChanged: (value) {
+                      controller.setDailyCalorieIntakeGoal(value);
+                    },
+                    decoration: const InputDecoration(
+                      labelText: 'Daily Calorie Intake Goal',
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 20),
+              Expanded(
+                child: Obx(
+                  () => SpinBox(
+                    min: 0,
+                    max: 500,
+                    value: controller.zone2ProteinTarget.value,
+                    decimals: 0,
+                    step: 1,
+                    acceleration: 1.5,
+                    onChanged: (value) {
+                      controller.setZone2ProteinTarget(value);
+                    },
+                    decoration: const InputDecoration(
+                      labelText: 'Protein Target (g)',
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 20),
-          SpinBox(
-            min: 0,
-            max: 5000,
-            value: controller.dailyCalorieIntakeGoalController.text.isNotEmpty
-                ? double.parse(controller.dailyCalorieIntakeGoalController.text)
-                : 0,
-            decimals: 0,
-            step: 1,
-            onChanged: (value) {
-              controller.setDailyCalorieIntakeGoal(value);
-            },
-            decoration: const InputDecoration(
-              labelText: 'Daily Calorie Intake Goal',
-              border: OutlineInputBorder(),
-            ),
+          Row(
+            children: [
+              Expanded(
+                child: Obx(
+                  () => SpinBox(
+                    min: 0,
+                    max: 50000,
+                    value: controller.dailyStepsGoal.value.toDouble(),
+                    decimals: 0,
+                    step: 1,
+                    acceleration: 1.5,
+                    onChanged: (value) {
+                      controller.setDailyStepsGoal(value.toInt());
+                    },
+                    decoration: const InputDecoration(
+                      labelText: 'Daily Steps Goal',
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 20),
+              Expanded(
+                child: Obx(
+                  () => SpinBox(
+                    min: 0,
+                    max: 500,
+                    value: controller.zone2CarbsTarget.value,
+                    decimals: 0,
+                    step: 1,
+                    acceleration: 1.5,
+                    onChanged: (value) {
+                      controller.setZone2CarbsTarget(value);
+                    },
+                    decoration: const InputDecoration(
+                      labelText: 'Carbs Target (g)',
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 20),
-          SpinBox(
-            min: 0,
-            max: 50000,
-            value: controller.dailyStepsGoalController.text.isNotEmpty
-                ? double.parse(controller.dailyStepsGoalController.text)
-                : 0,
-            decimals: 0,
-            step: 1,
-            acceleration: 1.5,
-            onChanged: (value) {
-              controller.setDailyStepsGoal(value.toInt());
-            },
-            decoration: const InputDecoration(
-              labelText: 'Daily Steps Goal',
-              border: OutlineInputBorder(),
-            ),
+          Row(
+            children: [
+              Expanded(
+                child: Obx(
+                  () => SpinBox(
+                    min: 0,
+                    max: 200,
+                    value: controller.dailyZonePointsGoal.value.toDouble(),
+                    decimals: 0,
+                    step: 1,
+                    onChanged: (value) {
+                      controller.setDailyZonePointsGoal(value.toInt());
+                    },
+                    decoration: const InputDecoration(
+                      labelText: 'Daily Zone Points Goal',
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                ),
+              ),
+              Expanded(
+                  child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: FilledButton(
+                        onPressed: () async {
+                          const url = 'https://tdeecalculator.net';
+                          await launchUrl(Uri.parse(url), mode: LaunchMode.inAppBrowserView);
+                        },
+                        child: const Text('Macro Calculator'),
+                      ))),
+            ],
           ),
           const SizedBox(height: 20),
-             SpinBox(
-            min: 0,
-            max: 500,
-            value: controller.zone2ProteinTarget.value,
-            decimals: 0,
-            step: 1,
-            acceleration: 1.5,
-            onChanged: (value) {
-              controller.setZone2ProteinTarget(value);
-            },
-            decoration: const InputDecoration(
-              labelText: 'Protein Target (g)',
-              border: OutlineInputBorder(),
-            ),
-          ),
-          const SizedBox(height: 20),
-          SpinBox(
-            min: 0,
-            max: 500,
-            value: controller.zone2CarbsTarget.value,
-            decimals: 0,
-            step: 1,
-            acceleration: 1.5,
-            onChanged: (value) {
-              controller.setZone2CarbsTarget(value);
-            },
-            decoration: const InputDecoration(
-              labelText: 'Carbs Target (g)',
-              border: OutlineInputBorder(),
-            ),
-          ),
-          const SizedBox(height: 20),
-          SpinBox(
-            min: 0,
-            max: 500,
-            value: controller.zone2FatTarget.value,
-            decimals: 0,
-            step: 1,
-            acceleration: 1.5,
-            onChanged: (value) {
-              controller.setZone2FatTarget(value);
-            },
-            decoration: const InputDecoration(
-              labelText: 'Fat Target (g)',
-              border: OutlineInputBorder(),
-            ),
-          ),
-          const SizedBox(height: 20),
-          ElevatedButton(
-            onPressed: () async {
-              const url = 'https://tdeecalculator.net';
-              await launchUrl(Uri.parse(url), mode: LaunchMode.inAppBrowserView);
-            },
-            child: const Text('Open TDEE Calculator'),
-          ),
           Obx(() => ElevatedButton(
                 onPressed: controller.isDirty.value ? controller.saveSettings : null,
                 child: const Text('Save Settings'),

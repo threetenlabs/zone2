@@ -14,6 +14,8 @@ class TrackController extends GetxController {
   final logger = Get.find<Logger>();
   final zone2User = Rxn<Zone2User>();
   final userAge = Rxn<int>();
+  final userWeightData = Rx<List<WeightData>>([]);
+  final weightDataLoading = RxBool(false);
 
   // Activity tracking
   final activityManager = HealthActivityManager().obs;
@@ -33,11 +35,17 @@ class TrackController extends GetxController {
       zone2User.value = user;
     });
 
+    retrieveHealthData();
+  }
+
+  Future<void> retrieveHealthData() async {
     retrieveActivityData();
+    getWeightData(TimeFrame.allTime);
   }
 
   // Method to get weight data based on time frame
-  Future<List<WeightData>> getWeightData(TimeFrame timeFrame) async {
+  Future<void> getWeightData(TimeFrame timeFrame) async {
+    weightDataLoading.value = true;
     final startDate = zone2User.value!.zoneSettings?.journeyStartDate.toDate();
     logger.i('startDate: $startDate');
     final weightData = await healthService.getWeightData(
@@ -54,20 +62,19 @@ class TrackController extends GetxController {
     }
 
     // Convert the latest entries to WeightData, converting kg to lbs
-    return Future.wait(latestEntries.values.map((dataPoint) async => WeightData(
-        DateFormat('M/d/yy').format(dataPoint.dateFrom),
-        // Await the conversion to ensure we get a double value
-        await healthService.convertWeightUnit(
-            (dataPoint.value as NumericHealthValue).numericValue.toDouble(), WeightUnit.pound))));
+    final weightEntries = await Future.wait(latestEntries.values.map((dataPoint) async =>
+        WeightData(
+            DateFormat('M/d/yy').format(dataPoint.dateFrom),
+            // Await the conversion to ensure we get a double value
+            await healthService.convertWeightUnit(
+                (dataPoint.value as NumericHealthValue).numericValue.toDouble(),
+                WeightUnit.pound))));
+    userWeightData.value = weightEntries;
+    weightDataLoading.value = false;
   }
 
   Future<void> retrieveActivityData({bool? forceRefresh = false}) async {
-    final types = [
-      HealthDataType.TOTAL_CALORIES_BURNED,
-      HealthDataType.HEART_RATE,
-      HealthDataType.WORKOUT,
-      HealthDataType.STEPS
-    ];
+    final types = [HealthDataType.HEART_RATE, HealthDataType.WORKOUT, HealthDataType.STEPS];
     final startDate = zone2User.value!.zoneSettings?.journeyStartDate.toDate();
     final allActivityData = await healthService.getActivityData(
         timeFrame: TimeFrame.allTime,
@@ -76,6 +83,6 @@ class TrackController extends GetxController {
         forceRefresh: forceRefresh,
         startDate: startDate);
     activityManager.value
-        .processActivityData(activityData: allActivityData, userAge: userAge.value ?? 30);
+        .processAggregatedActivityData(activityData: allActivityData, userAge: userAge.value ?? 30);
   }
 }

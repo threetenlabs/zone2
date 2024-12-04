@@ -21,25 +21,7 @@ class SettingsTab extends GetView<ProfileController> {
         mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Center(
-            child: Text(
-              'Profile & Settings',
-              style: TextStyle(
-                color: Theme.of(context).colorScheme.inverseSurface,
-                fontWeight: FontWeight.normal,
-                fontSize: Theme.of(context).textTheme.headlineSmall?.fontSize,
-              ),
-            ),
-          ),
-          const SizedBox(height: 8.0),
-          SettingsToggle(
-            themeService.isDarkMode.value ? 'Dark Mode' : 'Light Mode',
-            Icon(themeService.isDarkMode.value
-                ? Icons.dark_mode_outlined
-                : Icons.light_mode_outlined),
-            onSelected: () => themeService.toggleTheme(),
-          ),
-          const SizedBox(height: 8.0),
+          const SizedBox(height: 10.0),
           Obx(() => TextField(
                 controller: controller.openApiKeyController,
                 obscureText: !controller.openApiKeyVisible.value,
@@ -73,29 +55,43 @@ class SettingsTab extends GetView<ProfileController> {
                 keyboardType: TextInputType.visiblePassword,
                 textInputAction: TextInputAction.done,
               )),
-          Expanded(child: Container()),
-          TextButton(
-            onPressed: () {
-              AuthService.to.signOut();
-            },
-            clipBehavior: Clip.antiAlias,
-            child: const Column(children: [
-              Icon(Icons.logout_outlined),
-              Text('Sign Out'),
-            ]),
+          const SizedBox(height: 10.0),
+          SettingsToggle(
+            title: 'Dark Mode',
+            value: themeService.isDarkMode.value,
+            onToggle: themeService.toggleTheme,
+            activeIcon: Icons.dark_mode_outlined,
+            inactiveIcon: Icons.light_mode_outlined,
+          ),
+          const SizedBox(height: 10.0),
+          Align(
+            alignment: Alignment.centerRight,
+            child: TextButton(
+              onPressed: () {
+                AuthService.to.signOut();
+              },
+              clipBehavior: Clip.antiAlias,
+              child: const Column(children: [
+                Icon(Icons.logout_outlined),
+                Text('Sign Out'),
+              ]),
+            ),
           ),
           const Spacer(),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: FutureBuilder<PackageInfo>(
-              future: PackageInfo.fromPlatform(),
-              builder: (BuildContext context, AsyncSnapshot<PackageInfo> snapshot) {
-                if (snapshot.hasData) {
-                  return Text('Version: ${snapshot.data?.version}(${snapshot.data?.buildNumber})');
-                } else {
-                  return const CircularProgressIndicator();
-                }
-              },
+          Center(
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: FutureBuilder<PackageInfo>(
+                future: PackageInfo.fromPlatform(),
+                builder: (BuildContext context, AsyncSnapshot<PackageInfo> snapshot) {
+                  if (snapshot.hasData) {
+                    return Text(
+                        'Version: ${snapshot.data?.version}(${snapshot.data?.buildNumber})');
+                  } else {
+                    return const CircularProgressIndicator();
+                  }
+                },
+              ),
             ),
           ),
           if (kDebugMode)
@@ -125,17 +121,25 @@ class SettingsTab extends GetView<ProfileController> {
 }
 
 class SettingsToggle extends StatelessWidget {
+  final bool value;
+  final VoidCallback onToggle;
+  final IconData activeIcon;
+  final IconData inactiveIcon;
   final String title;
-  final Widget icon;
-  final VoidCallback? onSelected;
 
-  const SettingsToggle(this.title, this.icon, {super.key, this.onSelected});
+  const SettingsToggle({
+    super.key,
+    required this.value,
+    required this.onToggle,
+    required this.activeIcon,
+    required this.inactiveIcon,
+    required this.title,
+  });
 
   @override
   Widget build(BuildContext context) {
     return InkResponse(
       highlightShape: BoxShape.rectangle,
-      onTap: onSelected,
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 8),
         child: Row(
@@ -150,7 +154,12 @@ class SettingsToggle extends StatelessWidget {
                 ),
               ),
             ),
-            icon,
+            Icon(inactiveIcon),
+            Switch(
+              value: value,
+              onChanged: (_) => onToggle(),
+            ),
+            Icon(activeIcon),
           ],
         ),
       ),
