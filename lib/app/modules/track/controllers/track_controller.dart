@@ -4,7 +4,6 @@ import 'package:logger/logger.dart';
 import 'package:zone2/app/models/activity.dart';
 import 'package:zone2/app/models/user.dart';
 import 'package:zone2/app/modules/diary/controllers/activity_manager.dart';
-import 'package:zone2/app/modules/track/views/weight_tab.dart';
 import 'package:zone2/app/services/auth_service.dart';
 import 'package:zone2/app/services/health_service.dart';
 import 'package:intl/intl.dart'; // Add this import for DateFormat

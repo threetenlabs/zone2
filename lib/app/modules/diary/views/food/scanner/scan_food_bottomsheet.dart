@@ -13,49 +13,64 @@ class ScanFoodBottomSheet extends GetView<DiaryController> {
   @override
   Widget build(BuildContext context) {
     final scanWindow = Rect.fromCenter(
-      center: MediaQuery.of(context).size.center(Offset.zero),
+      center: MediaQuery.of(context).size.center(Offset.zero) - const Offset(15, 100),
       width: 300,
       height: 300,
     );
     return Scaffold(
-        appBar: AppBar(
-          title: const Center(child: Text('Scan Food Barcode')),
+      appBar: AppBar(
+        leading: Align(
+          alignment: Alignment.topLeft,
+          child: IconButton(
+            icon: const Icon(Icons.close),
+            onPressed: () => Navigator.pop(context), // Close the bottom sheet
+          ),
         ),
-        backgroundColor: Colors.black,
-        body: Stack(
-          fit: StackFit.expand,
-          children: [
-            MobileScanner(
-              fit: BoxFit.contain,
-              scanWindow: scanWindow,
-              controller: controller.scannerController,
-              onDetect: (capture) {
-                Navigator.pop(context);
-                _showFoodDetail(context);
-              },
-              errorBuilder: (context, error, child) {
-                return ScannerErrorWidget(error: error);
-              },
-            ),
-            _buildBarcodeOverlay(),
-            _buildScanWindow(scanWindow),
-            Align(
-              alignment: Alignment.bottomCenter,
-              child: Container(
-                alignment: Alignment.center,
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                height: 100,
-                color: Colors.black.withOpacity(0.4),
-                child: ScannedBarcodeLabel(barcodes: controller.scannerController.barcodes),
+        title: const Center(child: Text('Scan Food Barcode')),
+      ),
+      backgroundColor: Colors.black,
+      body: SafeArea(
+        child: Container(
+          height: MediaQuery.of(context).size.height, // Full screen height
+          padding: const EdgeInsets.all(16.0),
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              MobileScanner(
+                fit: BoxFit.contain,
+                scanWindow: scanWindow,
+                controller: controller.barcodeService.scannerController,
+                onDetect: (capture) {
+                  Navigator.pop(context);
+                  _showFoodDetail(context);
+                },
+                errorBuilder: (context, error, child) {
+                  return ScannerErrorWidget(error: error);
+                },
               ),
-            ),
-          ],
-        ));
+              _buildBarcodeOverlay(),
+              _buildScanWindow(scanWindow),
+              Align(
+                alignment: Alignment.bottomCenter,
+                child: Container(
+                  alignment: Alignment.center,
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  height: 50,
+                  color: Colors.black.withOpacity(0.4),
+                  child: ScannedBarcodeLabel(
+                      barcodes: controller.barcodeService.scannerController.barcodes),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   Widget _buildBarcodeOverlay() {
     return ValueListenableBuilder(
-      valueListenable: controller.scannerController,
+      valueListenable: controller.barcodeService.scannerController,
       builder: (context, value, child) {
         // Not ready.
         if (!value.isInitialized || !value.isRunning || value.error != null) {
@@ -63,7 +78,7 @@ class ScanFoodBottomSheet extends GetView<DiaryController> {
         }
 
         return StreamBuilder<BarcodeCapture>(
-          stream: controller.scannerController.barcodes,
+          stream: controller.barcodeService.scannerController.barcodes,
           builder: (context, snapshot) {
             final BarcodeCapture? barcodeCapture = snapshot.data;
 
@@ -114,7 +129,7 @@ class ScanFoodBottomSheet extends GetView<DiaryController> {
 
   Widget _buildScanWindow(Rect scanWindowRect) {
     return ValueListenableBuilder(
-      valueListenable: controller.scannerController,
+      valueListenable: controller.barcodeService.scannerController,
       builder: (context, value, child) {
         // Not ready.
         if (!value.isInitialized || !value.isRunning || value.error != null || value.size.isEmpty) {

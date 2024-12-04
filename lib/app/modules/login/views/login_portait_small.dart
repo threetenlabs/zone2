@@ -53,7 +53,7 @@ class LoginViewPortaitSmall extends GetWidget<LoginController> {
                     Center(
                       child: Text(
                         'Why sign in?',
-                        style: context.boldStyle,
+                        style: context.bodyMedium?.copyWith(fontWeight: FontWeight.bold),
                       ).scaled(context, scalePercent: 0.02),
                     ),
                     const SizedBox(height: 8),

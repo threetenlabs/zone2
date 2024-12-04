@@ -10,6 +10,7 @@ import 'package:health/health.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:speech_to_text/speech_recognition_error.dart';
 import 'package:speech_to_text/speech_to_text.dart';
+import 'package:super_tooltip/super_tooltip.dart';
 import 'package:zone2/app/modules/diary/controllers/activity_manager.dart';
 import 'package:zone2/app/models/food.dart';
 import 'package:zone2/app/modules/diary/controllers/food_manager.dart';
@@ -22,6 +23,7 @@ import 'package:zone2/app/services/health_service.dart';
 import 'package:intl/intl.dart'; // Added for date formatting
 import 'package:zone2/app/services/notification_service.dart';
 import 'package:zone2/app/services/openai_service.dart';
+import 'package:zone2/app/services/shared_preferences_service.dart';
 import 'package:zone2/app/services/speech_service.dart';
 import 'package:zone2/app/utils/helper.dart';
 
@@ -122,6 +124,8 @@ class DiaryController extends GetxController {
   final activityManager = HealthActivityManager().obs;
 
   // AI Funzies
+  final openAIKey = SharedPreferencesService.to.openAIKey;
+  final aiTooltipController = SuperTooltipController();
   final isProcessing = false.obs;
   final matchedFoods = RxList<String>();
   final speech = SpeechToText();
@@ -144,8 +148,7 @@ class DiaryController extends GetxController {
   // Barcode scanning
   final Rxn<Barcode> barcode = Rxn<Barcode>();
   final Rxn<BarcodeCapture> capture = Rxn<BarcodeCapture>();
-  late MobileScannerController scannerController;
-  StreamSubscription<Object?>? scannerSubscription;
+
 
   final ImagePicker _picker = ImagePicker();
 
@@ -180,6 +183,10 @@ class DiaryController extends GetxController {
     setUser();
     AuthService.to.appUser.stream.listen((user) async {
       setUser();
+    });
+
+    SharedPreferencesService.to.openAIKey.listen((key) {
+      openAIKey.value = key;
     });
   }
 
@@ -300,11 +307,7 @@ class DiaryController extends GetxController {
   }
 
   Future<void> _retrieveActivityData({bool? forceRefresh = false}) async {
-    final types = [
-      HealthDataType.HEART_RATE,
-      HealthDataType.WORKOUT,
-      HealthDataType.STEPS
-    ];
+    final types = [HealthDataType.HEART_RATE, HealthDataType.WORKOUT, HealthDataType.STEPS];
     final allActivityData = await healthService.getActivityData(
         timeFrame: TimeFrame.day,
         seedDate: diaryDate.value,
