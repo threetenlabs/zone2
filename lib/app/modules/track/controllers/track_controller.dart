@@ -17,13 +17,15 @@ class TrackController extends GetxController {
   final userAge = Rxn<int>();
   final userWeightData = Rx<List<WeightData>>([]);
   final filteredWeightData = Rx<List<WeightData>>([]);
-  final weightDataLoading = RxBool(false);
+  final weightDataLoading = false.obs;
+  final activityDataLoading = false.obs;
   final selectedTimeFrame = TimeFrame.week.obs;
 
   // Activity tracking
   final activityManager = HealthActivityManager().obs;
 
   final filteredStepData = Rx<List<StepRecord>>([]);
+  final filteredZonePointData = Rx<List<ZonePointRecord>>([]);
 
   @override
   void onInit() async {
@@ -45,16 +47,16 @@ class TrackController extends GetxController {
 
   Future<void> retrieveHealthData() async {
     retrieveActivityData();
-    getWeightData(TimeFrame.allTime);
+    getWeightData();
   }
 
   // Method to get weight data based on time frame
-  Future<void> getWeightData(TimeFrame timeFrame) async {
+  Future<void> getWeightData() async {
     weightDataLoading.value = true;
     final startDate = zone2User.value!.zoneSettings?.journeyStartDate.toDate();
     logger.i('startDate: $startDate');
     final weightData = await healthService.getWeightData(
-        timeFrame: timeFrame, seedDate: DateTime.now(), startDate: startDate);
+        timeFrame: TimeFrame.allTime, seedDate: DateTime.now(), startDate: startDate);
 
     // Group by date and take the last entry for each date
     Map<String, HealthDataPoint> latestEntries = {};
@@ -76,9 +78,12 @@ class TrackController extends GetxController {
                 WeightUnit.pound))));
     userWeightData.value = weightEntries;
     weightDataLoading.value = false;
+    getFilteredWeightData();
+    update();
   }
 
   Future<void> retrieveActivityData({bool? forceRefresh = false}) async {
+    activityDataLoading.value = true;
     final types = [HealthDataType.HEART_RATE, HealthDataType.WORKOUT, HealthDataType.STEPS];
     final startDate = zone2User.value!.zoneSettings?.journeyStartDate.toDate();
     final allActivityData = await healthService.getActivityData(
@@ -89,6 +94,10 @@ class TrackController extends GetxController {
         startDate: startDate);
     activityManager.value
         .processAggregatedActivityData(activityData: allActivityData, userAge: userAge.value ?? 30);
+    activityDataLoading.value = false;
+    getFilteredStepData();
+    getFilteredZonePointData();
+    update();
   }
 
   void getFilteredWeightData() {
@@ -121,6 +130,7 @@ class TrackController extends GetxController {
       default:
         filteredWeightData.value = userWeightData.value;
     }
+    update();
   }
 
   void getFilteredStepData() {
@@ -143,6 +153,31 @@ class TrackController extends GetxController {
     }
 
     filteredStepData.value = activityManager.value.dailyStepRecords.where((record) {
+      return record.dateFrom.isAfter(startDate);
+    }).toList();
+    update();
+  }
+
+  void getFilteredZonePointData() {
+    DateTime now = DateTime.now();
+    DateTime startDate;
+
+    switch (selectedTimeFrame.value) {
+      case TimeFrame.week:
+        startDate = now.subtract(Duration(days: 7));
+        break;
+      case TimeFrame.month:
+        startDate = now.subtract(Duration(days: 30));
+        break;
+      case TimeFrame.sixMonths:
+        startDate = now.subtract(Duration(days: 180));
+        break;
+      case TimeFrame.allTime:
+      default:
+        startDate = DateTime(2000); // Arbitrary early date for all-time data
+    }
+
+    filteredZonePointData.value = activityManager.value.dailyZonePointRecords.where((record) {
       return record.dateFrom.isAfter(startDate);
     }).toList();
     update();

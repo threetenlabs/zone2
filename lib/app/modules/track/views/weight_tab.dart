@@ -48,13 +48,13 @@ class WeightTab extends GetView<TrackController> {
   }
 }
 
-class WeightGraph extends GetWidget<TrackController> {
+class WeightGraph extends GetView<TrackController> {
   const WeightGraph({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Obx(
-      () {
+    return GetBuilder<TrackController>(
+      builder: (_) {
         return Skeletonizer(
           enabled: controller.weightDataLoading.value,
           child: SfCartesianChart(

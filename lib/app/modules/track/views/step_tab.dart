@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 import 'package:zone2/app/models/activity.dart';
 import 'package:zone2/app/modules/track/controllers/track_controller.dart';
@@ -88,52 +89,54 @@ class StepGraph extends GetView<TrackController> {
     }
 
     // Calculate average steps per day by month for 1/2 Year and Journey
-    final averageRecords = controller.selectedTimeFrame.value == TimeFrame.sixMonths ||
-            controller.selectedTimeFrame.value == TimeFrame.allTime
+    final averageRecords = controller.selectedTimeFrame.value == TimeFrame.allTime
         ? _calculateMonthlyAverages(controller.filteredStepData.value)
         : controller.filteredStepData.value;
 
-    return SfCartesianChart(
-      title: ChartTitle(
-        text: 'Your Step Activity',
-        textStyle: TextStyle(fontSize: 10, color: Theme.of(context).colorScheme.onSurface),
-      ),
-      primaryXAxis: DateTimeCategoryAxis(
-        intervalType: intervalType,
-        interval: interval,
-        dateFormat: dateFormat,
-        desiredIntervals: 3,
-        majorGridLines: const MajorGridLines(width: 0),
-        labelIntersectAction: AxisLabelIntersectAction.none,
-        labelAlignment: LabelAlignment.center,
-      ),
-      primaryYAxis: NumericAxis(
-        majorGridLines: const MajorGridLines(width: 0),
-        numberFormat: NumberFormat.compact(),
-      ),
-      series: <CartesianSeries>[
-        ColumnSeries<StepRecord, DateTime>(
-          dataSource: averageRecords,
-          xValueMapper: (StepRecord record, _) => record.dateFrom,
-          yValueMapper: (StepRecord record, _) => record.numericValue,
-          name: 'Steps',
-          color: MaterialTheme.coolPurple.value,
-          width: 0.6,
-          spacing: 0.2,
-          borderRadius: BorderRadius.circular(6),
-          emptyPointSettings: EmptyPointSettings(
-            mode: EmptyPointMode.zero,
-            color: Colors.transparent,
-          ),
-          dataLabelSettings: const DataLabelSettings(
-            isVisible: true,
-            labelAlignment: ChartDataLabelAlignment.outer,
-            textStyle: TextStyle(color: Colors.black87),
-          ),
+    return Skeletonizer(
+      enabled: controller.activityDataLoading.value,
+      child: SfCartesianChart(
+        title: ChartTitle(
+          text: 'Your Step Activity',
+          textStyle: TextStyle(fontSize: 10, color: Theme.of(context).colorScheme.onSurface),
         ),
-      ],
-      tooltipBehavior: TooltipBehavior(
-        enable: true,
+        primaryXAxis: DateTimeCategoryAxis(
+          intervalType: intervalType,
+          interval: interval,
+          dateFormat: dateFormat,
+          desiredIntervals: 3,
+          majorGridLines: const MajorGridLines(width: 0),
+          labelIntersectAction: AxisLabelIntersectAction.none,
+          labelAlignment: LabelAlignment.center,
+        ),
+        primaryYAxis: NumericAxis(
+          majorGridLines: const MajorGridLines(width: 0),
+          numberFormat: NumberFormat.compact(),
+        ),
+        series: <CartesianSeries>[
+          ColumnSeries<StepRecord, DateTime>(
+            dataSource: averageRecords,
+            xValueMapper: (StepRecord record, _) => record.dateFrom,
+            yValueMapper: (StepRecord record, _) => record.numericValue,
+            name: 'Steps',
+            color: MaterialTheme.coolPurple.value,
+            width: 0.6,
+            spacing: 0.2,
+            borderRadius: BorderRadius.circular(6),
+            emptyPointSettings: EmptyPointSettings(
+              mode: EmptyPointMode.zero,
+              color: Colors.transparent,
+            ),
+            dataLabelSettings: const DataLabelSettings(
+              isVisible: true,
+              labelAlignment: ChartDataLabelAlignment.outer,
+              textStyle: TextStyle(color: Colors.black87),
+            ),
+          ),
+        ],
+        tooltipBehavior: TooltipBehavior(
+          enable: true,
+        ),
       ),
     );
   }
