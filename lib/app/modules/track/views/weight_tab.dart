@@ -15,7 +15,6 @@ class WeightTab extends GetView<TrackController> {
     final Map<String, TimeFrame> labelToTimeFrame = {
       'Week': TimeFrame.week,
       'Month': TimeFrame.month,
-      '1/2 Year': TimeFrame.sixMonths,
       'Journey': TimeFrame.allTime,
     };
 

@@ -1,6 +1,7 @@
 import 'package:get/get.dart';
 import 'package:health/health.dart';
 import 'package:logger/logger.dart';
+import 'package:zone2/app/models/activity.dart';
 import 'package:zone2/app/models/user.dart';
 import 'package:zone2/app/modules/diary/controllers/activity_manager.dart';
 import 'package:zone2/app/modules/track/views/weight_tab.dart';
@@ -21,6 +22,8 @@ class TrackController extends GetxController {
 
   // Activity tracking
   final activityManager = HealthActivityManager().obs;
+
+  final filteredStepData = Rx<List<StepRecord>>([]);
 
   @override
   void onInit() async {
@@ -118,6 +121,31 @@ class TrackController extends GetxController {
       default:
         filteredWeightData.value = userWeightData.value;
     }
+  }
+
+  void getFilteredStepData() {
+    DateTime now = DateTime.now();
+    DateTime startDate;
+
+    switch (selectedTimeFrame.value) {
+      case TimeFrame.week:
+        startDate = now.subtract(Duration(days: 7));
+        break;
+      case TimeFrame.month:
+        startDate = now.subtract(Duration(days: 30));
+        break;
+      case TimeFrame.sixMonths:
+        startDate = now.subtract(Duration(days: 180));
+        break;
+      case TimeFrame.allTime:
+      default:
+        startDate = DateTime(2000); // Arbitrary early date for all-time data
+    }
+
+    filteredStepData.value = activityManager.value.dailyStepRecords.where((record) {
+      return record.dateFrom.isAfter(startDate);
+    }).toList();
+    update();
   }
 
   List<WeightData> getTrendLineData() {
