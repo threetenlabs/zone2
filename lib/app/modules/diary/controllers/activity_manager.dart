@@ -20,17 +20,15 @@ class HealthActivityManager {
 
   // Aggregate records by day and month
   final dailyStepRecords = RxList<StepRecord>([]);
-  final dailyCalorieRecords = RxList<CalorieBurnedRecord>([]);
   final dailyZonePointRecords = RxList<ZonePointRecord>([]);
   final monthlyStepRecords = RxList<StepRecord>([]);
-  final monthlyCalorieRecords = RxList<CalorieBurnedRecord>([]);
   final monthlyZonePointRecords = RxList<ZonePointRecord>([]);
 
   // Convert statistics to Rx
   final totalSteps = 0.obs;
   final totalCaloriesBurned = 0.0.obs;
   final totalZonePoints = 0.obs;
-  final multipleCalorieSources = false.obs;
+  final multipleSourcesExist = false.obs;
   final totalWorkoutCalories = 0.0.obs;
   final totalActiveZoneMinutes = 0.obs;
 
@@ -113,8 +111,7 @@ class HealthActivityManager {
     workoutRecords.value = _parseWorkoutData(
         activityData.where((data) => data.type == HealthDataType.WORKOUT).toList());
 
-    multipleCalorieSources.value =
-        activityData.map((record) => record.sourceName).toSet().length > 1;
+    multipleSourcesExist.value = activityData.map((record) => record.sourceName).toSet().length > 1;
 
     // Process heart rate zones
     _processHeartRateZones(userAge);
@@ -143,8 +140,7 @@ class HealthActivityManager {
     workoutRecords.value = _parseWorkoutData(
         activityData.where((data) => data.type == HealthDataType.WORKOUT).toList());
 
-    // multipleCalorieSources.value =
-    //     calorieRecords.map((record) => record.sourceName).toSet().length > 1;
+    multipleSourcesExist.value = activityData.map((record) => record.sourceName).toSet().length > 1;
 
     // Process steps by day
     _processStepsByDayAndMonth();
@@ -237,60 +233,6 @@ class HealthActivityManager {
       ..sort((a, b) => a.dateFrom.compareTo(b.dateFrom));
   }
 
-  // // Add this new method to bucket calories by hour
-  // void _processCaloriesByHour() {
-  //   if (calorieRecords.isEmpty) return;
-
-  //   // Create a map to store hourly totals
-  //   Map<DateTime, double> hourlyTotals = {};
-
-  //   // Get the date from the first record, or use current date if no records
-  //   DateTime firstDate = calorieRecords.isEmpty
-  //       ? DateTime.now()
-  //       : DateTime(
-  //           calorieRecords.first.dateFrom.year,
-  //           calorieRecords.first.dateFrom.month,
-  //           calorieRecords.first.dateFrom.day,
-  //         );
-
-  //   // Initialize all hours with 0 calories
-  //   for (int hour = 0; hour < 24; hour++) {
-  //     DateTime hourKey = firstDate.add(Duration(hours: hour));
-  //     hourlyTotals[hourKey] = 0;
-  //   }
-
-  //   // Track processed time ranges to avoid double counting
-  //   Set<String> processedRanges = {};
-
-  //   // Sum up calories for each hour, avoiding duplicates
-  //   for (var record in calorieRecords) {
-  //     String timeRange = '${record.dateFrom}-${record.dateTo}';
-  //     if (processedRanges.contains(timeRange)) continue;
-
-  //     DateTime hourKey = DateTime(
-  //       record.dateFrom.year,
-  //       record.dateFrom.month,
-  //       record.dateFrom.day,
-  //       record.dateFrom.hour,
-  //     );
-  //     hourlyTotals[hourKey] = (hourlyTotals[hourKey] ?? 0) + record.numericValue;
-  //     processedRanges.add(timeRange);
-  //   }
-
-  //   // Convert back to CalorieBurnedRecord list
-  //   hourlyCalorieRecords.value = hourlyTotals.entries.map((entry) {
-  //     return CalorieBurnedRecord(
-  //       numericValue: entry.value,
-  //       dateFrom: entry.key,
-  //       dateTo: entry.key.add(const Duration(hours: 1)),
-  //       sourceName: 'hourly',
-  //       uuid: 'hourly_${entry.key.toString()}',
-  //       unit: 'KILOCALORIE',
-  //     );
-  //   }).toList()
-  //     ..sort((a, b) => a.dateFrom.compareTo(b.dateFrom));
-  // }
-
   void _processStepsByHour() {
     if (stepRecords.isEmpty) return;
 
@@ -381,22 +323,13 @@ class HealthActivityManager {
     totalActiveZoneMinutes.value = 0;
     dailyZonePointRecords.clear();
     dailyStepRecords.clear();
-    dailyCalorieRecords.clear();
     monthlyStepRecords.clear();
-    monthlyCalorieRecords.clear();
     monthlyZonePointRecords.clear();
   }
 
   /// Parses a list of JSON objects into HeartRateRecord instances.
   List<HeartRateRecord> _parseHeartRateData(List<HealthDataPoint> healthData) {
     return healthData.map((data) => HeartRateRecord.fromJson(data.toJson())).toList();
-  }
-
-  /// Parses a list of JSON objects into CalorieBurnedRecord instances.
-  List<CalorieBurnedRecord> parseCalorieData(List<HealthDataPoint> healthData) {
-    final t = healthData;
-
-    return t.map((data) => CalorieBurnedRecord.fromJson(data.toJson())).toList();
   }
 
   /// Parses a list of JSON objects into StepRecord instances.

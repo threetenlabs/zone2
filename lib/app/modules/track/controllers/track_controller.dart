@@ -15,8 +15,8 @@ class TrackController extends GetxController {
   final logger = Get.find<Logger>();
   final zone2User = Rxn<Zone2User>();
   final userAge = Rxn<int>();
-  final userWeightData = Rx<List<WeightData>>([]);
-  final filteredWeightData = Rx<List<WeightData>>([]);
+  final userWeightData = Rx<List<WeightDataRecord>>([]);
+  final filteredWeightData = Rx<List<WeightDataRecord>>([]);
   final weightDataLoading = false.obs;
   final activityDataLoading = false.obs;
   final selectedTimeFrame = TimeFrame.week.obs;
@@ -70,7 +70,7 @@ class TrackController extends GetxController {
 
     // Convert the latest entries to WeightData, converting kg to lbs
     final weightEntries = await Future.wait(latestEntries.values.map((dataPoint) async =>
-        WeightData(
+        WeightDataRecord(
             DateFormat('M/d/yy').format(dataPoint.dateFrom),
             // Await the conversion to ensure we get a double value
             await healthService.convertWeightUnit(
@@ -95,8 +95,8 @@ class TrackController extends GetxController {
     activityManager.value
         .processAggregatedActivityData(activityData: allActivityData, userAge: userAge.value ?? 30);
     activityDataLoading.value = false;
-    getFilteredStepData();
-    getFilteredZonePointData();
+    applyStepFilter();
+    applyZonePointFilter();
     update();
   }
 
@@ -133,7 +133,7 @@ class TrackController extends GetxController {
     update();
   }
 
-  void getFilteredStepData() {
+  void applyStepFilter() {
     DateTime now = DateTime.now();
     DateTime startDate;
 
@@ -152,13 +152,18 @@ class TrackController extends GetxController {
         startDate = DateTime(2000); // Arbitrary early date for all-time data
     }
 
-    filteredStepData.value = activityManager.value.dailyStepRecords.where((record) {
+    final records = activityManager.value.dailyStepRecords.where((record) {
       return record.dateFrom.isAfter(startDate);
     }).toList();
+
+    // Calculate average steps per day by month for 1/2 Year and Journey
+    filteredStepData.value = selectedTimeFrame.value == TimeFrame.allTime
+        ? _calculateMonthlyStepAverages(records)
+        : records;
     update();
   }
 
-  void getFilteredZonePointData() {
+  void applyZonePointFilter() {
     DateTime now = DateTime.now();
     DateTime startDate;
 
@@ -177,13 +182,18 @@ class TrackController extends GetxController {
         startDate = DateTime(2000); // Arbitrary early date for all-time data
     }
 
-    filteredZonePointData.value = activityManager.value.dailyZonePointRecords.where((record) {
+    final records = activityManager.value.dailyZonePointRecords.where((record) {
       return record.dateFrom.isAfter(startDate);
     }).toList();
+
+    // Calculate average steps per day by month for 1/2 Year and Journey
+    filteredZonePointData.value = selectedTimeFrame.value == TimeFrame.allTime
+        ? _calculateMonthlyZoneAverages(records)
+        : records;
     update();
   }
 
-  List<WeightData> getTrendLineData() {
+  List<WeightDataRecord> getTrendLineData() {
     if (userWeightData.value.isEmpty) return [];
     final journeyStartDate = zone2User.value!.zoneSettings?.journeyStartDate.toDate().toString();
     DateTime startDate = DateTime.parse(journeyStartDate ?? DateTime.now().toString());
@@ -195,8 +205,63 @@ class TrackController extends GetxController {
     double targetWeight = 190.0;
 
     return [
-      WeightData(DateFormat('M/d/yy').format(trendStartDate), startWeight),
-      WeightData(DateFormat('M/d/yy').format(endDate), targetWeight),
+      WeightDataRecord(DateFormat('M/d/yy').format(trendStartDate), startWeight),
+      WeightDataRecord(DateFormat('M/d/yy').format(endDate), targetWeight),
     ];
+  }
+
+  List<ZonePointRecord> _calculateMonthlyZoneAverages(List<ZonePointRecord> records) {
+    // Implement logic to calculate average steps per day by month
+    Map<DateTime, List<ZonePointRecord>> groupedByMonth = {};
+    for (var record in records) {
+      DateTime monthKey = DateTime(record.dateFrom.year, record.dateFrom.month);
+      if (!groupedByMonth.containsKey(monthKey)) {
+        groupedByMonth[monthKey] = [];
+      }
+      groupedByMonth[monthKey]!.add(record);
+    }
+
+    List<ZonePointRecord> averageRecords = [];
+    groupedByMonth.forEach((month, records) {
+      double totalSteps = records.fold(0, (sum, record) => sum + record.zonePoints);
+      double averageSteps = totalSteps / records.length;
+      averageRecords.add(ZonePointRecord(
+        dateFrom: month,
+        zonePoints: averageSteps.toInt(),
+        uuid: "month_${month.toString()}",
+        sourceName: 'Zone Points',
+        dateTo: month.add(const Duration(days: 1)),
+      ));
+    });
+
+    return averageRecords;
+  }
+
+  List<StepRecord> _calculateMonthlyStepAverages(List<StepRecord> records) {
+    // Implement logic to calculate average steps per day by month
+    // This is a placeholder implementation
+    Map<DateTime, List<StepRecord>> groupedByMonth = {};
+    for (var record in records) {
+      DateTime monthKey = DateTime(record.dateFrom.year, record.dateFrom.month);
+      if (!groupedByMonth.containsKey(monthKey)) {
+        groupedByMonth[monthKey] = [];
+      }
+      groupedByMonth[monthKey]!.add(record);
+    }
+
+    List<StepRecord> averageRecords = [];
+    groupedByMonth.forEach((month, records) {
+      double totalSteps = records.fold(0, (sum, record) => sum + record.numericValue);
+      double averageSteps = totalSteps / records.length;
+      averageRecords.add(StepRecord(
+        dateFrom: month,
+        numericValue: averageSteps.toInt(),
+        uuid: "month_${month.toString()}",
+        unit: 'COUNT',
+        dateTo: month.add(const Duration(days: 1)),
+      ));
+    });
+
+    return averageRecords;
   }
 }

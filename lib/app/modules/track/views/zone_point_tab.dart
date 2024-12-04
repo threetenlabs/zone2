@@ -8,8 +8,6 @@ import 'package:zone2/app/services/health_service.dart'; // Import GetX for cont
 import 'package:intl/intl.dart';
 import 'package:zone2/app/style/theme.dart'; // Add this import
 
-// Define an enum for time frames
-
 class ZonePointsTab extends GetView<TrackController> {
   const ZonePointsTab({super.key});
 
@@ -35,7 +33,7 @@ class ZonePointsTab extends GetView<TrackController> {
                   if (selected) {
                     controller.selectedTimeFrame.value = entry.value;
                     // Update the graph data based on the selected time frame
-                    controller.getFilteredZonePointData();
+                    controller.applyZonePointFilter();
                   }
                 },
               );
@@ -88,11 +86,6 @@ class ZonePointsGraph extends GetWidget<TrackController> {
         interval = 1.0;
     }
 
-    // Calculate average steps per day by month for 1/2 Year and Journey
-    final averageRecords = controller.selectedTimeFrame.value == TimeFrame.allTime
-        ? _calculateMonthlyAverages(controller.filteredZonePointData.value)
-        : controller.filteredZonePointData.value;
-
     return Skeletonizer(
       enabled: controller.activityDataLoading.value,
       child: SfCartesianChart(
@@ -113,7 +106,7 @@ class ZonePointsGraph extends GetWidget<TrackController> {
         ),
         series: <CartesianSeries>[
           ColumnSeries<ZonePointRecord, DateTime>(
-            dataSource: averageRecords,
+            dataSource: controller.filteredZonePointData.value,
             xValueMapper: (ZonePointRecord record, _) => record.dateFrom,
             yValueMapper: (ZonePointRecord record, _) => record.zonePoints,
             name: 'Zone Points',
@@ -138,39 +131,4 @@ class ZonePointsGraph extends GetWidget<TrackController> {
       ),
     );
   }
-
-  List<ZonePointRecord> _calculateMonthlyAverages(List<ZonePointRecord> records) {
-    // Implement logic to calculate average steps per day by month
-    // This is a placeholder implementation
-    Map<DateTime, List<ZonePointRecord>> groupedByMonth = {};
-    for (var record in records) {
-      DateTime monthKey = DateTime(record.dateFrom.year, record.dateFrom.month);
-      if (!groupedByMonth.containsKey(monthKey)) {
-        groupedByMonth[monthKey] = [];
-      }
-      groupedByMonth[monthKey]!.add(record);
-    }
-
-    List<ZonePointRecord> averageRecords = [];
-    groupedByMonth.forEach((month, records) {
-      double totalSteps = records.fold(0, (sum, record) => sum + record.zonePoints);
-      double averageSteps = totalSteps / records.length;
-      averageRecords.add(ZonePointRecord(
-        dateFrom: month,
-        zonePoints: averageSteps.toInt(),
-        uuid: "month_${month.toString()}",
-        sourceName: 'Zone Points',
-        dateTo: month.add(const Duration(days: 1)),
-      ));
-    });
-
-    return averageRecords;
-  }
-}
-
-class WeightData {
-  final String date;
-  final double weight;
-
-  WeightData(this.date, this.weight);
 }

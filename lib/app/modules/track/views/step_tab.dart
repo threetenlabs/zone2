@@ -33,7 +33,7 @@ class StepTab extends GetView<TrackController> {
                   if (selected) {
                     controller.selectedTimeFrame.value = entry.value;
                     // Update the graph data based on the selected time frame
-                    controller.getFilteredStepData();
+                    controller.applyStepFilter();
                   }
                 },
               );
@@ -88,11 +88,6 @@ class StepGraph extends GetView<TrackController> {
         interval = 1.0;
     }
 
-    // Calculate average steps per day by month for 1/2 Year and Journey
-    final averageRecords = controller.selectedTimeFrame.value == TimeFrame.allTime
-        ? _calculateMonthlyAverages(controller.filteredStepData.value)
-        : controller.filteredStepData.value;
-
     return Skeletonizer(
       enabled: controller.activityDataLoading.value,
       child: SfCartesianChart(
@@ -115,7 +110,7 @@ class StepGraph extends GetView<TrackController> {
         ),
         series: <CartesianSeries>[
           ColumnSeries<StepRecord, DateTime>(
-            dataSource: averageRecords,
+            dataSource: controller.filteredStepData.value,
             xValueMapper: (StepRecord record, _) => record.dateFrom,
             yValueMapper: (StepRecord record, _) => record.numericValue,
             name: 'Steps',
@@ -140,39 +135,4 @@ class StepGraph extends GetView<TrackController> {
       ),
     );
   }
-
-  List<StepRecord> _calculateMonthlyAverages(List<StepRecord> records) {
-    // Implement logic to calculate average steps per day by month
-    // This is a placeholder implementation
-    Map<DateTime, List<StepRecord>> groupedByMonth = {};
-    for (var record in records) {
-      DateTime monthKey = DateTime(record.dateFrom.year, record.dateFrom.month);
-      if (!groupedByMonth.containsKey(monthKey)) {
-        groupedByMonth[monthKey] = [];
-      }
-      groupedByMonth[monthKey]!.add(record);
-    }
-
-    List<StepRecord> averageRecords = [];
-    groupedByMonth.forEach((month, records) {
-      double totalSteps = records.fold(0, (sum, record) => sum + record.numericValue);
-      double averageSteps = totalSteps / records.length;
-      averageRecords.add(StepRecord(
-        dateFrom: month,
-        numericValue: averageSteps.toInt(),
-        uuid: "month_${month.toString()}",
-        unit: 'COUNT',
-        dateTo: month.add(const Duration(days: 1)),
-      ));
-    });
-
-    return averageRecords;
-  }
-}
-
-class WeightData {
-  final String date;
-  final double weight;
-
-  WeightData(this.date, this.weight);
 }
