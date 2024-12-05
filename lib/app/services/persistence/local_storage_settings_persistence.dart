@@ -12,6 +12,7 @@ class GetStoragePersistence {
   final logger = Get.find<Logger>();
 
   final String userHasRemovedAdsKey = 'userHasRemovedAdsKey';
+  final String lastSavedWeightKey = 'lastSavedWeightKey';
   final String isIntroductionFinished = 'isIntroductionFinishedKey';
   final String soundOnKey = 'soundsOnKey';
   final String isAboveMinimumSupportedVersionKey = 'isAboveMinimumSupportedVersionKey';
@@ -25,6 +26,10 @@ class GetStoragePersistence {
 
   Future<void> saveUserHasRemovedAds(bool value) async {
     await box.write(userHasRemovedAdsKey, value);
+  }
+
+  Future<void> saveLastSavedWeight(double value) async {
+    await box.write(lastSavedWeightKey, value);
   }
 
   Future<void> saveIsAboveMinimumSupportedVersion(bool value) async {
@@ -46,6 +51,10 @@ class GetStoragePersistence {
 
   Future<void> saveOpenAIKey(String value) async {
     await box.write(openAIKey, value);
+  }
+
+  double getLastSavedWeight() {
+    return box.read(lastSavedWeightKey) ?? 0.0;
   }
 
   void erase() {

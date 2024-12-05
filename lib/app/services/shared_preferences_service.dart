@@ -17,6 +17,7 @@ class SharedPreferencesService {
   final darkMode = false.obs;
 
   final openAIKey = ''.obs;
+  final lastSavedWeight = 0.0.obs;
 
   final GetStoragePersistence _persistence;
 
@@ -64,6 +65,11 @@ class SharedPreferencesService {
   Future<void> setOpenAIKey(String value) async {
     openAIKey.value = value;
     await _persistence.saveOpenAIKey(value);
+  }
+
+  Future<void> setLastSavedWeight(double value) async {
+    lastSavedWeight.value = value;
+    await _persistence.saveLastSavedWeight(value);
   }
 
   //On Logout delete all shared preferences

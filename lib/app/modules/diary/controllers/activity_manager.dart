@@ -7,6 +7,7 @@ import 'package:get/get.dart';
 import 'package:zone2/app/models/user.dart';
 import 'package:zone2/app/services/auth_service.dart';
 import 'package:zone2/app/services/health_service.dart';
+import 'package:zone2/app/services/shared_preferences_service.dart';
 
 /// Class to manage and process health activity data
 class HealthActivityManager {
@@ -131,8 +132,12 @@ class HealthActivityManager {
       weightDecimal.value =
           ((weightInPounds - weightWhole.value) * 10).round(); // Update to single digit
       isWeightLogged.value = true;
+      SharedPreferencesService.to.setLastSavedWeight(weightInPounds);
     } else {
       logger.w('No weight data found');
+      final weightInPounds = SharedPreferencesService.to.lastSavedWeight;
+      weightWhole.value = weightInPounds.toInt();
+      weightDecimal.value = ((weightInPounds - weightWhole.value) * 10).round();
       isWeightLogged.value = false;
     }
   }
