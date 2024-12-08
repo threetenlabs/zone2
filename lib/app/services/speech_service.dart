@@ -32,7 +32,9 @@ class SpeechService {
         currentLocaleId.value = systemLocale.value?.localeId ?? '';
       }
     } catch (e) {
-      // Handle error
+      FirebaseCrashlytics.instance
+          .recordError(e, null, reason: 'Error initializing speech recognition');
+      logger.e('Error initializing speech recognition: $e');
     }
   }
 
@@ -44,12 +46,14 @@ class SpeechService {
         onResult: _onSpeechResult,
         listenOptions: SpeechListenOptions(partialResults: true),
         localeId: currentLocaleId.value,
-        listenFor: const Duration(seconds: 10),
+        listenFor: const Duration(seconds: 15),
         pauseFor: const Duration(seconds: 5),
       );
       isListening.value = true;
     } catch (e) {
-      // Handle error
+      FirebaseCrashlytics.instance
+          .recordError(e, null, reason: 'Error starting speech recognition');
+      logger.e('Error starting speech recognition: $e');
     }
   }
 
@@ -60,7 +64,9 @@ class SpeechService {
       await speech.stop();
       isListening.value = false;
     } catch (e) {
-      // Handle error
+      FirebaseCrashlytics.instance
+          .recordError(e, null, reason: 'Error stopping speech recognition');
+      logger.e('Error stopping speech recognition: $e');
     }
   }
 
@@ -71,7 +77,8 @@ class SpeechService {
       await speech.cancel();
       isListening.value = false;
     } catch (e) {
-      FirebaseCrashlytics.instance.recordError(e, null, reason: 'Error canceling speech recognition');
+      FirebaseCrashlytics.instance
+          .recordError(e, null, reason: 'Error canceling speech recognition');
       logger.e('Error canceling speech recognition: $e');
     }
   }

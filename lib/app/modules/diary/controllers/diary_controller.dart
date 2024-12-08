@@ -8,8 +8,6 @@ import 'package:image_picker/image_picker.dart';
 import 'package:logger/logger.dart';
 import 'package:health/health.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
-import 'package:speech_to_text/speech_recognition_error.dart';
-import 'package:speech_to_text/speech_to_text.dart';
 import 'package:super_tooltip/super_tooltip.dart';
 import 'package:zone2/app/modules/diary/controllers/activity_manager.dart';
 import 'package:zone2/app/models/food.dart';
@@ -122,16 +120,6 @@ class DiaryController extends GetxController {
   final aiTooltipController = SuperTooltipController();
   final isProcessing = false.obs;
   final matchedFoods = RxList<String>();
-  final speech = SpeechToText();
-  final isAvailable = false.obs;
-  final isListening = false.obs;
-  final currentLocaleId = ''.obs;
-  final locales = <LocaleName>[].obs;
-  final hasError = false.obs;
-  final lastError = Rxn<SpeechRecognitionError>();
-  final recognizedWords = ''.obs;
-  final systemLocale = Rxn<LocaleName>();
-  final isTestMode = false.obs; // Toggle this for testing
 
   final voiceResults = RxList<FoodVoiceResult>();
   final zone2User = AuthService.to.appUser;
@@ -183,6 +171,12 @@ class DiaryController extends GetxController {
 
     SharedPreferencesService.to.openAIKey.listen((key) {
       openAIKey.value = key;
+    });
+
+    speechService.isListening.listen((isListening) {
+      if (!isListening && speechService.recognizedWords.value.isNotEmpty) {
+        extractFoodItemsOpenAI(speechService.recognizedWords.value);
+      }
     });
   }
 
@@ -447,34 +441,12 @@ class DiaryController extends GetxController {
     try {
       isProcessing.value = true;
 
-      if (isTestMode.value) {
-        await Future.delayed(const Duration(seconds: 1));
-        voiceResults.value = [
-          FoodVoiceResult(
-            label: "2 scrambled eggs with spinach",
-            searchTerm: "eggs",
-            quantity: 2,
-            unit: "large",
-            mealType: MealType.BREAKFAST,
-          ),
-          FoodVoiceResult(
-            label: "1 slice whole grain toast with avocado",
-            searchTerm: "whole grain bread",
-            quantity: 1,
-            unit: "slice",
-            mealType: MealType.BREAKFAST,
-          ),
-          // ... other test items
-        ];
-        matchedFoods.value = voiceResults.map((r) => r.label).toList();
-      } else {
-        final openAIChatCompletion = await OpenAIService.to.extractFoodsFromText(text);
-        final newItems = FoodVoiceResult.fromOpenAiCompletion(
-            openAIChatCompletion['foods']['items'] as List<dynamic>);
-        voiceResults.value = newItems;
+      final openAIChatCompletion = await OpenAIService.to.extractFoodsFromText(text);
+      final newItems = FoodVoiceResult.fromOpenAiCompletion(
+          openAIChatCompletion['foods']['items'] as List<dynamic>);
+      voiceResults.value = newItems;
 
-        matchedFoods.value = voiceResults.map((r) => r.label).toList();
-      }
+      matchedFoods.value = voiceResults.map((r) => r.label).toList();
     } catch (e) {
       logger.e('Error extracting foods: $e');
       NotificationService.to

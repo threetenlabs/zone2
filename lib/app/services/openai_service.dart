@@ -92,7 +92,23 @@ class OpenAIService extends GetxService {
         if (call.function.name == "extract_foods") {
           final decodedArgs = jsonDecode(call.function.arguments);
           logger.d('OpenAI Response: $decodedArgs');
-          return decodedArgs;
+
+          if (decodedArgs is Map<String, dynamic> && decodedArgs.containsKey('foods')) {
+            final foods = decodedArgs['foods'];
+            logger.d('Foods: $foods');
+            if (foods is List) {
+              for (var food in foods) {
+                if (food is Map<String, dynamic>) {
+                  final label = food['label'];
+                  final searchTerm = food['searchTerm'];
+                  logger.d('Food Item: label=$label, searchTerm=$searchTerm');
+                }
+              }
+              return {
+                'foods': {'items': foods}
+              };
+            }
+          }
         }
       }
 

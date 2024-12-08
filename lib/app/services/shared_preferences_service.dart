@@ -17,7 +17,7 @@ class SharedPreferencesService {
   final darkMode = false.obs;
 
   final openAIKey = ''.obs;
-  final lastSavedWeight = 0.0.obs;
+  final lastSavedWeight = 70.0.obs;
 
   final GetStoragePersistence _persistence;
 

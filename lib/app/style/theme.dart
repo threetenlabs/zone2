@@ -6,8 +6,8 @@ class MaterialTheme {
   static TextTheme textTheme = const TextTheme();
   MaterialTheme() {
     TextTheme baseTextTheme = Theme.of(Get.context!).textTheme;
-    TextTheme bodyTextTheme = GoogleFonts.getTextTheme('ABeeZee', baseTextTheme);
-    TextTheme displayTextTheme = GoogleFonts.getTextTheme('ABeeZee', baseTextTheme);
+    TextTheme bodyTextTheme = GoogleFonts.getTextTheme('Noto Sans', baseTextTheme);
+    TextTheme displayTextTheme = GoogleFonts.getTextTheme('Noto Sans', baseTextTheme);
     textTheme = displayTextTheme.copyWith(
       bodyLarge: bodyTextTheme.bodyLarge,
       bodyMedium: bodyTextTheme.bodyMedium,
