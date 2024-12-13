@@ -1,5 +1,6 @@
 import 'package:health/health.dart';
 import 'package:openfoodfacts/openfoodfacts.dart' as openfoodfacts;
+import 'dart:convert';
 
 class FoodSearchResponse {
   final int totalHits;
@@ -643,6 +644,87 @@ class UsdaFoodNutrient {
               : (json['value'] as double) // Handle int or double
           : 0.0, // Default to 0.0 if null
       unitName: json['unitName'],
+    );
+  }
+}
+
+class FatSecretFood {
+  final String foodId;
+  final String foodName;
+  final String foodType;
+  final String foodUrl;
+  final List<String> foodImages; // Assuming a list of image URLs
+  final List<FatSecretServing> servings;
+
+  FatSecretFood({
+    required this.foodId,
+    required this.foodName,
+    required this.foodType,
+    required this.foodUrl,
+    required this.foodImages,
+    required this.servings,
+  });
+
+  factory FatSecretFood.fromJson(Map<String, dynamic> json) {
+    return FatSecretFood(
+      foodId: json['food_id'],
+      foodName: json['food_name'],
+      foodType: json['food_type'],
+      foodUrl: json['food_url'],
+      foodImages: List<String>.from(json['food_images']['food_image'].map((img) => img['image_url'])),
+      servings: List<FatSecretServing>.from(json['servings']['serving'].map((serving) => FatSecretServing.fromJson(serving))),
+    );
+  }
+}
+
+class FatSecretServing {
+  final String servingId;
+  final String servingDescription;
+  final double calories;
+  final double protein;
+  final double fat;
+  final double carbohydrates;
+
+  FatSecretServing({
+    required this.servingId,
+    required this.servingDescription,
+    required this.calories,
+    required this.protein,
+    required this.fat,
+    required this.carbohydrates,
+  });
+
+  factory FatSecretServing.fromJson(Map<String, dynamic> json) {
+    return FatSecretServing(
+      servingId: json['serving_id'],
+      servingDescription: json['serving_description'],
+      calories: double.parse(json['calories']),
+      protein: double.parse(json['protein']),
+      fat: double.parse(json['fat']),
+      carbohydrates: double.parse(json['carbohydrate']),
+    );
+  }
+}
+
+class FatSecretFoodSearchResult {
+  final int maxResults;
+  final int totalResults;
+  final int pageNumber;
+  final List<FatSecretFood> foods;
+
+  FatSecretFoodSearchResult({
+    required this.maxResults,
+    required this.totalResults,
+    required this.pageNumber,
+    required this.foods,
+  });
+
+  factory FatSecretFoodSearchResult.fromJson(Map<String, dynamic> json) {
+    return FatSecretFoodSearchResult(
+      maxResults: json['foods_search']['max_results'],
+      totalResults: json['foods_search']['total_results'],
+      pageNumber: json['foods_search']['page_number'],
+      foods: List<FatSecretFood>.from(json['foods_search']['results']['food'].map((food) => FatSecretFood.fromJson(food))),
     );
   }
 }

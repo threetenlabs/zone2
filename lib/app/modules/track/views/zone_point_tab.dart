@@ -13,38 +13,7 @@ class ZonePointsTab extends GetView<TrackController> {
 
   @override
   Widget build(BuildContext context) {
-    // Create a map of labels to TimeFrame values
-    final Map<String, TimeFrame> labelToTimeFrame = {
-      'Week': TimeFrame.week,
-      'Month': TimeFrame.month,
-      'Journey': TimeFrame.allTime,
-    };
-
-    return Column(
-      children: [
-        Obx(() {
-          return Wrap(
-            spacing: 8.0,
-            children: labelToTimeFrame.entries.map((entry) {
-              return ChoiceChip(
-                label: Text(entry.key),
-                selected: controller.selectedTimeFrame.value == entry.value,
-                onSelected: (bool selected) {
-                  if (selected) {
-                    controller.selectedTimeFrame.value = entry.value;
-                    // Update the graph data based on the selected time frame
-                    controller.applyFilter();
-                  }
-                },
-              );
-            }).toList(),
-          );
-        }),
-        Expanded(
-          child: ZonePointsGraph(),
-        ),
-      ],
-    );
+    return ZonePointsGraph();
   }
 }
 
@@ -91,17 +60,15 @@ class ZonePointsGraph extends GetWidget<TrackController> {
       child: SfCartesianChart(
         title: ChartTitle(
           text: 'Your Zone Point Activity',
-          textStyle: TextStyle(fontSize: 10, color: Theme.of(context).colorScheme.onSurface),
+          textStyle: TextStyle(fontSize: 16, color: Theme.of(context).colorScheme.onSurface),
         ),
         primaryXAxis: DateTimeCategoryAxis(
           intervalType: intervalType,
           interval: interval,
           dateFormat: dateFormat,
-          majorGridLines: const MajorGridLines(width: 0),
           labelIntersectAction: AxisLabelIntersectAction.none,
         ),
         primaryYAxis: NumericAxis(
-          majorGridLines: const MajorGridLines(width: 0),
           numberFormat: NumberFormat.compact(),
         ),
         series: <CartesianSeries>[
@@ -110,7 +77,9 @@ class ZonePointsGraph extends GetWidget<TrackController> {
             xValueMapper: (ZonePointRecord record, _) => record.dateFrom,
             yValueMapper: (ZonePointRecord record, _) => record.zonePoints,
             name: 'Zone Points',
-            color: MaterialTheme.coolRed.value,
+            color: Get.isDarkMode
+                ? MaterialTheme.activityColor.dark.color
+                : MaterialTheme.activityColor.light.color,
             width: 0.6,
             spacing: 0.2,
             borderRadius: BorderRadius.circular(6),
@@ -118,10 +87,10 @@ class ZonePointsGraph extends GetWidget<TrackController> {
               mode: EmptyPointMode.zero,
               color: Colors.transparent,
             ),
-            dataLabelSettings: const DataLabelSettings(
+            dataLabelSettings: DataLabelSettings(
               isVisible: true,
               labelAlignment: ChartDataLabelAlignment.outer,
-              textStyle: TextStyle(color: Colors.black87),
+              textStyle: TextStyle(color: Theme.of(context).colorScheme.onSurface),
             ),
           ),
         ],

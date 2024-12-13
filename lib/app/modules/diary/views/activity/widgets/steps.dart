@@ -75,7 +75,7 @@ class StepsChart extends GetView<DiaryController> {
                   xValueMapper: (StepRecord record, _) => record.dateFrom,
                   yValueMapper: (StepRecord record, _) => record.numericValue,
                   name: 'Steps',
-                  color: MaterialTheme.coolPurple.value,
+                  color: MaterialTheme.stepColor.value,
                   width: 0.6,
                   spacing: 0.2,
                   borderRadius: BorderRadius.circular(6),

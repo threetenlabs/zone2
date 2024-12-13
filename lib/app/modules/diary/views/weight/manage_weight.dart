@@ -44,7 +44,7 @@ class ManageWeightBottomSheet extends GetView<DiaryController> {
           ),
           const SizedBox(height: 16),
           Obx(
-            () => FilledButton.icon(
+            () => OutlinedButton(
               onPressed: controller.activityManager.value.isWeightLogged.value
                   ? null
                   : () async {
@@ -54,8 +54,7 @@ class ManageWeightBottomSheet extends GetView<DiaryController> {
                         Navigator.pop(context); // Close the bottom sheet
                       }
                     },
-              icon: const Icon(Icons.save),
-              label: const Text('Save'),
+              child: const Text('Save'),
             ),
           ),
         ],

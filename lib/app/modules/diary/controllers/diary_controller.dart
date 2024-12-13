@@ -89,7 +89,10 @@ class DiaryController extends GetxController {
   final logger = Get.find<Logger>();
   final healthService = Get.find<HealthService>();
   final foodService = Get.find<FoodService>();
-  final isLoadingHealthData = false.obs;
+  final isLoadingNutritionData = false.obs;
+  final isLoadingActivityData = false.obs;
+  final isLoadingWeightData = false.obs;
+  final isLoadingWaterData = false.obs;
 
   // Date tracking
   final diaryDate = DateTime.now().obs;
@@ -233,65 +236,86 @@ class DiaryController extends GetxController {
   }
 
   Future<void> getHealthDataForSelectedDay(bool forceRefresh) async {
-    isLoadingHealthData.value = true;
-    Future.wait([
-      _retrieveWeightData(),
-      _retrieveWaterData(),
-      _retrieveMealData(),
-      _retrieveActivityData(),
-    ]).then((_) {
-      // All tasks completed
-      isLoadingHealthData.value = false;
-    }).catchError((e) {
-      logger.e('Error getting health data: $e');
-      FirebaseCrashlytics.instance.recordError(e, null, fatal: true);
-      isLoadingHealthData.value = false; // Ensure this is set even on error
-    });
+    _retrieveWeightData();
+    _retrieveWaterData();
+    _retrieveMealData();
+    _retrieveActivityData();
   }
 
   Future<void> _retrieveWeightData({bool? forceRefresh = false}) async {
-    final weightData = await healthService.getWeightData(
-        timeFrame: TimeFrame.day, seedDate: diaryDate.value, forceRefresh: forceRefresh);
-    weightData.sort((a, b) => b.dateTo.compareTo(a.dateTo));
+    try {
+      isLoadingWeightData.value = true;
+      final weightData = await healthService.getWeightData(
+          timeFrame: TimeFrame.day, seedDate: diaryDate.value, forceRefresh: forceRefresh);
+      weightData.sort((a, b) => b.dateTo.compareTo(a.dateTo));
 
-    activityManager.value.processWeightForSelectedDay(weightData);
+      activityManager.value.processWeightForSelectedDay(weightData);
+    } catch (e) {
+      FirebaseCrashlytics.instance.recordError(e, null, reason: 'Error retrieving weight data');
+      logger.e('Error retrieving weight data: $e');
+    } finally {
+      isLoadingWeightData.value = false;
+    }
   }
 
   Future<void> _retrieveWaterData({bool? forceRefresh = false}) async {
-    final waterData = await healthService.getWaterData(
-        timeFrame: TimeFrame.day, seedDate: diaryDate.value, forceRefresh: forceRefresh);
+    try {
+      isLoadingWaterData.value = true;
+      final waterData = await healthService.getWaterData(
+          timeFrame: TimeFrame.day, seedDate: diaryDate.value, forceRefresh: forceRefresh);
 
-    if (waterData.isNotEmpty) {
-      double waterIntakeInLiters = waterData.fold(
-          0, (sum, data) => sum + (data.value as NumericHealthValue).numericValue.toDouble());
-      double waterIntakeInOunces =
-          await healthService.convertWaterUnit(waterIntakeInLiters, WaterUnit.ounce);
-      waterIntake.value = waterIntakeInOunces; // Update the water intake observable
-      isWaterLogged.value = waterIntake.value > 0;
+      if (waterData.isNotEmpty) {
+        double waterIntakeInLiters = waterData.fold(
+            0, (sum, data) => sum + (data.value as NumericHealthValue).numericValue.toDouble());
+        double waterIntakeInOunces =
+            await healthService.convertWaterUnit(waterIntakeInLiters, WaterUnit.ounce);
+        waterIntake.value = waterIntakeInOunces; // Update the water intake observable
+        isWaterLogged.value = waterIntake.value > 0;
 
-      logger.i('Water logged: $isWaterLogged.value');
-    } else {
-      logger.w('No water data found');
-      isWaterLogged.value = false;
+        logger.i('Water logged: $isWaterLogged.value');
+      } else {
+        logger.w('No water data found');
+        isWaterLogged.value = false;
+      }
+    } catch (e) {
+      FirebaseCrashlytics.instance.recordError(e, null, reason: 'Error retrieving water data');
+      logger.e('Error retrieving water data: $e');
+    } finally {
+      isLoadingWaterData.value = false;
     }
   }
 
   Future<void> _retrieveMealData({bool? forceRefresh = false}) async {
-    final foodDataPoints = await healthService.getMealData(
-        timeFrame: TimeFrame.day, seedDate: diaryDate.value, forceRefresh: forceRefresh);
-    foodManager.value.processFoodData(foodDataPoints);
-    update();
+    try {
+      isLoadingNutritionData.value = true;
+      final foodDataPoints = await healthService.getMealData(
+          timeFrame: TimeFrame.day, seedDate: diaryDate.value, forceRefresh: forceRefresh);
+      foodManager.value.processFoodData(foodDataPoints);
+    } catch (e) {
+      FirebaseCrashlytics.instance.recordError(e, null, reason: 'Error retrieving meal data');
+      logger.e('Error retrieving meal data: $e');
+    } finally {
+      isLoadingNutritionData.value = false;
+    }
   }
 
   Future<void> _retrieveActivityData({bool? forceRefresh = false}) async {
-    final types = [HealthDataType.HEART_RATE, HealthDataType.WORKOUT, HealthDataType.STEPS];
-    final allActivityData = await healthService.getActivityData(
-        timeFrame: TimeFrame.day,
-        seedDate: diaryDate.value,
-        types: types,
-        forceRefresh: forceRefresh);
-    activityManager.value
-        .processDailyActivityData(activityData: allActivityData, userAge: userAge.value ?? 30);
+    try {
+      isLoadingActivityData.value = true;
+      final types = [HealthDataType.HEART_RATE, HealthDataType.WORKOUT, HealthDataType.STEPS];
+      final allActivityData = await healthService.getActivityData(
+          timeFrame: TimeFrame.day,
+          seedDate: diaryDate.value,
+          types: types,
+          forceRefresh: forceRefresh);
+      activityManager.value
+          .processDailyActivityData(activityData: allActivityData, userAge: userAge.value ?? 30);
+    } catch (e) {
+      FirebaseCrashlytics.instance.recordError(e, null, reason: 'Error retrieving activity data');
+      logger.e('Error retrieving activity data: $e');
+    } finally {
+      isLoadingActivityData.value = false;
+    }
   }
 
   Future<void> saveWeightToHealth() async {
@@ -312,6 +336,7 @@ class DiaryController extends GetxController {
       // Update the weight logged state
       activityManager.value.isWeightLogged.value = true;
     } catch (e) {
+      FirebaseCrashlytics.instance.recordError(e, null, reason: 'Error saving weight to Health');
       logger.e('Error saving weight to Health: $e');
     }
   }
@@ -336,6 +361,7 @@ class DiaryController extends GetxController {
       }
       foodServingController.text = '';
     } catch (e) {
+      FirebaseCrashlytics.instance.recordError(e, null, reason: 'Error saving meal to Health');
       logger.e('Error saving meal to Health: $e');
     }
   }
@@ -370,15 +396,15 @@ class DiaryController extends GetxController {
   Future<void> navigateToNextDay() async {
     if (!isToday(diaryDate.value) && diaryDate.value.isBefore(DateTime.now())) {
       diaryDate.value = diaryDate.value.add(const Duration(days: 1));
-      await resetTracking();
+      resetTracking();
     }
-    await getHealthDataForSelectedDay(false);
+    getHealthDataForSelectedDay(false);
   }
 
   Future<void> navigateToPreviousDay() async {
     diaryDate.value = diaryDate.value.subtract(const Duration(days: 1));
-    await resetTracking();
-    await getHealthDataForSelectedDay(false);
+    resetTracking();
+    getHealthDataForSelectedDay(false);
   }
 
   Future<void> addWater(double ounces) async {
@@ -387,15 +413,16 @@ class DiaryController extends GetxController {
         await healthService.convertWaterUnit(waterIntakeInOunces, WaterUnit.liter);
     try {
       // Call the HealthService to save the weight
-      await healthService.saveWaterToHealth(waterIntakeInLiters, diaryDate.value);
+      healthService.saveWaterToHealth(waterIntakeInLiters, diaryDate.value);
 
       // Send success notification
       NotificationService.to.showSuccess(
           'Water Saved', 'Your water intake has been successfully saved to health data.');
 
-      await _retrieveWaterData(forceRefresh: true);
+      _retrieveWaterData(forceRefresh: true);
     } catch (e) {
-      logger.e('Error saving weight to Health: $e');
+      FirebaseCrashlytics.instance.recordError(e, null, reason: 'Error saving water to Health');
+      logger.e('Error saving water to Health: $e');
     }
   }
 
@@ -425,6 +452,7 @@ class DiaryController extends GetxController {
         update();
       }
     } catch (e) {
+      FirebaseCrashlytics.instance.recordError(e, null, reason: 'Error finding food by barcode');
       logger.e('Error finding food by barcode: $e');
     } finally {
       BusyIndicatorService.to.hideBusyIndicator();
@@ -448,6 +476,7 @@ class DiaryController extends GetxController {
 
       matchedFoods.value = voiceResults.map((r) => r.label).toList();
     } catch (e) {
+      FirebaseCrashlytics.instance.recordError(e, null, reason: 'Error extracting foods');
       logger.e('Error extracting foods: $e');
       NotificationService.to
           .showError('Error', 'Failed to process speech input. Please try again.');
@@ -483,6 +512,7 @@ class DiaryController extends GetxController {
         );
       }
     } catch (error) {
+      FirebaseCrashlytics.instance.recordError(error, null, reason: 'Error searching for food');
       Get.snackbar(
         'Error',
         'Failed to search for food: ${error.toString()}',

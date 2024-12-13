@@ -23,7 +23,7 @@ generate:
 	dart run build_runner build --delete-conflicting-outputs
 
 mobile: generate
-	flutter run --target lib/main.dart
+	flutter run --profile --target lib/main.dart
 
 build-android: generate
 	flutter build appbundle --release --target lib/main.dart      

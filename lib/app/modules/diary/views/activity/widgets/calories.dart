@@ -65,7 +65,7 @@ class CaloriesBurnedChart extends GetView<DiaryController> {
                   xValueMapper: (ZonePointRecord record, _) => record.dateFrom,
                   yValueMapper: (ZonePointRecord record, _) => record.zonePoints,
                   name: 'Zone Points',
-                  color: MaterialTheme.coolRed.value,
+                  color: MaterialTheme.activityColor.value,
                   width: 0.6,
                   spacing: 0.2,
                   borderRadius: BorderRadius.circular(6),

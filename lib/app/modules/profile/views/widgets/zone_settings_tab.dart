@@ -166,7 +166,7 @@ class ZoneSettingsTab extends GetWidget<ProfileController> {
               Expanded(
                   child: Padding(
                       padding: const EdgeInsets.all(8.0),
-                      child: FilledButton(
+                      child: OutlinedButton(
                         onPressed: () async {
                           const url = 'https://tdeecalculator.net';
                           await launchUrl(Uri.parse(url), mode: LaunchMode.inAppBrowserView);
@@ -176,7 +176,7 @@ class ZoneSettingsTab extends GetWidget<ProfileController> {
             ],
           ),
           const SizedBox(height: 20),
-          Obx(() => ElevatedButton(
+          Obx(() => OutlinedButton(
                 onPressed: controller.isDirty.value ? controller.saveSettings : null,
                 child: const Text('Save Settings'),
               )),

@@ -82,7 +82,7 @@ class MacroCard extends GetView<DiaryController> {
                 ? controller.foodManager.value.totalCarbohydrates.value /
                     controller.foodManager.value.totalCarbohydratesTarget.value
                 : 0.0,
-            MaterialTheme.coolOrange.value,
+            MaterialTheme.weightColor.value,
             controller.foodManager.value.totalCarbohydratesTarget.value != 0
                 ? '${(controller.foodManager.value.totalCarbohydrates.value / controller.foodManager.value.totalCarbohydratesTarget.value * 100).toStringAsFixed(0)}%'
                 : '0%',
@@ -93,7 +93,7 @@ class MacroCard extends GetView<DiaryController> {
                 ? controller.foodManager.value.totalFat.value /
                     controller.foodManager.value.totalFatTarget.value
                 : 0.0,
-            MaterialTheme.coolRed.value,
+            MaterialTheme.activityColor.value,
             controller.foodManager.value.totalFatTarget.value != 0
                 ? '${(controller.foodManager.value.totalFat.value / controller.foodManager.value.totalFatTarget.value * 100).toStringAsFixed(0)}%'
                 : '0%',

@@ -57,6 +57,10 @@ class $AssetsImagesGen {
   /// Directory path: assets/images/platform
   $AssetsImagesPlatformGen get platform => const $AssetsImagesPlatformGen();
 
+  /// File path: assets/images/powered_by_fatsecret.png
+  AssetGenImage get poweredByFatsecret =>
+      const AssetGenImage('assets/images/powered_by_fatsecret.png');
+
   /// File path: assets/images/splash.png
   AssetGenImage get splash => const AssetGenImage('assets/images/splash.png');
 
@@ -76,6 +80,7 @@ class $AssetsImagesGen {
         iconPng,
         iconWebp,
         iosAppStoreBadge,
+        poweredByFatsecret,
         splash,
         splashFull
       ];

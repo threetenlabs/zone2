@@ -257,6 +257,9 @@ class HealthService extends GetxService {
     final healthData = await Health().getHealthDataFromTypes(
         types: types, startTime: result.startDateTime, endTime: result.endDateTime);
 
+    final steps = await Health().getTotalStepsInInterval(result.startDateTime, result.endDateTime);
+
+    logger.i('Steps: $steps');
     // Store fetched data in cache
     if (healthData.isNotEmpty || forceRefresh!) {
       await cacheManager.cacheData(key, healthData, const Duration(minutes: 10));

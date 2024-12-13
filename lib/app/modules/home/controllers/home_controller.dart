@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:animated_notch_bottom_bar/animated_notch_bottom_bar/animated_notch_bottom_bar.dart';
 import 'package:app_links/app_links.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:material_symbols_icons/symbols.dart';
 import 'package:zone2/app/modules/diary/bindings/diary_binding.dart';
 import 'package:zone2/app/modules/diary/views/diary_view.dart';
 import 'package:zone2/app/modules/profile/bindings/profile_binding.dart';
@@ -23,7 +23,7 @@ class HomeController extends GetxController {
   final firebaseService = Get.find<FirebaseService>();
   final NotchBottomBarController notchController = NotchBottomBarController(index: 0);
 
-  RxList<BottomBarItem> navBarItems = RxList<BottomBarItem>();
+  RxList<BottomNavigationBarItem> navBarItems = RxList<BottomNavigationBarItem>();
   late AppLinks appLinks;
   StreamSubscription<Uri>? linkSubscription;
 
@@ -32,46 +32,30 @@ class HomeController extends GetxController {
     super.onInit();
 
     navBarItems.value = [
-      const BottomBarItem(
-        inActiveItem: Icon(
-          FontAwesomeIcons.listCheck,
-          color: Colors.blueGrey,
+      BottomNavigationBarItem(
+        icon: Icon(
+          Symbols.checklist,
         ),
-        activeItem: Icon(
-          FontAwesomeIcons.listCheck,
-          color: Colors.blueAccent,
+        activeIcon: Icon(
+          Symbols.checklist,
         ),
-        itemLabel: 'Diary',
+        label: 'Home',
       ),
-      // const BottomBarItem(
-      //   inActiveItem: Icon(FontAwesomeIcons.bullseye, color: Colors.blueGrey),
-      //   activeItem: Icon(
-      //     FontAwesomeIcons.bullseye,
-      //     color: Colors.purpleAccent,
-      //   ),
-      //   itemLabel: 'Zone',
-      // ),
-      const BottomBarItem(
-        inActiveItem: Icon(
-          FontAwesomeIcons.chartLine,
-          color: Colors.blueGrey,
+      BottomNavigationBarItem(
+        icon: Icon(Symbols.monitoring),
+        activeIcon: Icon(
+          Symbols.monitoring,
         ),
-        activeItem: Icon(
-          FontAwesomeIcons.chartLine,
-          color: Colors.pink,
-        ),
-        itemLabel: 'Track',
+        label: 'Tracking',
       ),
-      const BottomBarItem(
-        inActiveItem: Icon(
-          FontAwesomeIcons.userGear,
-          color: Colors.blueGrey,
+      BottomNavigationBarItem(
+        icon: Icon(
+          Symbols.account_circle,
         ),
-        activeItem: Icon(
-          FontAwesomeIcons.userGear,
-          color: Colors.orangeAccent,
+        activeIcon: Icon(
+          Symbols.account_circle,
         ),
-        itemLabel: 'My Zone',
+        label: 'Coaching',
       ),
     ];
 
@@ -80,11 +64,16 @@ class HomeController extends GetxController {
     });
   }
 
-  final pages = <String>['/diary' '/track', '/profile'];
+  final pages = <String>['/home' '/tracking', '/coaching'];
 
   void changePage(int index) {
     contentIndex.value = index;
-    Get.toNamed('/${navBarItems[index].itemLabel!.toLowerCase()}', id: 1);
+    String route = '/${navBarItems[index].label!.toLowerCase()}';
+    if (route == '/home') {
+      route = '/diary';
+    }
+    logger.d('Navigating to $route');
+    Get.toNamed(route, id: 1);
   }
 
   Route? onGenerateRoute(RouteSettings settings) {
@@ -96,7 +85,7 @@ class HomeController extends GetxController {
       );
     }
 
-    if (settings.name == '/track') {
+    if (settings.name == '/tracking') {
       return GetPageRoute(
         settings: settings,
         page: () => const TrackView(),
@@ -104,7 +93,7 @@ class HomeController extends GetxController {
       );
     }
 
-    if (settings.name == '/my zone') {
+    if (settings.name == '/coaching') {
       return GetPageRoute(
         settings: settings,
         page: () => const ProfileView(),

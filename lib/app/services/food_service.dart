@@ -11,9 +11,56 @@ import 'package:zone2/app/models/food.dart';
 import 'package:zone2/app/utils/env.dart';
 import 'package:fuzzy/fuzzy.dart';
 
+class FatSecretAuth {
+  static const _authUrl = 'https://oauth.fatsecret.com/connect/token';
+  static const _clientId = '60b6999cc95d4550a0c2b8dbbae9e0db';
+  static const _clientSecret = 'c9e125ee9aef4fa18170936a56761c1e';
+
+  String? _accessToken;
+  int? _expiryTime;
+
+  /// Fetches the token, renewing it if necessary.
+  Future<String> getAccessToken() async {
+    // Check if the token exists and is not expired
+    if (_accessToken != null &&
+        _expiryTime != null &&
+        DateTime.now().millisecondsSinceEpoch < _expiryTime!) {
+      return _accessToken!;
+    }
+
+    // Token is expired or missing, fetch a new one
+    return await _fetchNewToken();
+  }
+
+  /// Fetches a new access token from the FatSecret API
+  Future<String> _fetchNewToken() async {
+    final response = await http.post(
+      Uri.parse(_authUrl),
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'Authorization': 'Basic ${base64Encode(utf8.encode("$_clientId:$_clientSecret"))}',
+      },
+      body: 'grant_type=client_credentials&scope=premier',
+    );
+
+    if (response.statusCode == 200) {
+      final responseBody = jsonDecode(response.body);
+      _accessToken = responseBody['access_token'];
+      final expiresIn =
+          (responseBody['expires_in'] * 1000).toInt(); // Convert to milliseconds and cast to int
+      _expiryTime = (DateTime.now().millisecondsSinceEpoch + expiresIn).toInt(); // Cast to int
+
+      return _accessToken!;
+    } else {
+      throw Exception('Failed to fetch new access token: ${response.body}');
+    }
+  }
+}
+
 class FoodService extends GetxService {
   final logger = Get.find<Logger>();
   final box = GetStorage('food_data');
+  final auth = FatSecretAuth();
 
   final String usdaFoodApiKey = Env.usdaFoodApiKey;
   final String baseUrl = 'https://api.nal.usda.gov/fdc/v1';
@@ -62,6 +109,7 @@ class FoodService extends GetxService {
       final futures = await Future.wait([
         _searchOpenFoodFacts(searchTerm),
         searchUsdaFood(searchTerm),
+        searchFoodFatSecret(searchTerm),
       ]);
 
       final offResults = futures[0] as FoodSearchResponse;
@@ -238,6 +286,70 @@ class FoodService extends GetxService {
       return j;
     } else {
       throw Exception('Failed to load food data');
+    }
+  }
+
+  Future<void> getFatSecretFoodById(String id) async {
+    final url = Uri.parse('https://platform.fatsecret.com/rest/food/v4?food_id=33691&format=json');
+
+    try {
+      final accessToken = await auth.getAccessToken();
+      final response = await http.get(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $accessToken',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        // Parse the response body
+        logger.i('Response: ${response.body}');
+      } else {
+        logger.e('Failed to fetch food details. Status code: ${response.statusCode}');
+      }
+    } catch (e) {
+      logger.e('Error: $e');
+    }
+  }
+
+  Future<void> searchFoodFatSecret(
+    String searchExpression,
+  ) async {
+    // Base URL for the API
+    final baseUrl = 'https://platform.fatsecret.com/rest/foods/search/v3';
+
+    // Build query parameters
+    final queryParams = {
+      'search_expression': searchExpression,
+      'page_number': '0',
+      'max_results': '30',
+      'flag_default_serving': 'true',
+      'format': 'json',
+    };
+
+    // Create the URI with query parameters
+    final url = Uri.parse(baseUrl).replace(queryParameters: queryParams);
+
+    try {
+      // Make the GET request
+      final accessToken = await auth.getAccessToken();
+      final response = await http.get(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $accessToken',
+        },
+      );
+
+      // Check the response status
+      if (response.statusCode == 200) {
+        logger.i('Response: ${response.body}');
+      } else {
+        logger.e('Failed to fetch search results. Status code: ${response.statusCode}');
+      }
+    } catch (e) {
+      logger.e('Error: $e');
     }
   }
 }

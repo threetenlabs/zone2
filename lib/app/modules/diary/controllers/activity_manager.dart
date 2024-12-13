@@ -60,35 +60,35 @@ class HealthActivityManager {
   final zoneConfigs = {
     1: const ZoneConfig(
       name: 'Zone 1 (Very Light)',
-      color: Color(0xFFF9F826), // Bright cyan/teal
+      color: Color(0xFFffa600), // Bright cyan/teal
       minPercentage: 0,
       maxPercentage: 60,
       icon: Icons.directions_walk,
     ),
     2: const ZoneConfig(
       name: 'Zone 2 (Light)',
-      color: Color(0xFF00B0FF), // Bright blue
+      color: Color(0xFFff8531), // Bright blue
       minPercentage: 60,
       maxPercentage: 70,
       icon: Icons.directions_walk,
     ),
     3: const ZoneConfig(
       name: 'Zone 3 (Moderate)',
-      color: Color(0xFF00BFA6), // Deep blue/purple
+      color: Color(0xFFff6361), // Deep blue/purple
       minPercentage: 70,
       maxPercentage: 80,
       icon: Icons.directions_walk,
     ),
     4: const ZoneConfig(
       name: 'Zone 4 (Hard)',
-      color: Color(0xFF6C63FF), // Bright purple
+      color: Color(0xFFbc5090),
       minPercentage: 80,
       maxPercentage: 90,
       icon: Icons.directions_run,
     ),
     5: const ZoneConfig(
       name: 'Zone 5 (Maximum)',
-      color: Color(0xFFF50057), // Vibrant fuchsia
+      color: Color(0xFF8a508f),
       minPercentage: 90,
       maxPercentage: 100,
       icon: Icons.directions_bike,
@@ -122,6 +122,8 @@ class HealthActivityManager {
   }
 
   void processWeightForSelectedDay(List<HealthDataPoint> weightData) async {
+    isWeightLogged.value = false;
+
     if (weightData.isNotEmpty) {
       final weight = weightData.first.value as NumericHealthValue;
       final weightInKilograms = weight.numericValue.toDouble();
@@ -138,7 +140,6 @@ class HealthActivityManager {
       final weightInPounds = SharedPreferencesService.to.lastSavedWeight;
       weightWhole.value = weightInPounds.toInt();
       weightDecimal.value = ((weightInPounds - weightWhole.value) * 10).round();
-      isWeightLogged.value = false;
     }
   }
 
@@ -242,6 +243,7 @@ class HealthActivityManager {
     journeyActivityDataLoading.value = true;
     final types = [HealthDataType.HEART_RATE, HealthDataType.WORKOUT, HealthDataType.STEPS];
     final startDate = zone2User.value!.zoneSettings?.journeyStartDate.toDate();
+    logger.w('loading aggregated activity data');
     final allActivityData = await HealthService.to.getActivityData(
         timeFrame: TimeFrame.allTime,
         seedDate: DateTime.now(),
@@ -271,6 +273,7 @@ class HealthActivityManager {
     // Calculate totals
     _calculateTotals();
     journeyActivityDataLoading.value = false;
+    logger.w('finished processing aggregated activity data');
   }
 
   void applyJourneyStepFilter(TimeFrame selectedTimeFrame) {
@@ -541,8 +544,6 @@ class HealthActivityManager {
     zoneMinutes.updateAll((key, value) => 0);
     filteredZoneMinutes.value = {};
     totalActiveZoneMinutes.value = 0;
-
-    isWeightLogged.value = false;
   }
 
   void _resetAggregatedData() {

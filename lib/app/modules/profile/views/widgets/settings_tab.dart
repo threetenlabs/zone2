@@ -56,13 +56,13 @@ class SettingsTab extends GetView<ProfileController> {
                 textInputAction: TextInputAction.done,
               )),
           const SizedBox(height: 10.0),
-          SettingsToggle(
-            title: 'Dark Mode',
-            value: themeService.isDarkMode.value,
-            onToggle: themeService.toggleTheme,
-            activeIcon: Icons.dark_mode_outlined,
-            inactiveIcon: Icons.light_mode_outlined,
-          ),
+          Obx(() => SettingsToggle(
+                title: 'Theme Mode',
+                value: themeService.isDarkMode.value,
+                onToggle: themeService.toggleTheme,
+                activeIcon: Icons.dark_mode_outlined,
+                inactiveIcon: Icons.light_mode_outlined,
+              )),
           const SizedBox(height: 10.0),
           Align(
             alignment: Alignment.centerRight,
@@ -138,30 +138,27 @@ class SettingsToggle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return InkResponse(
-      highlightShape: BoxShape.rectangle,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 8),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: [
-            Expanded(
-              child: Text(
-                title,
-                maxLines: 1,
-                style: const TextStyle(
-                  fontSize: 14,
-                ),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 8),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: [
+          Expanded(
+            child: Text(
+              title,
+              maxLines: 1,
+              style: const TextStyle(
+                fontSize: 14,
               ),
             ),
-            Icon(inactiveIcon),
-            Switch(
-              value: value,
-              onChanged: (_) => onToggle(),
-            ),
-            Icon(activeIcon),
-          ],
-        ),
+          ),
+          Icon(inactiveIcon),
+          Switch(
+            value: value,
+            onChanged: (_) => onToggle(),
+          ),
+          Icon(activeIcon),
+        ],
       ),
     );
   }

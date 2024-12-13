@@ -42,7 +42,7 @@ class FoodCarousel extends GetView<DiaryController> {
           ),
         );
       } else {
-        return const Text('No meals logged');
+        return const Text('No food logged');
       }
     });
   }

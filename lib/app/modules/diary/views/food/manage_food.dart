@@ -68,16 +68,17 @@ class ManageFoodBottomSheet extends GetView<DiaryController> {
     return Obx(() => FilterChip(
           selected: controller.foodManager.value.filteredMealType.value == type,
           showCheckmark: false,
-          avatar: Icon(
-            icon,
-            size: 18,
-            color: controller.foodManager.value.filteredMealType.value == type
-                ? Theme.of(context).colorScheme.onPrimary
-                : Theme.of(context).colorScheme.primary,
-          ),
+          // avatar: Icon(
+          //   icon,
+          //   size: 18,
+          //   color: controller.foodManager.value.filteredMealType.value == type
+          //       ? Theme.of(context).colorScheme.onPrimary
+          //       : Theme.of(context).colorScheme.primary,
+          // ),
           label: Text(
             label,
             style: TextStyle(
+              fontSize: 12,
               color: controller.foodManager.value.filteredMealType.value == type
                   ? Theme.of(context).colorScheme.onPrimary
                   : Theme.of(context).colorScheme.onSurface,

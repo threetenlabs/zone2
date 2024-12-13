@@ -13,39 +13,8 @@ class StepTab extends GetView<TrackController> {
 
   @override
   Widget build(BuildContext context) {
-    // Create a map of labels to TimeFrame values
-    final Map<String, TimeFrame> labelToTimeFrame = {
-      'Week': TimeFrame.week,
-      'Month': TimeFrame.month,
-      'Journey': TimeFrame.allTime,
-    };
-
-    return Column(
-      children: [
-        Obx(() {
-          return Wrap(
-            spacing: 8.0,
-            children: labelToTimeFrame.entries.map((entry) {
-              return ChoiceChip(
-                label: Text(entry.key),
-                selected: controller.selectedTimeFrame.value == entry.value,
-                onSelected: (bool selected) {
-                  if (selected) {
-                    controller.selectedTimeFrame.value = entry.value;
-                    // Update the graph data based on the selected time frame
-                    controller.applyFilter();
-                  }
-                },
-              );
-            }).toList(),
-          );
-        }),
-        Expanded(
-          child: GetBuilder<TrackController>(
-            builder: (_) => StepGraph(),
-          ),
-        ),
-      ],
+    return GetBuilder<TrackController>(
+      builder: (_) => StepGraph(),
     );
   }
 }
@@ -93,7 +62,7 @@ class StepGraph extends GetView<TrackController> {
       child: SfCartesianChart(
         title: ChartTitle(
           text: 'Your Step Activity',
-          textStyle: TextStyle(fontSize: 10, color: Theme.of(context).colorScheme.onSurface),
+          textStyle: TextStyle(fontSize: 16, color: Theme.of(context).colorScheme.onSurface),
         ),
         primaryXAxis: DateTimeCategoryAxis(
           intervalType: intervalType,
@@ -114,7 +83,9 @@ class StepGraph extends GetView<TrackController> {
             xValueMapper: (StepRecord record, _) => record.dateFrom,
             yValueMapper: (StepRecord record, _) => record.numericValue,
             name: 'Steps',
-            color: MaterialTheme.coolPurple.value,
+            color: Get.isDarkMode
+                ? MaterialTheme.stepColor.dark.color
+                : MaterialTheme.stepColor.light.color,
             width: 0.6,
             spacing: 0.2,
             borderRadius: BorderRadius.circular(6),
@@ -122,10 +93,10 @@ class StepGraph extends GetView<TrackController> {
               mode: EmptyPointMode.zero,
               color: Colors.transparent,
             ),
-            dataLabelSettings: const DataLabelSettings(
+            dataLabelSettings: DataLabelSettings(
               isVisible: true,
               labelAlignment: ChartDataLabelAlignment.outer,
-              textStyle: TextStyle(color: Colors.black87),
+              textStyle: TextStyle(color: Theme.of(context).colorScheme.onSurface),
             ),
           ),
         ],

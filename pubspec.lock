@@ -1035,10 +1035,10 @@ packages:
     dependency: "direct main"
     description:
       name: health
-      sha256: "01d6318b2d813d4b87044f9adb5a588f672acd176434ac380259d28de1f321a4"
+      sha256: "148ce984c2119f50224b4d187552d751b91aa47f4de8968daf05e6e596ddee50"
       url: "https://pub.dev"
     source: hosted
-    version: "11.1.0"
+    version: "11.1.1"
   html:
     dependency: transitive
     description:
@@ -1292,6 +1292,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.11.1"
+  material_symbols_icons:
+    dependency: "direct main"
+    description:
+      name: material_symbols_icons
+      sha256: "64404f47f8e0a9d20478468e5decef867a688660bad7173adcd20418d7f892c9"
+      url: "https://pub.dev"
+    source: hosted
+    version: "4.2801.0"
   meta:
     dependency: transitive
     description:
