@@ -1,5 +1,6 @@
 import 'package:health/health.dart';
 import 'package:openfoodfacts/openfoodfacts.dart' as openfoodfacts;
+import 'dart:convert';
 
 class FoodSearchResponse {
   final int totalHits;
@@ -46,61 +47,108 @@ class OpenFoodFactsFood {
     final brand = product.brands ?? 'N/A';
     final nutriments = product.nutriments;
 
+    // Conversion factor from 100g to 1 oz (1 oz = 28.3495g)
+    const double gramsPerOunce = 28.3495;
+
+    // Determine if conversion is needed based on nutrition_data_per
+    final isPer100g = product.nutrimentDataPer == '100g';
+
     List<OpenFoodFactsNutriment> nutrients = [
       OpenFoodFactsNutriment(
           name: openfoodfacts.Nutrient.energyKCal.name,
           amount: nutriments?.getValue(
-                  openfoodfacts.Nutrient.energyKCal, openfoodfacts.PerSize.serving) ??
+                  openfoodfacts.Nutrient.energyKCal,
+                  isPer100g
+                      ? openfoodfacts.PerSize.oneHundredGrams
+                      : openfoodfacts.PerSize.serving) ??
               0.0,
           unitName: 'kcal'),
       OpenFoodFactsNutriment(
           name: openfoodfacts.Nutrient.proteins.name,
           amount: nutriments?.getValue(
-                  openfoodfacts.Nutrient.proteins, openfoodfacts.PerSize.serving) ??
+                  openfoodfacts.Nutrient.proteins,
+                  isPer100g
+                      ? openfoodfacts.PerSize.oneHundredGrams
+                      : openfoodfacts.PerSize.serving) ??
               0.0,
           unitName: 'g'),
       OpenFoodFactsNutriment(
           name: openfoodfacts.Nutrient.fat.name,
-          amount: nutriments?.getValue(openfoodfacts.Nutrient.fat, openfoodfacts.PerSize.serving) ??
+          amount: nutriments?.getValue(
+                  openfoodfacts.Nutrient.fat,
+                  isPer100g
+                      ? openfoodfacts.PerSize.oneHundredGrams
+                      : openfoodfacts.PerSize.serving) ??
               0.0,
           unitName: 'g'),
       OpenFoodFactsNutriment(
           name: openfoodfacts.Nutrient.carbohydrates.name,
           amount: nutriments?.getValue(
-                  openfoodfacts.Nutrient.carbohydrates, openfoodfacts.PerSize.serving) ??
+                  openfoodfacts.Nutrient.carbohydrates,
+                  isPer100g
+                      ? openfoodfacts.PerSize.oneHundredGrams
+                      : openfoodfacts.PerSize.serving) ??
               0.0,
           unitName: 'g'),
       OpenFoodFactsNutriment(
           name: openfoodfacts.Nutrient.sugars.name,
-          amount:
-              nutriments?.getValue(openfoodfacts.Nutrient.sugars, openfoodfacts.PerSize.serving) ??
-                  0.0,
+          amount: nutriments?.getValue(
+                  openfoodfacts.Nutrient.sugars,
+                  isPer100g
+                      ? openfoodfacts.PerSize.oneHundredGrams
+                      : openfoodfacts.PerSize.serving) ??
+              0.0,
           unitName: 'g'),
       OpenFoodFactsNutriment(
           name: openfoodfacts.Nutrient.saturatedFat.name,
           amount: nutriments?.getValue(
-                  openfoodfacts.Nutrient.saturatedFat, openfoodfacts.PerSize.serving) ??
+                  openfoodfacts.Nutrient.saturatedFat,
+                  isPer100g
+                      ? openfoodfacts.PerSize.oneHundredGrams
+                      : openfoodfacts.PerSize.serving) ??
               0.0,
           unitName: 'g'),
       OpenFoodFactsNutriment(
           name: openfoodfacts.Nutrient.sodium.name,
-          amount:
-              nutriments?.getValue(openfoodfacts.Nutrient.sodium, openfoodfacts.PerSize.serving) ??
-                  0.0,
+          amount: nutriments?.getValue(
+                  openfoodfacts.Nutrient.sodium,
+                  isPer100g
+                      ? openfoodfacts.PerSize.oneHundredGrams
+                      : openfoodfacts.PerSize.serving) ??
+              0.0,
           unitName: 'g'),
       OpenFoodFactsNutriment(
           name: openfoodfacts.Nutrient.cholesterol.name,
           amount: nutriments?.getValue(
-                  openfoodfacts.Nutrient.cholesterol, openfoodfacts.PerSize.serving) ??
+                  openfoodfacts.Nutrient.cholesterol,
+                  isPer100g
+                      ? openfoodfacts.PerSize.oneHundredGrams
+                      : openfoodfacts.PerSize.serving) ??
               0.0,
           unitName: 'mg'),
       OpenFoodFactsNutriment(
           name: openfoodfacts.Nutrient.potassium.name,
           amount: nutriments?.getValue(
-                  openfoodfacts.Nutrient.potassium, openfoodfacts.PerSize.serving) ??
+                  openfoodfacts.Nutrient.potassium,
+                  isPer100g
+                      ? openfoodfacts.PerSize.oneHundredGrams
+                      : openfoodfacts.PerSize.serving) ??
               0.0,
           unitName: 'g'),
     ];
+
+    // Convert nutrients to 1 oz serving size if nutrition_data_per is '100g'
+    if (isPer100g) {
+      nutrients = nutrients.map((nutrient) {
+        return OpenFoodFactsNutriment(
+          name: nutrient.name,
+          amount: (nutrient.amount / 100) * gramsPerOunce,
+          unitName: nutrient.unitName,
+        );
+      }).toList();
+      product.servingSize = '1 oz';
+      product.servingQuantity = 1.0;
+    }
 
     // Parse serving size
     String servingSizeStr = product.servingSize ?? '';
@@ -596,6 +644,87 @@ class UsdaFoodNutrient {
               : (json['value'] as double) // Handle int or double
           : 0.0, // Default to 0.0 if null
       unitName: json['unitName'],
+    );
+  }
+}
+
+class FatSecretFood {
+  final String foodId;
+  final String foodName;
+  final String foodType;
+  final String foodUrl;
+  final List<String> foodImages; // Assuming a list of image URLs
+  final List<FatSecretServing> servings;
+
+  FatSecretFood({
+    required this.foodId,
+    required this.foodName,
+    required this.foodType,
+    required this.foodUrl,
+    required this.foodImages,
+    required this.servings,
+  });
+
+  factory FatSecretFood.fromJson(Map<String, dynamic> json) {
+    return FatSecretFood(
+      foodId: json['food_id'],
+      foodName: json['food_name'],
+      foodType: json['food_type'],
+      foodUrl: json['food_url'],
+      foodImages: List<String>.from(json['food_images']['food_image'].map((img) => img['image_url'])),
+      servings: List<FatSecretServing>.from(json['servings']['serving'].map((serving) => FatSecretServing.fromJson(serving))),
+    );
+  }
+}
+
+class FatSecretServing {
+  final String servingId;
+  final String servingDescription;
+  final double calories;
+  final double protein;
+  final double fat;
+  final double carbohydrates;
+
+  FatSecretServing({
+    required this.servingId,
+    required this.servingDescription,
+    required this.calories,
+    required this.protein,
+    required this.fat,
+    required this.carbohydrates,
+  });
+
+  factory FatSecretServing.fromJson(Map<String, dynamic> json) {
+    return FatSecretServing(
+      servingId: json['serving_id'],
+      servingDescription: json['serving_description'],
+      calories: double.parse(json['calories']),
+      protein: double.parse(json['protein']),
+      fat: double.parse(json['fat']),
+      carbohydrates: double.parse(json['carbohydrate']),
+    );
+  }
+}
+
+class FatSecretFoodSearchResult {
+  final int maxResults;
+  final int totalResults;
+  final int pageNumber;
+  final List<FatSecretFood> foods;
+
+  FatSecretFoodSearchResult({
+    required this.maxResults,
+    required this.totalResults,
+    required this.pageNumber,
+    required this.foods,
+  });
+
+  factory FatSecretFoodSearchResult.fromJson(Map<String, dynamic> json) {
+    return FatSecretFoodSearchResult(
+      maxResults: json['foods_search']['max_results'],
+      totalResults: json['foods_search']['total_results'],
+      pageNumber: json['foods_search']['page_number'],
+      foods: List<FatSecretFood>.from(json['foods_search']['results']['food'].map((food) => FatSecretFood.fromJson(food))),
     );
   }
 }

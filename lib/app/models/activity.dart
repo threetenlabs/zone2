@@ -27,34 +27,37 @@ class HeartRateRecord {
   }
 }
 
-/// Class representing a calorie burned record.
-class CalorieBurnedRecord {
+class ZonePointRecord {
   final String uuid;
-  final double numericValue;
-  final String unit;
+  final int zonePoints;
   final DateTime dateFrom;
   final DateTime dateTo;
   final String sourceName;
 
-  CalorieBurnedRecord({
+  ZonePointRecord({
     required this.uuid,
-    required this.numericValue,
-    required this.unit,
+    required this.zonePoints,
     required this.dateFrom,
     required this.dateTo,
     required this.sourceName,
   });
 
-  factory CalorieBurnedRecord.fromJson(Map<String, dynamic> json) {
-    return CalorieBurnedRecord(
+  factory ZonePointRecord.fromJson(Map<String, dynamic> json) {
+    return ZonePointRecord(
       uuid: json['uuid'],
-      numericValue: (json['value']['numericValue'] as num).toDouble(),
-      unit: json['unit'],
+      zonePoints: json['zonePoints'] as int,
       dateFrom: DateTime.parse(json['dateFrom']),
       dateTo: DateTime.parse(json['dateTo']),
       sourceName: json['sourceName'],
     );
   }
+}
+
+class WeightDataRecord {
+  final String date;
+  final double weight;
+
+  WeightDataRecord(this.date, this.weight);
 }
 
 /// Class representing a step record.

@@ -30,11 +30,11 @@ class StepsChart extends GetView<DiaryController> {
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
                   Text(
-                      'Target: ${NumberFormat('#,###').format(controller.zone2User.value?.zoneSettings?.dailyStepsGoal ?? 0)}'),
+                      'Target: ${NumberFormat('#,###').format(controller.zone2User.value.zoneSettings?.dailyStepsGoal ?? 0)}'),
                   Text(
                       'Current: ${NumberFormat('#,###').format(controller.activityManager.value.totalSteps.value)}'),
                   Text(
-                      'Remaining: ${NumberFormat('#,###').format(max(0, (controller.zone2User.value?.zoneSettings?.dailyStepsGoal ?? 0) - controller.activityManager.value.totalSteps.value))}'),
+                      'Remaining: ${NumberFormat('#,###').format(max(0, (controller.zone2User.value.zoneSettings?.dailyStepsGoal ?? 0) - controller.activityManager.value.totalSteps.value))}'),
                 ],
               ),
             ),
@@ -75,7 +75,7 @@ class StepsChart extends GetView<DiaryController> {
                   xValueMapper: (StepRecord record, _) => record.dateFrom,
                   yValueMapper: (StepRecord record, _) => record.numericValue,
                   name: 'Steps',
-                  color: MaterialTheme.coolPurple.value,
+                  color: MaterialTheme.stepColor.value,
                   width: 0.6,
                   spacing: 0.2,
                   borderRadius: BorderRadius.circular(6),

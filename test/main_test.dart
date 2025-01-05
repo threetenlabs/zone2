@@ -36,10 +36,6 @@ void main() {
     final foodServiceMock = FoodServiceMock();
     final sharedPreferencesServiceMock = SharedPreferencesServiceMock();
 
-    sharedPreferencesServiceMock.zone2ProteinTarget.value = 100.0;
-    sharedPreferencesServiceMock.zone2CarbsTarget.value = 100.0;
-    sharedPreferencesServiceMock.zone2FatTarget.value = 100.0;
-
     when(() => healthServiceMock.getWeightData(
             timeFrame: any(named: 'timeFrame'), seedDate: any(named: 'seedDate')))
         .thenAnswer((_) async => [
@@ -88,23 +84,25 @@ void main() {
               )
             ]);
 
-    when(() => healthServiceMock.getActivityData(
-            timeFrame: any(named: 'timeFrame'), seedDate: any(named: 'seedDate')))
-        .thenAnswer((_) async => [
-              HealthDataPoint(
-                uuid: "b0401744-fae8-4979-9afc-cf4b34f5fa4b",
-                value: NumericHealthValue(numericValue: 21.109180000000002),
-                type: HealthDataType.TOTAL_CALORIES_BURNED,
-                unit: HealthDataUnit.KILOCALORIE,
-                dateFrom: DateTime.parse("2024-11-06T00:15:00.000"),
-                dateTo: DateTime.parse("2024-11-06T00:30:00.000"),
-                sourcePlatform: HealthPlatformType.googleHealthConnect,
-                sourceDeviceId: "AP3A.241005.015",
-                sourceId: "",
-                sourceName: "com.fitbit.FitbitMobile",
-                recordingMethod: RecordingMethod.unknown,
-              )
-            ]);
+    when(() =>
+        healthServiceMock.getActivityData(
+            timeFrame: any(named: 'timeFrame'),
+            seedDate: any(named: 'seedDate'),
+            types: any(named: 'types'))).thenAnswer((_) async => [
+          HealthDataPoint(
+            uuid: "b0401744-fae8-4979-9afc-cf4b34f5fa4b",
+            value: NumericHealthValue(numericValue: 21.109180000000002),
+            type: HealthDataType.TOTAL_CALORIES_BURNED,
+            unit: HealthDataUnit.KILOCALORIE,
+            dateFrom: DateTime.parse("2024-11-06T00:15:00.000"),
+            dateTo: DateTime.parse("2024-11-06T00:30:00.000"),
+            sourcePlatform: HealthPlatformType.googleHealthConnect,
+            sourceDeviceId: "AP3A.241005.015",
+            sourceId: "",
+            sourceName: "com.fitbit.FitbitMobile",
+            recordingMethod: RecordingMethod.unknown,
+          )
+        ]);
 
     when(() => healthServiceMock.getWaterData(
             timeFrame: any(named: 'timeFrame'), seedDate: any(named: 'seedDate')))

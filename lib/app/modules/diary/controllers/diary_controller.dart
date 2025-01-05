@@ -1,29 +1,29 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:logger/logger.dart';
 import 'package:health/health.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
-import 'package:speech_to_text/speech_recognition_error.dart';
-import 'package:speech_to_text/speech_recognition_result.dart';
-import 'package:speech_to_text/speech_to_text.dart';
-import 'package:syncfusion_flutter_charts/charts.dart';
-import 'package:zone2/app/models/user.dart';
+import 'package:super_tooltip/super_tooltip.dart';
 import 'package:zone2/app/modules/diary/controllers/activity_manager.dart';
 import 'package:zone2/app/models/food.dart';
 import 'package:zone2/app/modules/diary/controllers/food_manager.dart';
 import 'package:zone2/app/modules/loading_service.dart';
 import 'package:zone2/app/services/auth_service.dart';
+import 'package:zone2/app/services/barcode_service.dart';
 import 'package:zone2/app/services/firebase_service.dart';
 import 'package:zone2/app/services/food_service.dart';
 import 'package:zone2/app/services/health_service.dart';
 import 'package:intl/intl.dart'; // Added for date formatting
 import 'package:zone2/app/services/notification_service.dart';
 import 'package:zone2/app/services/openai_service.dart';
+import 'package:zone2/app/services/shared_preferences_service.dart';
+import 'package:zone2/app/services/speech_service.dart';
+import 'package:zone2/app/utils/helper.dart';
 
 class FoodVoiceResult {
   final String label;
@@ -89,12 +89,10 @@ class DiaryController extends GetxController {
   final logger = Get.find<Logger>();
   final healthService = Get.find<HealthService>();
   final foodService = Get.find<FoodService>();
-
-  // Weight tracking
-  final weightWhole = 70.obs;
-  final weightDecimal = 0.obs;
-  final healthData = RxList<HealthDataPoint>();
-  final isWeightLogged = false.obs; // Track if weight is logged
+  final isLoadingNutritionData = false.obs;
+  final isLoadingActivityData = false.obs;
+  final isLoadingWeightData = false.obs;
+  final isLoadingWaterData = false.obs;
 
   // Date tracking
   final diaryDate = DateTime.now().obs;
@@ -118,34 +116,24 @@ class DiaryController extends GetxController {
   final foodServingController = TextEditingController(text: '');
 
   // Activity tracking
-  final activityManager = HealthActivityManager().obs;
+  final activityManager = Get.put(HealthActivityManager()).obs;
 
   // AI Funzies
+  final openAIKey = SharedPreferencesService.to.openAIKey;
+  final aiTooltipController = SuperTooltipController();
   final isProcessing = false.obs;
   final matchedFoods = RxList<String>();
-  final speech = SpeechToText();
-  final isAvailable = false.obs;
-  final isListening = false.obs;
-  final currentLocaleId = ''.obs;
-  final locales = <LocaleName>[].obs;
-  final hasError = false.obs;
-  final lastError = Rxn<SpeechRecognitionError>();
-  final recognizedWords = ''.obs;
-  final systemLocale = Rxn<LocaleName>();
-  final isTestMode = false.obs; // Toggle this for testing
 
   final voiceResults = RxList<FoodVoiceResult>();
-  final zone2User = Rxn<Zone2User>();
+  final zone2User = AuthService.to.appUser;
+  final userAge = Rxn<int>();
   String selectedVoiceFood = '';
   RxList<FoodVoiceResult> searchResults = RxList<FoodVoiceResult>();
 
   // Barcode scanning
   final Rxn<Barcode> barcode = Rxn<Barcode>();
   final Rxn<BarcodeCapture> capture = Rxn<BarcodeCapture>();
-  late MobileScannerController scannerController;
-  StreamSubscription<Object?>? scannerSubscription;
 
-  final textRecognizer = TextRecognizer();
   final ImagePicker _picker = ImagePicker();
 
   // Add Calories
@@ -155,6 +143,8 @@ class DiaryController extends GetxController {
   final addCalorieCarbohydratesTextController = TextEditingController();
   final addCalorieTotalFatTextController = TextEditingController();
 
+  final SpeechService speechService = SpeechService();
+  final BarcodeService barcodeService = BarcodeService();
   @override
   void onInit() async {
     super.onInit();
@@ -164,112 +154,53 @@ class DiaryController extends GetxController {
     ever(healthService.isAuthorized, (isAuthorized) => authorizedChanged(isAuthorized));
     ever(diaryDate, (date) => updateDateLabel());
     updateDateLabel();
-    await initSpeechState();
 
-    scannerController = MobileScannerController();
-
-    scannerSubscription = scannerController.barcodes.listen(handleBarcode);
     await HealthService.to.authorize();
     await getHealthDataForSelectedDay(true);
+    await speechService.initSpeechState();
+    barcodeService.initializeScanner(handleBarcode);
   }
 
   @override
   void onReady() async {
     super.onReady();
-    AuthService.to.zone2User.stream.listen((user) async {
-      logger.i('zone2User: $user');
-      zone2User.value = user;
-      // if (user != null) {
-      //   await checkHealthPermissions();
-      // }
+    await setUser();
+    AuthService.to.appUser.stream.listen((user) async {
+      setUser();
     });
+    activityManager.value.setUser(zone2User.value);
+    activityManager.value.processJourneyWeightData();
+    activityManager.value.processAggregatedActivityData(userAge: userAge.value ?? 30);
+
+    SharedPreferencesService.to.openAIKey.listen((key) {
+      openAIKey.value = key;
+    });
+
+    speechService.isListening.listen((isListening) {
+      if (!isListening && speechService.recognizedWords.value.isNotEmpty) {
+        extractFoodItemsOpenAI(speechService.recognizedWords.value);
+      }
+    });
+  }
+
+  @override
+  void onClose() {
+    barcodeService.dispose();
+    super.onClose();
+  }
+
+  Future<void> setUser() async {
+    zone2User.value = AuthService.to.appUser.value;
+
+    // Parse the birthdate using the correct format
+    final birthDate = getBirthdateFromZone2User(zone2User.value);
+
+    userAge.value = calculateAge(birthDate);
   }
 
   Future<void> checkHealthPermissions() async {
     if (!HealthService.to.hasPermissions.value) {
       await getHealthDataForSelectedDay(true);
-    }
-  }
-
-  Future<void> initSpeechState() async {
-    try {
-      isAvailable.value = await speech.initialize(
-        onError: (error) => _onSpeechError(error),
-        onStatus: (status) => _onSpeechStatus(status),
-        finalTimeout: const Duration(milliseconds: 5000),
-      );
-
-      if (isAvailable.value) {
-        locales.value = await speech.locales();
-        systemLocale.value = await speech.systemLocale();
-        currentLocaleId.value = systemLocale.value?.localeId ?? '';
-      }
-    } catch (e) {
-      logger.e('Error initializing speech: $e');
-      isAvailable.value = false;
-    }
-  }
-
-  Future<void> startListening() async {
-    if (!isAvailable.value || isListening.value) return;
-
-    try {
-      await speech.listen(
-        onResult: _onSpeechResult,
-        listenOptions: SpeechListenOptions(partialResults: true),
-        localeId: currentLocaleId.value,
-        listenFor: const Duration(seconds: 10),
-        pauseFor: const Duration(seconds: 5),
-      );
-      isListening.value = true;
-    } catch (e) {
-      logger.e('Error starting speech recognition: $e');
-      isListening.value = false;
-    }
-  }
-
-  Future<void> stopListening() async {
-    if (!isListening.value) return;
-
-    try {
-      await speech.stop();
-      isListening.value = false;
-      extractFoodItemsOpenAI(recognizedWords.value);
-    } catch (e) {
-      logger.e('Error stopping speech recognition: $e');
-    }
-  }
-
-  Future<void> cancelListening() async {
-    if (!isListening.value) return;
-
-    try {
-      await speech.cancel();
-      isListening.value = false;
-    } catch (e) {
-      logger.e('Error canceling speech recognition: $e');
-    }
-  }
-
-  void switchLanguage(String newLocaleId) {
-    currentLocaleId.value = newLocaleId;
-  }
-
-  void _onSpeechResult(SpeechRecognitionResult result) {
-    recognizedWords.value = result.recognizedWords;
-  }
-
-  void _onSpeechError(SpeechRecognitionError error) {
-    hasError.value = true;
-    lastError.value = error;
-    logger.e('Speech recognition error: ${error.errorMsg}');
-  }
-
-  void _onSpeechStatus(String status) {
-    logger.i('Speech recognition status: $status');
-    if (status == 'done') {
-      isListening.value = false;
-      extractFoodItemsOpenAI(recognizedWords.value);
     }
   }
 
@@ -305,92 +236,107 @@ class DiaryController extends GetxController {
   }
 
   Future<void> getHealthDataForSelectedDay(bool forceRefresh) async {
-    try {
-      await BusyIndicatorService.to.showBusyIndicator('Retrieving health data...');
-      await Future.wait([
-        _retrieveWeightData(),
-        _retrieveWaterData(),
-        _retrieveMealData(),
-        _retrieveActivityData(),
-      ]);
-    } catch (e) {
-      logger.e('Error getting health data: $e');
-      FirebaseCrashlytics.instance.recordError(e, null, fatal: true);
-    } finally {
-      BusyIndicatorService.to.hideBusyIndicator();
-    }
+    _retrieveWeightData();
+    _retrieveWaterData();
+    _retrieveMealData();
+    _retrieveActivityData();
   }
 
   Future<void> _retrieveWeightData({bool? forceRefresh = false}) async {
-    final weightData = await healthService.getWeightData(
-        timeFrame: TimeFrame.day, seedDate: diaryDate.value, forceRefresh: forceRefresh);
-    weightData.sort((a, b) => b.dateTo.compareTo(a.dateTo));
+    try {
+      isLoadingWeightData.value = true;
+      final weightData = await healthService.getWeightData(
+          timeFrame: TimeFrame.day, seedDate: diaryDate.value, forceRefresh: forceRefresh);
+      weightData.sort((a, b) => b.dateTo.compareTo(a.dateTo));
 
-    if (weightData.isNotEmpty) {
-      final weight = weightData.first.value as NumericHealthValue;
-      final weightInKilograms = weight.numericValue.toDouble();
-      final weightInPounds =
-          await healthService.convertWeightUnit(weightInKilograms, WeightUnit.pound);
-
-      weightWhole.value = weightInPounds.toInt(); // Ensure weightWhole is an int
-      weightDecimal.value =
-          ((weightInPounds - weightWhole.value) * 10).round(); // Update to single digit
-      isWeightLogged.value = true;
-    } else {
-      logger.w('No weight data found');
-      isWeightLogged.value = false;
+      activityManager.value.processWeightForSelectedDay(weightData);
+    } catch (e) {
+      FirebaseCrashlytics.instance.recordError(e, null, reason: 'Error retrieving weight data');
+      logger.e('Error retrieving weight data: $e');
+    } finally {
+      isLoadingWeightData.value = false;
     }
   }
 
   Future<void> _retrieveWaterData({bool? forceRefresh = false}) async {
-    final waterData = await healthService.getWaterData(
-        timeFrame: TimeFrame.day, seedDate: diaryDate.value, forceRefresh: forceRefresh);
+    try {
+      isLoadingWaterData.value = true;
+      final waterData = await healthService.getWaterData(
+          timeFrame: TimeFrame.day, seedDate: diaryDate.value, forceRefresh: forceRefresh);
 
-    if (waterData.isNotEmpty) {
-      double waterIntakeInLiters = waterData.fold(
-          0, (sum, data) => sum + (data.value as NumericHealthValue).numericValue.toDouble());
-      double waterIntakeInOunces =
-          await healthService.convertWaterUnit(waterIntakeInLiters, WaterUnit.ounce);
-      waterIntake.value = waterIntakeInOunces; // Update the water intake observable
-      isWaterLogged.value = waterIntake.value > 0;
+      if (waterData.isNotEmpty) {
+        double waterIntakeInLiters = waterData.fold(
+            0, (sum, data) => sum + (data.value as NumericHealthValue).numericValue.toDouble());
+        double waterIntakeInOunces =
+            await healthService.convertWaterUnit(waterIntakeInLiters, WaterUnit.ounce);
+        waterIntake.value = waterIntakeInOunces; // Update the water intake observable
+        isWaterLogged.value = waterIntake.value > 0;
 
-      logger.i('Water logged: $isWaterLogged.value');
-    } else {
-      logger.w('No water data found');
-      isWaterLogged.value = false;
+        logger.i('Water logged: $isWaterLogged.value');
+      } else {
+        logger.w('No water data found');
+        isWaterLogged.value = false;
+      }
+    } catch (e) {
+      FirebaseCrashlytics.instance.recordError(e, null, reason: 'Error retrieving water data');
+      logger.e('Error retrieving water data: $e');
+    } finally {
+      isLoadingWaterData.value = false;
     }
   }
 
   Future<void> _retrieveMealData({bool? forceRefresh = false}) async {
-    final foodDataPoints = await healthService.getMealData(
-        timeFrame: TimeFrame.day, seedDate: diaryDate.value, forceRefresh: forceRefresh);
-    foodManager.value.processFoodData(foodDataPoints);
+    try {
+      isLoadingNutritionData.value = true;
+      final foodDataPoints = await healthService.getMealData(
+          timeFrame: TimeFrame.day, seedDate: diaryDate.value, forceRefresh: forceRefresh);
+      foodManager.value.processFoodData(foodDataPoints);
+    } catch (e) {
+      FirebaseCrashlytics.instance.recordError(e, null, reason: 'Error retrieving meal data');
+      logger.e('Error retrieving meal data: $e');
+    } finally {
+      isLoadingNutritionData.value = false;
+    }
   }
 
   Future<void> _retrieveActivityData({bool? forceRefresh = false}) async {
-    final allActivityData = await healthService.getActivityData(
-        timeFrame: TimeFrame.day, seedDate: diaryDate.value, forceRefresh: forceRefresh);
-    activityManager.value.processActivityData(activityData: allActivityData, userAge: 48);
+    try {
+      isLoadingActivityData.value = true;
+      final types = [HealthDataType.HEART_RATE, HealthDataType.WORKOUT, HealthDataType.STEPS];
+      final allActivityData = await healthService.getActivityData(
+          timeFrame: TimeFrame.day,
+          seedDate: diaryDate.value,
+          types: types,
+          forceRefresh: forceRefresh);
+      activityManager.value
+          .processDailyActivityData(activityData: allActivityData, userAge: userAge.value ?? 30);
+    } catch (e) {
+      FirebaseCrashlytics.instance.recordError(e, null, reason: 'Error retrieving activity data');
+      logger.e('Error retrieving activity data: $e');
+    } finally {
+      isLoadingActivityData.value = false;
+    }
   }
 
   Future<void> saveWeightToHealth() async {
     try {
-      final weightInPounds =
-          weightWhole.value + (weightDecimal.value / 100); // Combine whole and decimal parts
+      final weightInPounds = activityManager.value.weightWhole.value +
+          (activityManager.value.weightDecimal.value / 100); // Combine whole and decimal parts
 
       final weightInKilograms =
           await healthService.convertWeightUnit(weightInPounds, WeightUnit.kilogram);
 
       // Call the HealthService to save the weight
-      await healthService.saveWeightToHealth(weightInKilograms);
+      await healthService.saveWeightToHealth(weightInKilograms, diaryDate.value);
 
       // Send success notification
       NotificationService.to
           .showSuccess('Weight Saved', 'Your weight has been successfully saved to health data.');
 
       // Update the weight logged state
-      isWeightLogged.value = true;
+      activityManager.value.isWeightLogged.value = true;
     } catch (e) {
+      FirebaseCrashlytics.instance.recordError(e, null, reason: 'Error saving weight to Health');
       logger.e('Error saving weight to Health: $e');
     }
   }
@@ -402,8 +348,8 @@ class DiaryController extends GetxController {
       selectedZone2Food.value!.servingQuantity = servingQty;
       selectedZone2Food.value!.mealTypeValue = mealType;
 
-      final success =
-          await healthService.saveMealToHealth(selectedMealType.value, selectedZone2Food.value!);
+      final success = await healthService.saveMealToHealth(
+          selectedMealType.value, selectedZone2Food.value!, diaryDate.value);
       if (success) {
         // Send success notification
         NotificationService.to
@@ -415,6 +361,7 @@ class DiaryController extends GetxController {
       }
       foodServingController.text = '';
     } catch (e) {
+      FirebaseCrashlytics.instance.recordError(e, null, reason: 'Error saving meal to Health');
       logger.e('Error saving meal to Health: $e');
     }
   }
@@ -443,22 +390,21 @@ class DiaryController extends GetxController {
   }
 
   Future<void> resetTracking() async {
-    isWeightLogged.value = false;
     isWaterLogged.value = false;
   }
 
   Future<void> navigateToNextDay() async {
     if (!isToday(diaryDate.value) && diaryDate.value.isBefore(DateTime.now())) {
       diaryDate.value = diaryDate.value.add(const Duration(days: 1));
-      await resetTracking();
+      resetTracking();
     }
-    await getHealthDataForSelectedDay(false);
+    getHealthDataForSelectedDay(false);
   }
 
   Future<void> navigateToPreviousDay() async {
     diaryDate.value = diaryDate.value.subtract(const Duration(days: 1));
-    await resetTracking();
-    await getHealthDataForSelectedDay(false);
+    resetTracking();
+    getHealthDataForSelectedDay(false);
   }
 
   Future<void> addWater(double ounces) async {
@@ -467,15 +413,16 @@ class DiaryController extends GetxController {
         await healthService.convertWaterUnit(waterIntakeInOunces, WaterUnit.liter);
     try {
       // Call the HealthService to save the weight
-      await healthService.saveWaterToHealth(waterIntakeInLiters);
+      healthService.saveWaterToHealth(waterIntakeInLiters, diaryDate.value);
 
       // Send success notification
       NotificationService.to.showSuccess(
           'Water Saved', 'Your water intake has been successfully saved to health data.');
 
-      await _retrieveWaterData(forceRefresh: true);
+      _retrieveWaterData(forceRefresh: true);
     } catch (e) {
-      logger.e('Error saving weight to Health: $e');
+      FirebaseCrashlytics.instance.recordError(e, null, reason: 'Error saving water to Health');
+      logger.e('Error saving water to Health: $e');
     }
   }
 
@@ -497,13 +444,15 @@ class DiaryController extends GetxController {
       await BusyIndicatorService.to.showBusyIndicator('Getting food...');
       final result = await foodService.getFoodById(barcode);
       logger.i('Food: ${result.product?.productName}');
-
+      final product = jsonEncode(result.product?.toJson());
+      printWrapped(product);
       if (result.product != null) {
         selectedOpenFoodFactsFood.value = OpenFoodFactsFood.fromOpenFoodFacts(result.product!);
         selectedZone2Food.value = Zone2Food.fromOpenFoodFactsFood(selectedOpenFoodFactsFood.value!);
         update();
       }
     } catch (e) {
+      FirebaseCrashlytics.instance.recordError(e, null, reason: 'Error finding food by barcode');
       logger.e('Error finding food by barcode: $e');
     } finally {
       BusyIndicatorService.to.hideBusyIndicator();
@@ -520,35 +469,14 @@ class DiaryController extends GetxController {
     try {
       isProcessing.value = true;
 
-      if (isTestMode.value) {
-        await Future.delayed(const Duration(seconds: 1));
-        voiceResults.value = [
-          FoodVoiceResult(
-            label: "2 scrambled eggs with spinach",
-            searchTerm: "eggs",
-            quantity: 2,
-            unit: "large",
-            mealType: MealType.BREAKFAST,
-          ),
-          FoodVoiceResult(
-            label: "1 slice whole grain toast with avocado",
-            searchTerm: "whole grain bread",
-            quantity: 1,
-            unit: "slice",
-            mealType: MealType.BREAKFAST,
-          ),
-          // ... other test items
-        ];
-        matchedFoods.value = voiceResults.map((r) => r.label).toList();
-      } else {
-        final openAIChatCompletion = await OpenAIService.to.extractFoodsFromText(text);
-        final newItems = FoodVoiceResult.fromOpenAiCompletion(
-            openAIChatCompletion['foods']['items'] as List<dynamic>);
-        voiceResults.value = newItems;
+      final openAIChatCompletion = await OpenAIService.to.extractFoodsFromText(text);
+      final newItems = FoodVoiceResult.fromOpenAiCompletion(
+          openAIChatCompletion['foods']['items'] as List<dynamic>);
+      voiceResults.value = newItems;
 
-        matchedFoods.value = voiceResults.map((r) => r.label).toList();
-      }
+      matchedFoods.value = voiceResults.map((r) => r.label).toList();
     } catch (e) {
+      FirebaseCrashlytics.instance.recordError(e, null, reason: 'Error extracting foods');
       logger.e('Error extracting foods: $e');
       NotificationService.to
           .showError('Error', 'Failed to process speech input. Please try again.');
@@ -584,6 +512,7 @@ class DiaryController extends GetxController {
         );
       }
     } catch (error) {
+      FirebaseCrashlytics.instance.recordError(error, null, reason: 'Error searching for food');
       Get.snackbar(
         'Error',
         'Failed to search for food: ${error.toString()}',
@@ -677,17 +606,6 @@ class DiaryController extends GetxController {
         break;
     }
     update();
-  }
-
-  Future<void> saveNutritionToHealth() async {
-    // Implement your health saving logic here
-    try {
-      // Save to health
-      Get.back(); // Close the bottom sheet
-      NotificationService.to.showSuccess('Success', 'Nutrition facts saved successfully');
-    } catch (e) {
-      NotificationService.to.showError('Error', 'Failed to save nutrition facts');
-    }
   }
 
   void initializeZone2Food() {

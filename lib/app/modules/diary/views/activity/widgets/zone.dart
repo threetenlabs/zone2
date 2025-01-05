@@ -49,10 +49,10 @@ class ActiveZoneMinutesRadialChart extends GetView<DiaryController> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  Text('Target: ${controller.zone2User.value?.zoneSettings?.dailyZonePointsGoal}'),
+                  Text('Target: ${controller.zone2User.value.zoneSettings?.dailyZonePointsGoal}'),
                   Text('Earned: ${controller.activityManager.value.totalZonePoints}'),
                   Text(
-                      'Remaining: ${max(0, (controller.zone2User.value?.zoneSettings?.dailyZonePointsGoal ?? 0) - controller.activityManager.value.totalZonePoints.value)}'),
+                      'Remaining: ${max(0, (controller.zone2User.value.zoneSettings?.dailyZonePointsGoal ?? 0) - controller.activityManager.value.totalZonePoints.value)}'),
                 ],
               ),
             ),

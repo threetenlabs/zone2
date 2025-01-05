@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:super_tooltip/super_tooltip.dart';
 import 'package:zone2/app/modules/diary/controllers/diary_controller.dart';
 import 'package:zone2/app/modules/diary/views/food/food_detail.dart';
+import 'package:zone2/app/widgets/ai_tooltip.dart';
 
 class AddCaloriesBottomSheet extends GetWidget<DiaryController> {
   const AddCaloriesBottomSheet({super.key});
@@ -43,10 +45,20 @@ class AddCaloriesBottomSheet extends GetWidget<DiaryController> {
                   ),
                   Align(
                     alignment: Alignment.topRight,
-                    child: ElevatedButton.icon(
-                      onPressed: controller.pickAndProcessImage,
-                      icon: const Icon(Icons.camera),
-                      label: const Text("Capture With Camera"),
+                    child: AITooltip(
+                      ttController: controller.aiTooltipController,
+                      direction: TooltipDirection.down,
+                      child: ElevatedButton.icon(
+                        icon: const Icon(Icons.camera),
+                        label: const Text("Capture With Camera"),
+                        onPressed: () {
+                          if (controller.openAIKey.value.isNotEmpty) {
+                            controller.pickAndProcessImage();
+                          } else {
+                            controller.aiTooltipController.showTooltip();
+                          }
+                        },
+                      ),
                     ),
                   ),
                   const SizedBox(height: 20),

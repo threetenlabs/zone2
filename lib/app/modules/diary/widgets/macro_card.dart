@@ -8,21 +8,24 @@ class MacroCard extends GetView<DiaryController> {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      elevation: 8,
-      child: SingleChildScrollView(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: [
-            SizedBox(
-              height: 75, // Example height
-              child: _buildCalorieRow(context),
-            ),
-            SizedBox(
-              height: 75, // Example height
-              child: _buildMacroRow(context),
-            ),
-          ],
+    return GetBuilder<DiaryController>(
+      init: controller,
+      builder: (c) => Card(
+        elevation: 8,
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              SizedBox(
+                height: 75, // Example height
+                child: _buildCalorieRow(context),
+              ),
+              SizedBox(
+                height: 75, // Example height
+                child: _buildMacroRow(context),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -36,7 +39,7 @@ class MacroCard extends GetView<DiaryController> {
         mainAxisSize: MainAxisSize.max,
         children: [
           _buildTargetColumn('Target',
-              controller.zone2User.value?.zoneSettings?.dailyCalorieIntakeGoal.round() ?? 2000),
+              controller.zone2User.value.zoneSettings?.dailyCalorieIntakeGoal.round() ?? 2000),
           Center(child: Text('+', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold))),
           _buildTargetColumn('Consumed', controller.foodManager.value.totalCalories.value.round()),
           Center(child: Text('-', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold))),
@@ -45,7 +48,7 @@ class MacroCard extends GetView<DiaryController> {
           Center(child: Text('=', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold))),
           _buildRemainingColumn(
               'Remaining',
-              ((controller.zone2User.value?.zoneSettings?.dailyCalorieIntakeGoal ?? 2000) -
+              ((controller.zone2User.value.zoneSettings?.dailyCalorieIntakeGoal ?? 2000) -
                       (controller.foodManager.value.totalCalories.value) +
                       controller.activityManager.value.totalWorkoutCalories.value)
                   .roundToDouble(),
@@ -79,7 +82,7 @@ class MacroCard extends GetView<DiaryController> {
                 ? controller.foodManager.value.totalCarbohydrates.value /
                     controller.foodManager.value.totalCarbohydratesTarget.value
                 : 0.0,
-            MaterialTheme.coolOrange.value,
+            MaterialTheme.weightColor.value,
             controller.foodManager.value.totalCarbohydratesTarget.value != 0
                 ? '${(controller.foodManager.value.totalCarbohydrates.value / controller.foodManager.value.totalCarbohydratesTarget.value * 100).toStringAsFixed(0)}%'
                 : '0%',
@@ -90,7 +93,7 @@ class MacroCard extends GetView<DiaryController> {
                 ? controller.foodManager.value.totalFat.value /
                     controller.foodManager.value.totalFatTarget.value
                 : 0.0,
-            MaterialTheme.coolRed.value,
+            MaterialTheme.activityColor.value,
             controller.foodManager.value.totalFatTarget.value != 0
                 ? '${(controller.foodManager.value.totalFat.value / controller.foodManager.value.totalFatTarget.value * 100).toStringAsFixed(0)}%'
                 : '0%',

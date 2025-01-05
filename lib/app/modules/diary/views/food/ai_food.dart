@@ -28,7 +28,7 @@ class AISearchBottomSheet extends GetView<DiaryController> {
                 ),
 
                 // Examples section when no results
-                if (!controller.isListening.value && controller.voiceResults.isEmpty)
+                if (!controller.speechService.isListening.value && controller.voiceResults.isEmpty)
                   Expanded(
                     child: SingleChildScrollView(
                       child: Column(
@@ -206,18 +206,18 @@ class AISearchBottomSheet extends GetView<DiaryController> {
                   child: Column(
                     children: [
                       GestureDetector(
-                        onTapDown: (_) => controller.startListening(),
-                        onTapUp: (_) => controller.stopListening(),
-                        onTapCancel: () => controller.cancelListening(),
+                        onTapDown: (_) => controller.speechService.startListening(),
+                        onTapUp: (_) => controller.speechService.stopListening(),
+                        onTapCancel: () => controller.speechService.cancelListening(),
                         child: Stack(
                           alignment: Alignment.center,
                           children: [
                             AnimatedContainer(
                               duration: const Duration(milliseconds: 300),
-                              width: controller.isListening.value ? 100 : 80,
-                              height: controller.isListening.value ? 100 : 80,
+                              width: controller.speechService.isListening.value ? 100 : 80,
+                              height: controller.speechService.isListening.value ? 100 : 80,
                               decoration: BoxDecoration(
-                                color: controller.isListening.value
+                                color: controller.speechService.isListening.value
                                     ? Colors.green
                                     : Theme.of(context).primaryColor,
                                 shape: BoxShape.circle,
@@ -231,7 +231,7 @@ class AISearchBottomSheet extends GetView<DiaryController> {
                               ),
                               child: Icon(
                                 Icons.mic,
-                                size: controller.isListening.value ? 50 : 40,
+                                size: controller.speechService.isListening.value ? 50 : 40,
                                 color: Colors.white,
                               ),
                             ),
@@ -244,7 +244,9 @@ class AISearchBottomSheet extends GetView<DiaryController> {
                       ),
                       const SizedBox(height: 16),
                       Text(
-                        controller.isListening.value ? 'Listening...' : 'Hold to speak',
+                        controller.speechService.isListening.value
+                            ? 'Listening...'
+                            : 'Hold to speak',
                         style: Theme.of(context).textTheme.titleMedium,
                       ),
                     ],

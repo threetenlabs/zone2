@@ -13,7 +13,6 @@ import 'package:zone2/app/style/theme.dart';
 import 'package:zone2/app/style/palette.dart';
 import 'package:zone2/firebase_options.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:toastification/toastification.dart';
@@ -95,9 +94,9 @@ Future<void> main() async {
 
     if (useEmulator) {
       // Connect to local Functions emulator from emulator
-      FirebaseFunctions.instance.useFunctionsEmulator("192.168.86.28", 5001,
-          automaticHostMapping:
-              true); // use your local IP (ipconfig getifaddr en0) for android device
+      // FirebaseFunctions.instance.useFunctionsEmulator("192.168.86.28", 5001,
+      //     automaticHostMapping:
+      //         true); // use your local IP (ipconfig getifaddr en0) for android device
       // FirebaseFunctions.instance.useFunctionsEmulator("127.0.0.1", 5001, automaticHostMapping: true); // for android emulator
     }
   }
@@ -122,7 +121,7 @@ Future<void> main() async {
       debugShowCheckedModeBanner: true,
       themeMode: Get.isDarkMode ? ThemeMode.dark : ThemeMode.light,
       theme: MaterialTheme.light(),
-      darkTheme: MaterialTheme.darkHighContrast(),
+      darkTheme: MaterialTheme.dark(),
       initialRoute: Routes.introOrHome,
       getPages: AppPages.routes,
       builder: EasyLoading.init(),

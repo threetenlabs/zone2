@@ -12,13 +12,13 @@ class GetStoragePersistence {
   final logger = Get.find<Logger>();
 
   final String userHasRemovedAdsKey = 'userHasRemovedAdsKey';
+  final String lastSavedWeightKey = 'lastSavedWeightKey';
   final String isIntroductionFinished = 'isIntroductionFinishedKey';
   final String soundOnKey = 'soundsOnKey';
   final String isAboveMinimumSupportedVersionKey = 'isAboveMinimumSupportedVersionKey';
   final String darkModeKey = 'darkModeKey';
-  final String zone2ProteinTargetKey = 'zone2ProteinTargetKey';
-  final String zone2CarbsTargetKey = 'zone2CarbsTargetKey';
-  final String zone2FatTargetKey = 'zone2FatTargetKey';
+
+  final String openAIKey = 'openAIKey';
 
   bool getUserHasRemovedAds() {
     return box.read(userHasRemovedAdsKey) ?? false;
@@ -26,6 +26,10 @@ class GetStoragePersistence {
 
   Future<void> saveUserHasRemovedAds(bool value) async {
     await box.write(userHasRemovedAdsKey, value);
+  }
+
+  Future<void> saveLastSavedWeight(double value) async {
+    await box.write(lastSavedWeightKey, value);
   }
 
   Future<void> saveIsAboveMinimumSupportedVersion(bool value) async {
@@ -41,28 +45,16 @@ class GetStoragePersistence {
     await box.write(darkModeKey, value);
   }
 
-  double getZone2ProteinTarget() {
-    return box.read(zone2ProteinTargetKey) ?? 0.0;
+  String getOpenAIKey() {
+    return box.read(openAIKey) ?? '';
   }
 
-  Future<void> saveZone2ProteinTarget(double value) async {
-    await box.write(zone2ProteinTargetKey, value);
+  Future<void> saveOpenAIKey(String value) async {
+    await box.write(openAIKey, value);
   }
 
-  double getZone2CarbsTarget() {
-    return box.read(zone2CarbsTargetKey) ?? 0.0;
-  }
-
-  Future<void> saveZone2CarbsTarget(double value) async {
-    await box.write(zone2CarbsTargetKey, value);
-  }
-
-  double getZone2FatTarget() {
-    return box.read(zone2FatTargetKey) ?? 0.0;
-  }
-
-  Future<void> saveZone2FatTarget(double value) async {
-    await box.write(zone2FatTargetKey, value);
+  double getLastSavedWeight() {
+    return box.read(lastSavedWeightKey) ?? 0.0;
   }
 
   void erase() {

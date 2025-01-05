@@ -1,83 +1,70 @@
 import 'package:flutter/material.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
+import 'package:zone2/app/models/activity.dart';
 import 'package:zone2/app/modules/track/controllers/track_controller.dart';
 import 'package:get/get.dart';
-import 'package:zone2/app/services/health_service.dart'; // Import GetX for controller access
+import 'package:intl/intl.dart';
+import 'package:zone2/app/services/health_service.dart';
+import 'package:zone2/app/style/theme.dart';
 
-// Define an enum for time frames
-
-class WeightTab extends StatelessWidget {
+class WeightTab extends GetView<TrackController> {
   const WeightTab({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return DefaultTabController(
-      length: 4, // Number of tabs
-      child: Scaffold(
-        appBar: AppBar(
-          title: const Text('Weight Over Time'),
-          bottom: const TabBar(
-            tabs: [
-              Tab(text: '1W'),
-              Tab(text: '3M'),
-              Tab(text: '6M'),
-              Tab(text: 'All'),
-            ],
-          ),
-        ),
-        body: const TabBarView(
-          children: [
-            WeightGraph(timeFrame: TimeFrame.week),
-            WeightGraph(timeFrame: TimeFrame.month),
-            WeightGraph(timeFrame: TimeFrame.sixMonths),
-            WeightGraph(timeFrame: TimeFrame.year),
-          ],
-        ),
-      ),
+    return Padding(
+      padding: const EdgeInsets.all(10.0),
+      child: WeightGraph(),
     );
   }
 }
 
-class WeightGraph extends GetWidget<TrackController> {
-  final TimeFrame timeFrame; // Update type to TimeFrame
-
-  const WeightGraph({super.key, required this.timeFrame});
+class WeightGraph extends GetView<TrackController> {
+  const WeightGraph({super.key});
 
   @override
   Widget build(BuildContext context) {
-    // Map enum to string for fetching data
-
-    Future<List<WeightData>> data =
-        controller.getWeightData(timeFrame); // Use the controller to fetch data
-
-    return FutureBuilder<List<WeightData>>(
-      future: data,
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator()); // Loading indicator
-        } else if (snapshot.hasError) {
-          return Center(child: Text('Error: ${snapshot.error}')); // Error handling
-        } else {
-          return SfCartesianChart(
+    return GetBuilder<TrackController>(
+      builder: (_) {
+        return Skeletonizer(
+          enabled: controller.activityManager.value.journeyWeightDataLoading.value,
+          child: SfCartesianChart(
             primaryXAxis: const CategoryAxis(),
-            title: const ChartTitle(text: 'Weight Over Time'),
+            title: ChartTitle(
+                text: "Weight Loss Journey",
+                textStyle: TextStyle(fontSize: 16, color: Theme.of(context).colorScheme.onSurface)),
             series: <CartesianSeries>[
-              LineSeries<WeightData, String>(
-                dataSource: snapshot.data!,
-                xValueMapper: (WeightData weight, _) => weight.date,
-                yValueMapper: (WeightData weight, _) => weight.weight,
+              LineSeries<WeightDataRecord, String>(
+                color: Get.isDarkMode
+                    ? MaterialTheme.weightColor.dark.color
+                    : MaterialTheme.weightColor.light.color,
+                dataSource: controller.activityManager.value.filteredJourneyWeightData,
+                xValueMapper: (WeightDataRecord weight, _) {
+                  final DateFormat inputFormat = DateFormat('M/d/yy');
+                  final DateFormat outputFormat = DateFormat('M/dd');
+                  DateTime date = inputFormat.parse(weight.date);
+                  return outputFormat.format(date);
+                },
+                yValueMapper: (WeightDataRecord weight, _) => weight.weight,
               ),
+              if (controller.selectedTimeFrame.value == TimeFrame.allTime)
+                LineSeries<WeightDataRecord, String>(
+                  dataSource: controller.getTrendLineData(),
+                  xValueMapper: (WeightDataRecord weight, _) {
+                    final DateFormat inputFormat = DateFormat('M/d/yy');
+                    final DateFormat outputFormat = DateFormat('M/dd');
+                    DateTime date = inputFormat.parse(weight.date);
+                    return outputFormat.format(date);
+                  },
+                  yValueMapper: (WeightDataRecord weight, _) => weight.weight,
+                  color: Colors.red,
+                  dashArray: <double>[5, 5],
+                ),
             ],
-          );
-        }
+          ),
+        );
       },
     );
   }
-}
-
-class WeightData {
-  final String date;
-  final double weight;
-
-  WeightData(this.date, this.weight);
 }

@@ -17,6 +17,7 @@ enum TimeFrame {
   month,
   sixMonths,
   year,
+  allTime,
 }
 
 class TimeFrameResult {
@@ -139,7 +140,9 @@ class HealthService extends GetxService {
   /// Get the date range for a given time frame
   /// Day = Today, Week = Last Monday, Month = First of the current month, SixMonths = First of the month six months ago, Year = First of the year
   Future<TimeFrameResult> getDateRangeForTimeFrame(
-      {required DateTime seedDate, TimeFrame timeFrame = TimeFrame.day}) async {
+      {required DateTime seedDate,
+      TimeFrame timeFrame = TimeFrame.day,
+      DateTime? startDate}) async {
     final sameDay = seedDate.year == DateTime.now().year &&
         seedDate.month == DateTime.now().month &&
         seedDate.day == DateTime.now().day;
@@ -170,6 +173,9 @@ class HealthService extends GetxService {
         break;
       case TimeFrame.year:
         startTime = DateTime(seedDate.year, 1, 1, 0, 1, 0); // Start of the current year
+        break;
+      case TimeFrame.allTime:
+        startTime = DateTime(startDate!.year, startDate.month, startDate.day, 0, 0, 1);
         break;
       default:
         return TimeFrameResult(
@@ -251,6 +257,9 @@ class HealthService extends GetxService {
     final healthData = await Health().getHealthDataFromTypes(
         types: types, startTime: result.startDateTime, endTime: result.endDateTime);
 
+    final steps = await Health().getTotalStepsInInterval(result.startDateTime, result.endDateTime);
+
+    logger.i('Steps: $steps');
     // Store fetched data in cache
     if (healthData.isNotEmpty || forceRefresh!) {
       await cacheManager.cacheData(key, healthData, const Duration(minutes: 10));
@@ -259,16 +268,19 @@ class HealthService extends GetxService {
   }
 
   Future<List<HealthDataPoint>> getWeightData(
-      {required TimeFrame timeFrame, required DateTime seedDate, bool? forceRefresh}) async {
+      {required TimeFrame timeFrame,
+      required DateTime seedDate,
+      bool? forceRefresh,
+      DateTime? startDate}) async {
     final types = [HealthDataType.WEIGHT];
     final key = 'weight_${seedDate.year}_${seedDate.month}_${seedDate.day}_${timeFrame.name}';
 
-    TimeFrameResult result =
-        await getDateRangeForTimeFrame(seedDate: seedDate, timeFrame: timeFrame);
+    TimeFrameResult result = await getDateRangeForTimeFrame(
+        seedDate: seedDate, timeFrame: timeFrame, startDate: startDate);
 
     // Check for cached data
     final cachedData = await cacheManager.getData(key);
-    if (cachedData != null && !forceRefresh!) {
+    if (cachedData != null && (forceRefresh != null && !forceRefresh)) {
       return cachedData; // Return cached data if available
     }
 
@@ -276,7 +288,7 @@ class HealthService extends GetxService {
         types: types, startTime: result.startDateTime, endTime: result.endDateTime);
 
     // Store fetched data in cache
-    if (healthData.isNotEmpty || forceRefresh!) {
+    if (healthData.isNotEmpty || (forceRefresh != null && forceRefresh)) {
       await cacheManager.cacheData(key, healthData, const Duration(minutes: 10));
     }
     return Health().removeDuplicates(healthData);
@@ -306,18 +318,16 @@ class HealthService extends GetxService {
   }
 
   Future<List<HealthDataPoint>> getActivityData(
-      {required TimeFrame timeFrame, required DateTime seedDate, bool? forceRefresh}) async {
-    final types = [
-      HealthDataType.TOTAL_CALORIES_BURNED,
-      HealthDataType.HEART_RATE,
-      HealthDataType.WORKOUT,
-      HealthDataType.STEPS
-    ];
+      {required TimeFrame timeFrame,
+      required DateTime seedDate,
+      required List<HealthDataType> types,
+      bool? forceRefresh,
+      DateTime? startDate}) async {
     final key =
         'activity_${DateTime(seedDate.year, seedDate.month, seedDate.day).toIso8601String()}_${timeFrame.name}';
 
-    TimeFrameResult result =
-        await getDateRangeForTimeFrame(seedDate: seedDate, timeFrame: timeFrame);
+    TimeFrameResult result = await getDateRangeForTimeFrame(
+        seedDate: seedDate, timeFrame: timeFrame, startDate: startDate);
 
     // Check for cached data
     final cachedData = await cacheManager.getData(key);
@@ -346,9 +356,9 @@ class HealthService extends GetxService {
     }
   }
 
-  Future<void> saveWeightToHealth(double weight) async {
+  Future<void> saveWeightToHealth(double weight, DateTime startTime) async {
     try {
-      final now = DateTime.now();
+      final now = startTime;
       final earlier = now.subtract(const Duration(minutes: 1));
       // Save the weight data point to Health
       await Health().writeHealthData(
@@ -366,9 +376,9 @@ class HealthService extends GetxService {
     }
   }
 
-  Future<void> saveWaterToHealth(double water) async {
+  Future<void> saveWaterToHealth(double water, DateTime startTime) async {
     try {
-      final now = DateTime.now();
+      final now = startTime;
       final earlier = now.subtract(const Duration(minutes: 1));
       // Save the weight data point to Health
       await Health().writeHealthData(
@@ -385,9 +395,9 @@ class HealthService extends GetxService {
     }
   }
 
-  Future<bool> saveMealToHealth(MealType mealtype, Zone2Food meal) async {
-    final now = DateTime.now();
-    final earlier = now.subtract(const Duration(minutes: 1));
+  Future<bool> saveMealToHealth(MealType mealtype, Zone2Food meal, DateTime startTime) async {
+    final now = startTime;
+    final earlier = now.subtract(const Duration(seconds: 5));
     final qty = meal.servingQuantity;
 
     try {

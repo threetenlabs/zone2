@@ -1,3 +1,4 @@
+import 'package:flutter_spinbox/flutter_spinbox.dart';
 import 'package:zone2/app/modules/intro/controllers/intro_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -241,16 +242,21 @@ class IntroSmall extends GetWidget<IntroController> {
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 20),
-                TextField(
-                  controller: controller.targetWeightController,
+                SpinBox(
+                  min: 0,
+                  max: 500,
+                  value: controller.targetWeightController.text.isNotEmpty
+                      ? double.parse(controller.targetWeightController.text)
+                      : controller.suggestedWeightLossUpperBound.value,
+                  decimals: 0,
+                  step: 1,
+                  onChanged: (value) {
+                    controller.setTargetWeight(value.toString());
+                  },
                   decoration: const InputDecoration(
-                    labelText: 'TargetWeight (lbs)',
+                    labelText: 'Target Weight (lbs)',
                     border: OutlineInputBorder(),
                   ),
-                  keyboardType: TextInputType.number,
-                  onChanged: (value) {
-                    controller.setTargetWeight(value);
-                  },
                 ),
                 Padding(
                   padding: const EdgeInsets.all(8.0),
@@ -309,55 +315,58 @@ class IntroSmall extends GetWidget<IntroController> {
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 20),
-                TextField(
+                SpinBox(
+                  min: 0,
+                  max: 500,
+                  value: 100.0,
+                  decimals: 0,
+                  step: 1,
+                  onChanged: (value) => controller.setDailyWaterGoal(value.toInt()),
                   decoration: const InputDecoration(
                     labelText: 'Daily Water Goal (oz)',
                     border: OutlineInputBorder(),
                   ),
-                  keyboardType: TextInputType.number,
-                  controller: TextEditingController(text: '100'),
-                  onChanged: (value) => controller.setDailyWaterGoal(int.tryParse(value) ?? 100),
                 ),
                 const SizedBox(height: 20),
-                TextField(
+                SpinBox(
+                  min: 0,
+                  max: 1000,
+                  value: 100.0,
+                  decimals: 0,
+                  step: 1,
+                  onChanged: (value) => controller.setDailyZonePointsGoal(value.toInt()),
                   decoration: const InputDecoration(
                     labelText: 'Daily Zone Points Goal',
                     border: OutlineInputBorder(),
                   ),
-                  keyboardType: TextInputType.number,
-                  controller: TextEditingController(text: '100'),
-                  onChanged: (value) =>
-                      controller.setDailyZonePointsGoal(int.tryParse(value) ?? 100),
                 ),
                 const SizedBox(height: 20),
-                TextField(
+                SpinBox(
+                  min: 0,
+                  max: 10000,
+                  value: controller.dailyCalorieIntakeGoal.value,
+                  decimals: 0,
+                  step: 1,
+                  acceleration: 1.5,
+                  onChanged: (value) => controller.setDailyCalorieIntakeGoal(value),
                   decoration: const InputDecoration(
                     labelText: 'Daily Calorie Intake Goal',
                     border: OutlineInputBorder(),
                   ),
-                  keyboardType: TextInputType.number,
-                  onChanged: (value) =>
-                      controller.setDailyCalorieIntakeGoal(double.tryParse(value) ?? 0),
                 ),
                 const SizedBox(height: 20),
-                TextField(
-                  decoration: const InputDecoration(
-                    labelText: 'Daily Calories Burned Goal',
-                    border: OutlineInputBorder(),
-                  ),
-                  keyboardType: TextInputType.number,
-                  onChanged: (value) =>
-                      controller.setDailyCaloriesBurnedGoal(double.tryParse(value) ?? 0),
-                ),
-                const SizedBox(height: 20),
-                TextField(
+                SpinBox(
+                  min: 0,
+                  max: 50000,
+                  value: controller.dailyStepsGoal.value.toDouble(),
+                  decimals: 0,
+                  step: 1,
+                  acceleration: 1.5,
+                  onChanged: (value) => controller.setDailyStepsGoal(value.toInt()),
                   decoration: const InputDecoration(
                     labelText: 'Daily Steps Goal',
                     border: OutlineInputBorder(),
                   ),
-                  keyboardType: TextInputType.number,
-                  controller: TextEditingController(text: '10000'),
-                  onChanged: (value) => controller.setDailyStepsGoal(int.tryParse(value) ?? 10000),
                 ),
               ],
             ),

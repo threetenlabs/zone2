@@ -13,7 +13,10 @@ class WaterBottomSheet extends GetView<DiaryController> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Text('Add Water Intake:', style: TextStyle(fontSize: 18)),
+          const Padding(
+            padding: EdgeInsets.only(bottom: 16),
+            child: Text('Add Water Intake:', style: TextStyle(fontSize: 18)),
+          ),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
@@ -28,6 +31,10 @@ class WaterBottomSheet extends GetView<DiaryController> {
                 value: controller.waterIntake.value / controller.waterGoal.value,
                 minHeight: 10,
               )),
+          Center(
+              child: Text(
+                  style: TextStyle(color: Theme.of(context).colorScheme.outline),
+                  '${controller.waterIntake.value.toStringAsFixed(1)} of ${controller.waterGoal.value.toStringAsFixed(1)} oz')),
           const SizedBox(height: 16),
           _buildCustomWaterInput(context),
         ],
@@ -38,16 +45,19 @@ class WaterBottomSheet extends GetView<DiaryController> {
   Widget _buildWaterButton(BuildContext context, double ounces, IconData icon, String label) {
     return Column(
       children: [
-        ElevatedButton(
+        OutlinedButton(
           onPressed: () => controller.addWater(ounces),
-          style: ElevatedButton.styleFrom(
-            shape: const RoundedRectangleBorder(), // Use RoundedRectangleBorder instead
+          style: OutlinedButton.styleFrom(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12), // Rounded corners
+            ),
             padding: const EdgeInsets.all(16),
+            fixedSize: const Size(75, 75), // Fixed size
           ),
           child: Column(
             children: [
               Icon(icon),
-              Text(label),
+              Text(label, style: TextStyle(fontSize: 12)),
             ],
           ),
         ),
@@ -78,7 +88,7 @@ class WaterBottomSheet extends GetView<DiaryController> {
                 )),
           ],
         ),
-        ElevatedButton(
+        OutlinedButton(
           onPressed: () {
             final total =
                 controller.customWaterWhole.value + (controller.customWaterDecimal.value / 10);

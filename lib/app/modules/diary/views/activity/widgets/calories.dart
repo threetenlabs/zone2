@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
@@ -30,17 +28,13 @@ class CaloriesBurnedChart extends GetView<DiaryController> {
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
                   Text(
-                      'Target: ${NumberFormat('#,###').format(controller.zone2User.value?.zoneSettings?.dailyCaloriesBurnedGoal ?? 0)}'),
-                  Text(
                       'Burned: ${NumberFormat('#,###').format(controller.activityManager.value.totalCaloriesBurned.value)}'),
-                  Text(
-                      'Remaining: ${NumberFormat('#,###').format(max(0, (controller.zone2User.value?.zoneSettings?.dailyCaloriesBurnedGoal ?? 0) - controller.activityManager.value.totalCaloriesBurned.value))}'),
                 ],
               ),
             ),
             SfCartesianChart(
               title: ChartTitle(
-                text: 'Hourly Calorie Breakdown',
+                text: 'Hourly Zone Point Breakdown',
                 textStyle: TextStyle(fontSize: 10, color: Theme.of(context).colorScheme.onSurface),
               ),
               primaryXAxis: DateTimeAxis(
@@ -66,12 +60,12 @@ class CaloriesBurnedChart extends GetView<DiaryController> {
                 numberFormat: NumberFormat.compact(),
               ),
               series: <CartesianSeries>[
-                ColumnSeries<CalorieBurnedRecord, DateTime>(
-                  dataSource: controller.activityManager.value.hourlyCalorieRecords,
-                  xValueMapper: (CalorieBurnedRecord record, _) => record.dateFrom,
-                  yValueMapper: (CalorieBurnedRecord record, _) => record.numericValue,
-                  name: 'Calories Burned',
-                  color: MaterialTheme.coolRed.value,
+                ColumnSeries<ZonePointRecord, DateTime>(
+                  dataSource: controller.activityManager.value.hourlyZonePointRecords,
+                  xValueMapper: (ZonePointRecord record, _) => record.dateFrom,
+                  yValueMapper: (ZonePointRecord record, _) => record.zonePoints,
+                  name: 'Zone Points',
+                  color: MaterialTheme.activityColor.value,
                   width: 0.6,
                   spacing: 0.2,
                   borderRadius: BorderRadius.circular(6),

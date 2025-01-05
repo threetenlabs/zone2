@@ -9,7 +9,6 @@ import 'package:logger/logger.dart';
 import 'package:zone2/app/models/user.dart';
 import 'package:zone2/app/services/services.dart';
 import 'package:zone2/app/utils/firebase.dart';
-import 'package:zone2/gen/assets.gen.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 
 class FirebaseService {
@@ -20,16 +19,10 @@ class FirebaseService {
   final CollectionReference userCollectionReference =
       FirebaseFirestore.instance.collection('users');
 
-  Future<void> updateUserOnboardingComplete() async {
-    await userCollectionReference
-        .doc(FirebaseAuth.instance.currentUser!.uid)
-        .update({'onboardingComplete': true});
-  }
-
   Future<void> updateUserZoneSettings(ZoneSettings zoneSettings) async {
     await userCollectionReference
         .doc(FirebaseAuth.instance.currentUser!.uid)
-        .update({'zoneSettings': zoneSettings.toJson()});
+        .update({'onboardingComplete': true, 'zoneSettings': zoneSettings.toJson()});
   }
 
   Future<Zone2User?> getUser() async {

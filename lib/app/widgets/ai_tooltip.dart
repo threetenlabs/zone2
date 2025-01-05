@@ -1,22 +1,26 @@
-import 'package:get/get.dart';
 import 'package:zone2/app/extensions/extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:super_tooltip/super_tooltip.dart';
 
-class SignInToolTip extends StatelessWidget {
-  const SignInToolTip({super.key, required this.ttController});
+class AITooltip extends StatelessWidget {
+  const AITooltip(
+      {super.key,
+      required this.ttController,
+      required this.child,
+      this.direction = TooltipDirection.up});
 
   final SuperTooltipController ttController;
+  final TooltipDirection direction;
+  final Widget child;
   @override
   Widget build(BuildContext context) {
     return SuperTooltip(
       showBarrier: true,
       showDropBoxFilter: true,
-      showOnTap: false,
       sigmaX: 10,
       sigmaY: 10,
       controller: ttController,
-      popupDirection: TooltipDirection.up,
+      popupDirection: direction,
       backgroundColor: Colors.grey[200],
       left: 30,
       right: 30,
@@ -37,36 +41,23 @@ class SignInToolTip extends StatelessWidget {
             children: <TextSpan>[
               TextSpan(
                 text:
-                    'Zone 2 uses your platform account in order to securly access data in ${GetPlatform.isAndroid ? 'Google Health Connect' : 'Apple Health'}.\n',
+                    'This feature is currently in beta and powered by OpenAI. In the future, it will be part of premium features. Until then, you may use this feature by you can use this feature if you save your OpenAI API key in MyZone App Settings to help us test beta features such as:\n',
                 style: context.boldStyle?.copyWith(
                   color: Colors.black,
                 ),
               ),
-              const TextSpan(text: 'Read & Write Exercise Data\n'),
-              const TextSpan(text: 'Read & Write Nutrition Data\n'),
-              const TextSpan(text: 'Read & Write Water Intake Data\n'),
-              const TextSpan(text: 'Read Heart Rate Data\n'),
-              const TextSpan(text: 'Read & Write Weight Data\n'),
+              const TextSpan(
+                  text: 'Add calorie information to food by taking a picture of the label\n'),
+              const TextSpan(text: 'Speech to text to convert to multi-faceted food entry\n'),
               TextSpan(
-                text: '\nWe respect your privacy and will not sell your data.',
+                text: '\nYou OPEN AI Key is not stored on Zone 2 servers.',
                 style: context.italicStyle,
               ),
             ],
           ),
         ),
       ),
-      child: Container(
-        width: 40.0,
-        height: 40.0,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          color: Colors.grey[800],
-        ),
-        child: Icon(
-          Icons.help_outline,
-          color: Colors.blue[400],
-        ),
-      ),
+      child: child,
     );
   }
 }
